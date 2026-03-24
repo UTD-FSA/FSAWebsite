@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import { motion } from "framer-motion";
 import { Circle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -59,9 +59,9 @@ function ElegantShape({
                 <div
                     className={cn(
                         "absolute inset-0 rounded-full",
-                        "bg-gradient-to-r to-transparent",
+                        "bg-linear-to-r to-transparent",
                         gradient,
-                        "backdrop-blur-[2px] border-2 border-white/[0.15]",
+                        "backdrop-blur-[2px] border-2 border-white/15",
                         "shadow-[0_8px_32px_0_rgba(255,255,255,0.1)]",
                         "after:absolute after:inset-0 after:rounded-full",
                         "after:bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.2),transparent_70%)]"
@@ -96,7 +96,7 @@ function HeroGeometric({
 
     return (
         <div className="relative min-h-screen w-full flex items-center justify-center bg-[#051005]">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-900/[0.4] via-transparent to-orange-500/[0.08] blur-3xl" />
+            <div className="absolute inset-0 bg-linear-to-br from-green-900/40 via-transparent to-orange-500/8 blur-3xl" />
 
             <div className="absolute inset-0 overflow-hidden">
                 <ElegantShape
@@ -152,7 +152,7 @@ function HeroGeometric({
                         variants={fadeUpVariants}
                         initial="hidden"
                         animate="visible"
-                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] mb-8 md:mb-12"
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/3 border border-white/8 mb-8 md:mb-12"
                     >
                         <Circle className="h-2 w-2 fill-rose-500/80" />
                         <span className="text-sm text-white/60 tracking-wide">
@@ -167,13 +167,13 @@ function HeroGeometric({
                         animate="visible"
                     >
                         <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold mb-6 md:mb-8 tracking-tight">
-                            <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">
+                            <span className="bg-clip-text text-transparent bg-linear-to-b from-white to-white/80">
                                 {title1}
                             </span>
                             <br />
                             <span
                                 className={cn(
-                                    "bg-clip-text text-transparent bg-gradient-to-r from-green-400 via-white/90 to-orange-400"
+                                    "bg-clip-text text-transparent bg-linear-to-r from-green-400 via-white/90 to-orange-400"
                                 )}
                             >
                                 {title2}
@@ -194,7 +194,7 @@ function HeroGeometric({
                 </div>
             </div>
 
-            <div className="absolute inset-0 bg-gradient-to-t from-[#051005] via-transparent to-[#051005]/80 pointer-events-none" />
+            <div className="absolute inset-0 bg-linear-to-t from-[#051005] via-transparent to-[#051005]/80 pointer-events-none" />
         </div>
     );
 }
