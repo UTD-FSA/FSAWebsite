@@ -1,9 +1,13 @@
 import { HeroGeometric } from "@/components/ui/shape-landing-hero";
 
+
+
 export default function Home() {
   return (
     <main>
-      <HeroGeometric />
+
+     * <HeroGeometric /> 
+     
 
       <section id="about" className="bg-[#051005] text-white px-6 py-32">
         <div className="max-w-3xl mx-auto text-center">

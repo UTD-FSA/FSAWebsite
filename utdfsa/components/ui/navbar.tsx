@@ -32,6 +32,13 @@ export function Navbar() {
             </li>
           ))}
         </ul>
+
+        <Link
+          href="/login"
+          className="text-sm tracking-wide px-4 py-1.5 rounded-full border border-white/15 text-white/60 hover:border-orange-400/50 hover:text-orange-400 transition-colors duration-200"
+        >
+          Login
+        </Link>
       </nav>
     </header>
   );
