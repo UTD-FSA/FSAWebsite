@@ -1,7 +1,7 @@
-export default function Home() {
+export default function Pamilya() {
   return (
     <main>
-      <h1>Welcome to UTD FSA</h1>
+      <h1>Pamilya</h1>
       <p>Your one-stop solution for all things FSA.</p>
     </main>
   );
