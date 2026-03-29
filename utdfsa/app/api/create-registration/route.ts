@@ -48,22 +48,22 @@ export async function POST(req: Request) {
 
   const now = new Date()
   const isEarly =
-    event.early_bird_deadline &&
-    new Date(event.early_bird_deadline) > now
+    event.eb_deadline &&
+    new Date(event.eb_deadline) > now
 
   let pricePerTicket
 
   if (isMember) {
     pricePerTicket = isEarly
-      ? event.early_bird_price_members ?? event.price_cents_members
+      ? event.eb_price_members ?? event.price_cents_members
       : event.price_cents_members
   } else {
     pricePerTicket = isEarly
-      ? event.early_bird_price_nonmembers ?? event.price_cents_nonmembers
+      ? event.eb_price_nonmembers ?? event.price_cents_nonmembers
       : event.price_cents_nonmembers
   }
 
-  const amount_expected = pricePerTicket * num_tickets
+  const amt_expected = pricePerTicket * num_tickets
 
   const payment_code = generatePaymentCode('EVT')
   const qr_code = crypto.randomUUID()
@@ -78,7 +78,7 @@ export async function POST(req: Request) {
     payment_code,
     qr_code,
     payment_status: 'pending',
-    amount_expected,
+    amt_expected,
   })
 
   if (error) {
@@ -87,6 +87,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     payment_code,
-    amount_expected,
+    amt_expected,
   })
 }

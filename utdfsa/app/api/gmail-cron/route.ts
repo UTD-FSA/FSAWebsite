@@ -19,9 +19,9 @@ export async function POST() {
 
   for (const email of emails) {
     const code = extractPaymentCode(email.body)
-    const amount_paid = extractAmount(email.body)
+    const amt_paid = extractAmount(email.body)
 
-    if (!code || !amount_paid) continue
+    if (!code || !amt_paid) continue
 
     // Try event registrations first
     const { data: registration } = await supabase
@@ -31,13 +31,13 @@ export async function POST() {
       .single()
 
     if (registration) {
-      const isValid = amount_paid >= registration.amount_expected
+      const isValid = amt_paid >= registration.amt_expected
 
       await supabase
         .from('event_registrations')
         .update({
           payment_status: isValid ? 'paid' : 'failed',
-          amount_paid,
+          amt_paid,
           payment_verified_at: new Date().toISOString(),
         })
         .eq('id', registration.id)
@@ -57,7 +57,7 @@ export async function POST() {
         .from('members')
         .update({
           membership_status: 'active',
-          amount_paid,
+          amt_paid,
           payment_verified_at: new Date().toISOString(),
         })
         .eq('id', member.id)
