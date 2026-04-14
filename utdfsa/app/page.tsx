@@ -29,6 +29,14 @@ export default function Home() {
   </div>
 </section>
 
+    {/* Who Are We? Section */}
+    <section className="py-24 px-6 bg-white text-black">
+
+      
+      <h2 className="text-3xl font-bold text-left mb-4"> WHO ARE </h2>
+      <h2 className="text-3xl font-bold text-left mb-4"> WE? </h2>
+    </section>
+
     {/* Footer Section */}
     <footer className="bg-black text-white py-4">
       <div className="container mx-auto text-left">
