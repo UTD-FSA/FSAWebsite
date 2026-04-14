@@ -29,6 +29,13 @@ export default function Home() {
   </div>
 </section>
 
+    {/* Footer Section */}
+    <footer className="bg-black text-white py-4">
+      <div className="container mx-auto text-left">
+        <p className="text-sm">&copy; UTD FSA</p>
+      </div>
+    </footer>
+
     </main>
   );
 }
