@@ -35,13 +35,13 @@ body {
 .marquee-track {
   display: flex;
   gap: 1rem;
-  animation: marquee 10s linear infinite;
+  animation: marquee 20s linear infinite;
 }
 
 .marquee-track-duplicate {
   display: flex;
   gap: 1rem;
-  animation: marquee 10s linear infinite;
+  animation: marquee 20s linear infinite;
 }
 
 @keyframes marquee {
