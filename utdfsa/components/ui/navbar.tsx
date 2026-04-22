@@ -33,12 +33,20 @@ export function Navbar() {
           ))}
         </ul>
 
-        <Link
-          href="/auth/login"
-          className="text-sm tracking-wide px-4 py-1.5 rounded-full border border-white/15 text-white/60 hover:border-orange-400/50 hover:text-orange-400 transition-colors duration-200"
-        >
-          Login
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/auth/login"
+            className="text-sm tracking-wide px-4 py-1.5 rounded-full border border-white/15 text-white/60 hover:border-orange-400/50 hover:text-orange-400 transition-colors duration-200"
+          >
+            Login
+          </Link>
+          <Link
+            href="/auth/signup"
+            className="text-sm tracking-wide px-4 py-1.5 rounded-full bg-orange-500 hover:bg-orange-400 active:scale-95 text-white font-medium transition-all duration-150 shadow-lg shadow-orange-500/20"
+          >
+            Sign Up
+          </Link>
+        </div>
       </nav>
     </header>
   );

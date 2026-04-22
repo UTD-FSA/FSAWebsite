@@ -14,18 +14,25 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createUserClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data: sessionData, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
-      const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
+      const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
-      if (isLocalEnv) {
-        // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
-        return NextResponse.redirect(`${origin}${next}`)
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`)
-      } else {
-        return NextResponse.redirect(`${origin}${next}`)
+      const baseUrl = isLocalEnv ? origin : forwardedHost ? `https://${forwardedHost}` : origin
+
+      const email = sessionData.user?.email
+      if (email) {
+        const { data: member } = await supabase
+          .from('members')
+          .select('id')
+          .eq('email', email)
+          .maybeSingle()
+        if (!member) {
+          return NextResponse.redirect(`${baseUrl}/onboarding/questionnaire`)
+        }
       }
+
+      return NextResponse.redirect(`${baseUrl}${next}`)
     }
   }
 
