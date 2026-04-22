@@ -1,16 +1,7 @@
-export default function AboutPage() {
+export default function About() {
   return (
-    <main className="bg-[#051005] text-white min-h-screen px-6 py-32">
-      <div className="max-w-3xl mx-auto text-center">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-6 tracking-tight text-white">
-          About FSA
-        </h1>
-        <p className="text-white/60 text-lg leading-relaxed font-light">
-          The Filipino Student Association at UT Dallas is a community dedicated
-          to celebrating Filipino culture, fostering friendship, and building
-          lasting connections on campus.
-        </p>
-      </div>
+    <main>
+      <h1>About Us</h1>
     </main>
   );
 }

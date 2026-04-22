@@ -1,5 +1,4 @@
 import { HeroGeometric } from "@/components/ui/shape-landing-hero";
-import CheckUserButton from "@/app/components/CheckUserButton";
 
 
 
@@ -56,7 +55,6 @@ export default function Home() {
         </div>
       </section>
       <div className="bg-[#051005] flex justify-center py-8">
-        <CheckUserButton />
       </div>
     </main>
   );
