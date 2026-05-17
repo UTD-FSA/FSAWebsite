@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server'
 import { createUserClient } from '@/utils/supabase/server'
 
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const supabase = await createUserClient()
 
-  const event_id = params.id
+  const { id: event_id } = await params
 
   const {
     data: { user },

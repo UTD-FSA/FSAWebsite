@@ -1,55 +1,35 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/utils/supabase/server'
 
-function extractPaymentCode(text: string) {
-  const match = text.match(/(FSA|EVT)-[A-Z0-9]{8}/)
-  return match ? match[0] : null
-}
-
 function extractAmount(text: string) {
   const match = text.match(/\$([0-9]+(\.[0-9]{2})?)/)
   return match ? Math.round(parseFloat(match[1]) * 100) : null
 }
 
-export async function POST() {
+function extractTransactionId(text: string) {
+  const match = text.match(/Transaction\s+ID[:\s]+(\d{19})/i)
+  return match ? match[1] : null
+}
+
+export async function POST(req: Request) {
   const supabase = createAdminClient()
+  const { emails } = await req.json() as { emails: string[] }
 
-  // Placeholder: replace with real Gmail API fetch
-  const emails = [] as { body: string }[]
+  for (const body of emails) {
+    const transaction_id = extractTransactionId(body)
+    if (!transaction_id) continue
 
-  for (const email of emails) {
-    const code = extractPaymentCode(email.body)
-    const amt_paid = extractAmount(email.body)
+    const amount_cents = extractAmount(body)
 
-    if (!code || !amt_paid) continue
+    await supabase
+      .from('venmo_transactions')
+      .upsert({ transaction_id, amount_cents }, { onConflict: 'transaction_id', ignoreDuplicates: true })
 
-    // Try event registrations first
-    const { data: registration } = await supabase
-      .from('event_registrations')
-      .select('*')
-      .eq('payment_code', code)
-      .single()
-
-    if (registration) {
-      const isValid = amt_paid >= registration.amt_expected
-
-      await supabase
-        .from('event_registrations')
-        .update({
-          payment_status: isValid ? 'paid' : 'failed',
-          amt_paid,
-          payment_verified_at: new Date().toISOString(),
-        })
-        .eq('id', registration.id)
-
-      continue
-    }
-
-    // Try membership
     const { data: member } = await supabase
       .from('members')
-      .select('*')
-      .eq('payment_code', code)
+      .select('id')
+      .eq('confirmation_id', transaction_id)
+      .eq('membership_status', 'pending')
       .single()
 
     if (member) {
@@ -57,7 +37,7 @@ export async function POST() {
         .from('members')
         .update({
           membership_status: 'active',
-          amt_paid,
+          amt_paid: amount_cents,
           payment_verified_at: new Date().toISOString(),
         })
         .eq('id', member.id)

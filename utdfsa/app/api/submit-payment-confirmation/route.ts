@@ -18,5 +18,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ success: true })
+  const { data: tx } = await supabase
+    .from('venmo_transactions')
+    .select('amount_cents')
+    .eq('transaction_id', confirmation_id)
+    .single()
+
+  if (tx) {
+    await supabase
+      .from('members')
+      .update({
+        membership_status: 'active',
+        amt_paid: tx.amount_cents,
+        payment_verified_at: new Date().toISOString(),
+      })
+      .eq('payment_code', payment_code)
+  }
+
+  return NextResponse.json({ success: true, verified: !!tx })
 }
