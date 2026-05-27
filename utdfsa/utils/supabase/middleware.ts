@@ -1,10 +1,10 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// Any logged-in user can access these
+// any logged-in user can access these
 const MEMBER_ROUTES = ['/member']
 
-// Only officers and admins can access these
+// only officers and admins can access these
 const OFFICER_ROUTES = ['/officer', '/api/officer']
 
 export async function updateSession(request: NextRequest) {
@@ -37,7 +37,7 @@ export async function updateSession(request: NextRequest) {
   const needsMember = MEMBER_ROUTES.some(r => pathname.startsWith(r))
   const needsOfficer = OFFICER_ROUTES.some(r => pathname.startsWith(r))
 
-  // Not logged in — redirect to login and remember where they were going
+  // not logged in — redirect to login and remember where they were going
   if ((needsMember || needsOfficer) && !user) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/login'
@@ -45,7 +45,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  // Logged in but trying to reach officer routes — check role
+  // logged in but trying to reach officer routes — check role
   if (needsOfficer && user) {
     const { data: member } = await supabase
       .from('members')

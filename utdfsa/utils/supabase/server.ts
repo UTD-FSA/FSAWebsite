@@ -1,7 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-// for user-facing routes — respects RLS
 export async function createUserClient() {
   const cookieStore = await cookies()
 
@@ -14,16 +13,19 @@ export async function createUserClient() {
           return cookieStore.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            cookieStore.set(name, value, options)
-          )
+          cookiesToSet.forEach(({ name, value, options }) => {
+            try {
+              cookieStore.set(name, value, options)
+            } catch (e) {
+              console.error('[server.ts] failed to set cookie:', name, e)
+            }
+          })
         },
       },
     }
   )
 }
 
-// for admin/cron routes — bypasses RLS entirely
 export function createAdminClient() {
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

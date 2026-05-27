@@ -5,28 +5,37 @@ import Link from 'next/link'
 import { createClient } from '@/utils/supabase/client'
 import type { Member } from '@/types/database'
 
-export default function Navbar() {
-  const [member, setMember] = useState<Member | null>(null)
+interface NavbarProps {
+  initialMember: Member | null
+}
+
+export default function Navbar({ initialMember }: NavbarProps) {
+  const [member, setMember] = useState<Member | null>(initialMember)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [goodphilOpen, setGoodphilOpen] = useState(false)
   const dropdownRef = useRef<HTMLLIElement>(null)
   const goodphilRef = useRef<HTMLLIElement>(null)
-  const supabase = createClient()
+  const supabase = useRef(createClient()).current
 
   useEffect(() => {
-    async function loadMember() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+    // only listen for changes after initial load
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          const { data } = await supabase
+            .from('members')
+            .select('*')
+            .eq('email', session.user.email!)
+            .maybeSingle()
+          setMember(data ?? null)
+        }
+        if (event === 'SIGNED_OUT') {
+          setMember(null)
+        }
+      }
+    )
 
-      const { data } = await supabase
-        .from('members')
-        .select('*')
-        .eq('email', user.email!)
-        .single()
-
-      setMember(data)
-    }
-    loadMember()
+    return () => subscription.unsubscribe()
   }, [])
 
   // close dropdowns when clicking outside
@@ -44,26 +53,19 @@ export default function Navbar() {
   }, [])
 
   async function handleLogout() {
-    await supabase.auth.signOut()
-    window.location.href = '/login'
+    window.location.href = '/auth/logout'
   }
 
   const isOfficer = member?.role === 'officer' || member?.role === 'admin'
 
   return (
     <nav className="flex justify-between items-center px-6 py-4">
-
-      {/* logo */}
       <Link href="/">*Insert Logo Here*</Link>
 
-      {/* main nav links */}
       <ul className="flex gap-6 items-center">
-
         <li><Link href="/about">About Us</Link></li>
-
         <li><Link href="/pamilyas">Pamilyas</Link></li>
 
-        {/* goodphil tab with subtabs dropdown */}
         <li className="relative" ref={goodphilRef}>
           <button
             onClick={() => setGoodphilOpen(prev => !prev)}
@@ -75,43 +77,17 @@ export default function Navbar() {
 
           {goodphilOpen && (
             <div className="absolute top-full left-0 mt-2 w-36 bg-white shadow-lg rounded-lg py-1 z-50">
-              <Link
-                href="/goodphil/cultural"
-                className="block px-4 py-2 text-sm hover:bg-gray-100"
-                onClick={() => setGoodphilOpen(false)}
-              >
-                Cultural
-              </Link>
-              <Link
-                href="/goodphil/modern"
-                className="block px-4 py-2 text-sm hover:bg-gray-100"
-                onClick={() => setGoodphilOpen(false)}
-              >
-                Modern
-              </Link>
-              <Link
-                href="/goodphil/spirit"
-                className="block px-4 py-2 text-sm hover:bg-gray-100"
-                onClick={() => setGoodphilOpen(false)}
-              >
-                Spirit
-              </Link>
-              <Link
-                href="/goodphil/sports"
-                className="block px-4 py-2 text-sm hover:bg-gray-100"
-                onClick={() => setGoodphilOpen(false)}
-              >
-                Sports
-              </Link>
+              <Link href="/goodphil/cultural" className="block px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setGoodphilOpen(false)}>Cultural</Link>
+              <Link href="/goodphil/modern" className="block px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setGoodphilOpen(false)}>Modern</Link>
+              <Link href="/goodphil/spirit" className="block px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setGoodphilOpen(false)}>Spirit</Link>
+              <Link href="/goodphil/sports" className="block px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setGoodphilOpen(false)}>Sports</Link>
             </div>
           )}
         </li>
 
         <li><Link href="/archives">Archives</Link></li>
-
         <li><Link href="/events">Events</Link></li>
 
-        {/* profile dropdown or sign-in button */}
         {member ? (
           <li className="relative" ref={dropdownRef}>
             <button
@@ -125,55 +101,16 @@ export default function Navbar() {
 
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-lg py-1 z-50">
+                <Link href="/member/profile" className="block px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setDropdownOpen(false)}>Profile</Link>
+                <Link href="/member/orders" className="block px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setDropdownOpen(false)}>Order History</Link>
+                <Link href="/member/attendance" className="block px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setDropdownOpen(false)}>Attendance History</Link>
 
-                {/* all members */}
-                <Link
-                  href="/member/profile"
-                  className="block px-4 py-2 text-sm hover:bg-gray-100"
-                  onClick={() => setDropdownOpen(false)}
-                >
-                  Profile
-                </Link>
-                <Link
-                  href="/member/orders"
-                  className="block px-4 py-2 text-sm hover:bg-gray-100"
-                  onClick={() => setDropdownOpen(false)}
-                >
-                  Order History
-                </Link>
-                <Link
-                  href="/member/attendance"
-                  className="block px-4 py-2 text-sm hover:bg-gray-100"
-                  onClick={() => setDropdownOpen(false)}
-                >
-                  Attendance History
-                </Link>
-
-                {/* officers only */}
                 {isOfficer && (
                   <>
                     <hr className="my-1" />
-                    <Link
-                      href="/officer/events"
-                      className="block px-4 py-2 text-sm hover:bg-gray-100"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      Create Event
-                    </Link>
-                    <Link
-                      href="/officer/forms"
-                      className="block px-4 py-2 text-sm hover:bg-gray-100"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      Create Form
-                    </Link>
-                    <Link
-                      href="/officer/scan"
-                      className="block px-4 py-2 text-sm hover:bg-gray-100"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      Scan QR Codes
-                    </Link>
+                    <Link href="/officer/events" className="block px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setDropdownOpen(false)}>Create Event</Link>
+                    <Link href="/officer/forms" className="block px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setDropdownOpen(false)}>Create Form</Link>
+                    <Link href="/officer/scan" className="block px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setDropdownOpen(false)}>Scan QR Codes</Link>
                   </>
                 )}
 
@@ -184,21 +121,16 @@ export default function Navbar() {
                 >
                   Log Out
                 </button>
-
               </div>
             )}
           </li>
         ) : (
           <li>
-            <Link
-              href="/login"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700"
-            >
+            <Link href="/login" className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">
               Sign In
             </Link>
           </li>
         )}
-
       </ul>
     </nav>
   )

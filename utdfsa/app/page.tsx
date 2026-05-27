@@ -7,7 +7,7 @@ export default function Home() {
       <h1>Welcome to the Home Page</h1>
       <p>This is the home page of our website.</p>
 
-      <Link href="/Pamilya">Get Involved</Link>
+      <Link href="/pamilyas">Get Involved</Link>
     </div>
   );
 }
