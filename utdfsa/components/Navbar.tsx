@@ -60,7 +60,13 @@ export default function Navbar({ initialMember }: NavbarProps) {
 
   return (
     <nav className="flex justify-between items-center px-6 py-4">
-      <Link href="/">*Insert Logo Here*</Link>
+      <Link href="/">
+        <img
+          src="/logo.jpg"
+          alt="UTD FSA Logo"
+          className="h-10 w-auto"
+        />
+      </Link>
 
       <ul className="flex gap-6 items-center">
         <li><Link href="/about">About Us</Link></li>
@@ -94,7 +100,23 @@ export default function Navbar({ initialMember }: NavbarProps) {
               onClick={() => setDropdownOpen(prev => !prev)}
               className="flex items-center gap-2"
             >
-              <div className="w-8 h-8 rounded-full bg-gray-400 flex items-center justify-center text-white text-sm font-bold">
+              {member.avatar_url ? (
+                <img
+                  src={member.avatar_url}
+                  alt={`${member.first_name} ${member.last_name}`}
+                  className="w-8 h-8 rounded-full object-cover"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none'
+                    const sibling = e.currentTarget.nextElementSibling as HTMLElement
+                    if (sibling) sibling.style.display = 'flex'
+                  }}
+                />
+              ) : null}
+              <div
+                className="w-8 h-8 rounded-full bg-gray-400 items-center justify-center text-white text-sm font-bold"
+                style={{ display: member.avatar_url ? 'none' : 'flex' }}
+              >
                 {member.first_name?.[0]}{member.last_name?.[0]}
               </div>
             </button>
@@ -109,7 +131,7 @@ export default function Navbar({ initialMember }: NavbarProps) {
                   <>
                     <hr className="my-1" />
                     <Link href="/officer/events" className="block px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setDropdownOpen(false)}>Create Event</Link>
-                    <Link href="/officer/forms" className="block px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setDropdownOpen(false)}>Create Form</Link>
+                    <Link href="/officer/gallery" className="block px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setDropdownOpen(false)}>Create Gallery</Link>
                     <Link href="/officer/scan" className="block px-4 py-2 text-sm hover:bg-gray-100" onClick={() => setDropdownOpen(false)}>Scan QR Codes</Link>
                   </>
                 )}

@@ -2,12 +2,6 @@ export type MembershipStatus = 'pending' | 'active' | 'expired'
 export type UserRole = 'member' | 'officer' | 'admin'
 export type PaymentStatus = 'pending' | 'paid' | 'failed'
 export type PaymentProvider = 'stripe' | 'paypal' | 'venmo' | 'zelle' | 'cash'
-export type FormStatus = 'draft' | 'published' | 'closed'
-export type SubmissionStatus = 'draft' | 'submitted' | 'reviewed' | 'accepted' | 'rejected'
-export type QuestionType = 
-  | 'short_text' | 'long_text' | 'multiple_choice' 
-  | 'checkbox' | 'dropdown' | 'date' | 'number' 
-  | 'ranking' | 'file_upload'
 
 export interface Member {
   id: string
@@ -24,7 +18,6 @@ export interface Member {
   phone: string | null
   year: string | null
   major: string | null
-  interests: string[] | null
   pamilya: string | null
   confirmation_id: string | null
   payment_provider: PaymentProvider | null
@@ -33,6 +26,8 @@ export interface Member {
   payment_method: string | null
   payment_metadata: Record<string, unknown> | null
   stripe_customer_id: string | null
+  avatar_url: string | null
+  onboarding_complete: boolean
 }
 
 export interface Event {
@@ -95,54 +90,28 @@ export interface Attendance {
   created_at: string
 }
 
-export interface Form {
+// static decoration/website photos — managed directly, not officer-created
+export interface Photo {
+  id: string
+  event_id: string | null
+  created_at: string
+  s3_key: string
+  caption: string | null
+  sort_order: number | null
+  uploaded_at: string
+}
+
+// officer-created archive galleries shown on /archives
+export interface Gallery {
   id: string
   created_at: string
   title: string
-  slug: string
   description: string | null
-  form_type: string
-  status: FormStatus
-  member_only: boolean
-  opens_at: string | null
-  closes_at: string | null
-  allow_multiple_submissions: boolean
+  cover_photo_url: string
+  google_photos_url: string | null
+  event_id: string | null
+  semester: string | null
+  year: number | null
   created_by: string
-  updated_at: string
-}
-
-export interface FormQuestion {
-  id: string
-  created_at: string
-  form_id: string
-  question_text: string
-  question_type: QuestionType
-  required: boolean
-  options_json: unknown | null
-  placeholder_text: string | null
-  order_index: number
-  max_length: number | null
-  created_by: string | null
-}
-
-export interface FormSubmission {
-  id: string
-  created_at: string
-  form_id: string
-  member_id: string
-  submitted_at: string
-  status: SubmissionStatus
-  reviewer_notes: string | null
-  reviewed_by: string | null
-  reviewed_at: string | null
-}
-
-export interface FormAnswer {
-  id: string
-  created_at: string
-  submission_id: string
-  question_id: string
-  answer_text: string | null
-  answer_json: unknown | null
-  uploaded_file_url: string | null
+  is_published: boolean
 }

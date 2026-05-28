@@ -52,6 +52,7 @@ export async function GET(request: Request) {
       last_name: lastName,
       role: 'member',
       membership_status: 'pending',
+      avatar_url: data.user.user_metadata?.avatar_url ?? null,
     })
 
     console.log('[callback] insert error:', insertError?.message ?? 'none')
