@@ -2,11 +2,11 @@ import { createUserClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 
 interface Props {
-  searchParams: { token?: string }
+  searchParams: Promise<{ token?: string }>
 }
 
 export default async function AttendPage({ searchParams }: Props) {
-  const token = searchParams.token
+  const { token } = await searchParams
 
   if (!token) redirect('/')
 
