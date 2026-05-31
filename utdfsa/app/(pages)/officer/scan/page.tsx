@@ -29,14 +29,18 @@ export default function ScanPage() {
         await scanner.stop()
         setScanning(false)
 
-        const res = await fetch('/api/scan-ticket', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ qr_code: decodedText }),
-        })
+        try {
+          const res = await fetch('/api/scan-ticket', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ qr_code: decodedText }),
+          })
 
-        const data = await res.json()
-        setResult(data)
+          const data = await res.json()
+          setResult(data)
+        } catch {
+          setResult({ valid: false, reason: 'INVALID_TICKET', message: 'Scan failed' })
+        }
 
         // auto-reset after 4 seconds for next scan
         setTimeout(() => {

@@ -14,7 +14,7 @@ export default async function AttendPage({ searchParams }: Props) {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect(`/login?next=/attend?token=${token}`)
+    redirect(`/login?next=${encodeURIComponent(`/attend?token=${token}`)}`)
   }
 
   // find the event by its attendance token
