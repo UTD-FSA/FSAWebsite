@@ -187,7 +187,7 @@ export default function OnboardingClient({ memberId, firstName }: Props) {
               onChange={e => setProfileForm(p => ({ ...p, year: e.target.value }))}
               className="w-full border rounded-lg p-2 text-sm"
             >
-              <option value="">Select your year</option>
+              <option value="">Select Your Year</option>
               <option value="Freshman">Freshman</option>
               <option value="Sophomore">Sophomore</option>
               <option value="Junior">Junior</option>
@@ -252,14 +252,14 @@ export default function OnboardingClient({ memberId, firstName }: Props) {
           */}
           <div>
             <label className="block text-sm font-medium mb-1">
-              Preferred pamilya (optional)
+              Preferred Pamilya (optional)
             </label>
             <select
               value={adingForm.preferred_pamilya}
               onChange={e => setAdingForm(p => ({ ...p, preferred_pamilya: e.target.value }))}
               className="w-full border rounded-lg p-2 text-sm"
             >
-              <option value="">No preference</option>
+              <option value="">No Preference</option>
               <option value="Shiballers">Shiballers</option>
               <option value="Gutom Gang">Gutom Gang</option>
               <option value="Sushi Cuchi">Sushi Cuchi</option>
@@ -292,7 +292,7 @@ export default function OnboardingClient({ memberId, firstName }: Props) {
             disabled={loading}
             className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 mt-2"
           >
-            {loading ? 'submitting...' : 'complete sign up'}
+            {loading ? 'submitting...' : 'Complete Sign Up'}
           </button>
 
           <button
@@ -344,7 +344,7 @@ export default function OnboardingClient({ memberId, firstName }: Props) {
             disabled={loading}
             className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 mt-2"
           >
-            {loading ? 'submitting...' : 'complete sign up'}
+            {loading ? 'submitting...' : 'Complete Sign Up'}
           </button>
 
           <button

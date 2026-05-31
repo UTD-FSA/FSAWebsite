@@ -11,9 +11,8 @@ export function toTitleCase(value: string): string {
 
 // capitalizes only the first letter — "computer science" → "Computer science"
 export function toSentenceCase(value: string): string {
-  const trimmed = value.trim()
-  if (!trimmed) return trimmed
-  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1)
+  if (!value) return value
+  return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
 // formats a raw phone input to (xxx) xxx-xxxx

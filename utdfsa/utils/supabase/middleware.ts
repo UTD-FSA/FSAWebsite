@@ -62,15 +62,9 @@ export async function updateSession(request: NextRequest) {
       .eq('email', user.email!)
       .maybeSingle()
 
-    const isOfficerOrAdmin =
-      member?.role === 'officer' || member?.role === 'admin'
-
     const isPaid = member?.membership_status === 'active'
 
-    // officers bypass payment entirely — they use the $0 coupon flow
-    // regular members who haven't paid get redirected to /membership
-    // unless they're already heading somewhere that's allowed unpaid
-    if (!isPaid && !isOfficerOrAdmin) {
+    if (!isPaid) {
       const isAllowed = ALLOWED_UNPAID_PATHS.some(p => pathname.startsWith(p))
 
       if (!isAllowed) {

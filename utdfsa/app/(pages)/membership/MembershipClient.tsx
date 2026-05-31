@@ -99,7 +99,7 @@ export default function MembershipClient({
           disabled={loading}
           className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors"
         >
-          {loading ? 'redirecting to payment...' : `pay ${formatPrice(displayPrice)}`}
+          {loading ? 'redirecting to payment...' : `Pay ${formatPrice(displayPrice)}`}
         </button>
       </div>
 

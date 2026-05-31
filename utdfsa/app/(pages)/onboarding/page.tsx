@@ -25,11 +25,6 @@ export default async function OnboardingPage({ searchParams }: Props) {
 
   if (!member) redirect('/login')
 
-  // officers skip onboarding entirely
-  if (member.role === 'officer' || member.role === 'admin') {
-    redirect('/member/profile')
-  }
-
   // already done — nothing to do here
   if (member.onboarding_complete) {
     redirect('/member/profile')
