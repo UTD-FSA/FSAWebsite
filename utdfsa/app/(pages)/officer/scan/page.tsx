@@ -25,9 +25,11 @@ export default function ScanPage() {
       { facingMode: 'environment' }, // use back camera on phones
       { fps: 10, qrbox: { width: 250, height: 250 } },
       async (decodedText) => {
-        // stop scanning while we process
-        await scanner.stop()
+        // stop scanner — swallow errors, cleanup will retry if needed
+        try { await scanner.stop() } catch {}
         setScanning(false)
+
+        let scanResult: ScanResult = { valid: false, reason: 'INVALID_TICKET', message: 'Scan failed' }
 
         try {
           const res = await fetch('/api/scan-ticket', {
@@ -35,12 +37,10 @@ export default function ScanPage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ qr_code: decodedText }),
           })
+          if (res.ok) scanResult = await res.json()
+        } catch {}
 
-          const data = await res.json()
-          setResult(data)
-        } catch {
-          setResult({ valid: false, reason: 'INVALID_TICKET', message: 'Scan failed' })
-        }
+        setResult(scanResult)
 
         // auto-reset after 4 seconds for next scan
         setTimeout(() => {
