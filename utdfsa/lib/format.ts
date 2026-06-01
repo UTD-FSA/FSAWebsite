@@ -1,11 +1,11 @@
-// lib/format.ts
-
 // capitalizes first letter of each word — "john doe" → "John Doe"
 export function toTitleCase(value: string): string {
   return value
-    .trim()
     .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .map(word => {
+      if (!word) return ''
+      return word.charAt(0).toUpperCase() + word.slice(1)
+    })
     .join(' ')
 }
 

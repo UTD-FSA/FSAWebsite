@@ -27,6 +27,7 @@ export interface Member {
   stripe_customer_id: string | null
   avatar_url: string | null
   onboarding_complete: boolean
+  contact_email: string | null
 }
 
 export interface Event {

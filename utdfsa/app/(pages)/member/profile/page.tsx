@@ -110,6 +110,11 @@ export default async function ProfilePage() {
         </div>
       </section>
 
+      {/* edit profile button — safe to restyle, keep the href */}
+      <a href="/member/profile/edit" className="inline-block mt-4 text-sm text-blue-600 underline hover:text-blue-800">
+        Edit Profile
+      </a>
+
       {/* Unpaid membership banner */}
       {member.membership_status !== 'active' && (
         <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
