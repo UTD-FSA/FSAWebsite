@@ -1,4 +1,5 @@
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { uploadToS3 } from '@/utils/s3'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -61,19 +62,16 @@ export async function POST(request: NextRequest) {
   }
 
   const ext = coverFile.name.split('.').pop() ?? 'jpg'
-  const path = `covers/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+  const key = `covers/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
   const buffer = Buffer.from(await coverFile.arrayBuffer())
 
-  const { error: uploadError } = await admin.storage
-    .from('gallery-covers')
-    .upload(path, buffer, { contentType: coverFile.type, upsert: false })
-
-  if (uploadError) {
-    console.error('Supabase storage upload error:', uploadError)
-    return NextResponse.json({ error: `Upload failed: ${JSON.stringify(uploadError)}` }, { status: 500 })
+  let publicUrl: string
+  try {
+    publicUrl = await uploadToS3(key, buffer, coverFile.type)
+  } catch (err) {
+    console.error('S3 upload error:', err)
+    return NextResponse.json({ error: `Upload failed: ${String(err)}` }, { status: 500 })
   }
-
-  const { data: { publicUrl } } = admin.storage.from('gallery-covers').getPublicUrl(path)
 
   const { data: gallery, error: insertError } = await admin
     .from('galleries')
