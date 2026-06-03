@@ -139,6 +139,7 @@ export interface GoodphilEligibility {
   first_name: string
   last_name: string
   email: string
+  phone: string | null
   pamilya: string | null
   points: number | null
   dues_paid: boolean
