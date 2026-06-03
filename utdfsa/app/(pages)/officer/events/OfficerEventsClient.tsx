@@ -14,17 +14,22 @@ import type { Event } from '@/types/database'
 
 // ── constants ─────────────────────────────────────────────────────────────────
 
-const EVENT_TYPES = ['Party', 'Meeting', 'Workshop', 'Practice', 'Fundraising', 'Other'] as const
+const EVENT_TYPES = ['General Meeting', 'Risk Management', 'Party', 'GP Event', 'Regular Event', 'Other'] as const
 
 /**
- * Ticketed events: Party and Other
+ * Ticketed events: Party, Other
  *   → show ticket pricing + early-bird toggle
  *   → officer scan page handles check-in
- *   → Party specifically has NO attendance QR (ticket scan IS attendance)
+ *   → Party has NO attendance QR (ticket scan IS attendance)
  *
- * Free/attendance events: Meeting, Workshop, Practice, Fundraising, Other
+ * Attendance QR events: General Meeting, Risk Management, GP Event, Other
  *   → no ticket pricing
  *   → attendance tracked via QR code that members scan at the door
+ *   → General Meeting + Risk Management: marks present only, no points
+ *   → GP Event: awards goodphil points
+ *   → Other (hybrid): paid + awards points via QR
+ *
+ * Regular Event: no pricing, no QR, no points — purely for the calendar
  */
 function isTicketed(type: string) {
   return ['party', 'other'].includes(type.toLowerCase())
@@ -36,8 +41,12 @@ function isHybrid(type: string) {
 }
 
 function hasAttendanceQR(type: string) {
-  // Every type except Party uses the attendance QR flow
-  return type.toLowerCase() !== 'party'
+  return ['general meeting', 'risk management', 'gp event', 'other'].includes(type.toLowerCase())
+}
+
+// Types that actually award goodphil points on check-in
+function hasPoints(type: string) {
+  return ['gp event', 'other'].includes(type.toLowerCase())
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -47,6 +56,14 @@ function toDollars(cents: number) { return (cents / 100).toFixed(2) }
 
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'America/Chicago' })
+}
+
+function fmtDateTime(iso: string) {
+  return new Date(iso).toLocaleString('en-US', {
+    month: 'short', day: 'numeric', year: 'numeric',
+    hour: 'numeric', minute: '2-digit', second: '2-digit',
+    timeZone: 'America/Chicago',
+  })
 }
 
 function toDatetimeLocal(iso: string | null | undefined) {
@@ -77,7 +94,7 @@ interface EventFormData {
 }
 
 const emptyForm = (): EventFormData => ({
-  name: '', description: '', event_type: 'Meeting', event_date: '',
+  name: '', description: '', event_type: 'General Meeting', event_date: '',
   location: '', points: '', price_dollars_members: '', price_dollars_nonmembers: '',
   eb_enabled: false, eb_price_dollars_members: '', eb_price_dollars_nonmembers: '',
   eb_deadline: '', is_active: true,
@@ -109,7 +126,7 @@ function formToPayload(f: EventFormData) {
     event_type: f.event_type,
     event_date: f.event_date ? new Date(f.event_date).toISOString() : '',
     location: f.location || null,
-    points: f.points ? parseInt(f.points) : null,
+    points: hasPoints(f.event_type) && f.points ? parseInt(f.points) : null,
     // pricing only applies to ticketed events; free events store 0
     price_dollars_members: ticketed ? (parseFloat(f.price_dollars_members) || 0) : 0,
     price_dollars_nonmembers: ticketed ? (parseFloat(f.price_dollars_nonmembers) || 0) : 0,
@@ -297,21 +314,30 @@ function EventForm({
         </>
       )}
 
-      {/* ── Attendance points (free events + Other hybrid) ─────────────────── */}
-      {(!ticketed || isHybrid(form.event_type)) && (
+      {/* ── Attendance (QR tracking + optional points) ─────────────────────── */}
+      {hasAttendanceQR(form.event_type) && (
         <div className="border-t pt-4">
           <p className="text-sm font-semibold text-gray-800 mb-1">Attendance</p>
-          <p className="text-xs text-gray-500 mb-3">
-            {isHybrid(form.event_type)
-              ? 'Members earn points by scanning the attendance QR in addition to buying a ticket.'
-              : 'Members scan the attendance QR code to earn points. Open/close the QR in the edit panel after saving.'}
-          </p>
-          <div className="w-40">
-            <label className={labelCls}>Points Awarded</label>
-            <input type="number" min="0" max="100" value={form.points}
-              onChange={e => set('points', e.target.value)}
-              className={inputCls} placeholder="10" />
-          </div>
+          {hasPoints(form.event_type) ? (
+            <>
+              <p className="text-xs text-gray-500 mb-3">
+                {isHybrid(form.event_type)
+                  ? 'Members earn goodphil points by scanning the attendance QR in addition to buying a ticket.'
+                  : 'Members scan the attendance QR code to earn goodphil points. Open/close the QR in the edit panel after saving.'}
+              </p>
+              <div className="w-40">
+                <label className={labelCls}>Points Awarded</label>
+                <input type="number" min="0" max="100" value={form.points}
+                  onChange={e => set('points', e.target.value)}
+                  className={inputCls} placeholder="10" />
+              </div>
+            </>
+          ) : (
+            <p className="text-xs text-gray-500">
+              Attendance is tracked via QR code. Open/close the QR in the edit panel after saving.
+              No goodphil points are awarded for this event type.
+            </p>
+          )}
         </div>
       )}
 
@@ -346,6 +372,19 @@ function EventForm({
 function AttendanceQR({ event, onUpdate }: { event: Event; onUpdate: (e: Event) => void }) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  // optimistic local open state — updates immediately on button click, syncs from prop on server response
+  const [isOpen, setIsOpen] = useState(event.attend_qr_open)
+
+  useEffect(() => { setIsOpen(event.attend_qr_open) }, [event.attend_qr_open])
+
+  // auto-close the badge locally once the expiry timestamp is reached
+  useEffect(() => {
+    if (!event.attend_qr_expires_at) return
+    const ms = new Date(event.attend_qr_expires_at).getTime() - Date.now()
+    if (ms <= 0) { setIsOpen(false); return }
+    const t = setTimeout(() => setIsOpen(false), ms)
+    return () => clearTimeout(t)
+  }, [event.attend_qr_expires_at])
 
   const siteUrl = typeof window !== 'undefined' ? window.location.origin : ''
   const attendUrl = event.attend_qr_token
@@ -359,6 +398,8 @@ function AttendanceQR({ event, onUpdate }: { event: Event; onUpdate: (e: Event) 
   }, [attendUrl])
 
   async function patch(fields: Record<string, unknown>) {
+    // optimistically flip open state before the round-trip
+    if ('attend_qr_open' in fields) setIsOpen(fields.attend_qr_open as boolean)
     setSaving(true)
     const res = await fetch(`/api/officer/events/${event.id}`, {
       method: 'PATCH',
@@ -366,11 +407,14 @@ function AttendanceQR({ event, onUpdate }: { event: Event; onUpdate: (e: Event) 
       body: JSON.stringify(fields),
     })
     const data = await res.json()
-    if (res.ok) onUpdate(data.event)
+    if (res.ok) {
+      onUpdate(data.event)
+    } else {
+      // revert on error
+      if ('attend_qr_open' in fields) setIsOpen(event.attend_qr_open)
+    }
     setSaving(false)
   }
-
-  const isOpen = event.attend_qr_open
 
   return (
     <div className="border-t mt-5 pt-5">
@@ -378,8 +422,9 @@ function AttendanceQR({ event, onUpdate }: { event: Event; onUpdate: (e: Event) 
         Attendance QR Code
       </p>
       <p className="text-xs text-gray-500 mb-4">
-        Members scan this at the event to log attendance and earn points.
-        Open it when the event starts and close it when done.
+        {hasPoints(event.event_type)
+          ? 'Members scan this at the event to log attendance and earn goodphil points. Open it when the event starts and close it when done.'
+          : 'Members scan this at the event to log attendance. No goodphil points are awarded for this event type.'}
       </p>
 
       <div className="flex gap-5 items-start flex-wrap">
@@ -389,7 +434,7 @@ function AttendanceQR({ event, onUpdate }: { event: Event; onUpdate: (e: Event) 
         )}
 
         <div className="flex flex-col gap-2 flex-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
               isOpen ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
             }`}>
@@ -397,7 +442,7 @@ function AttendanceQR({ event, onUpdate }: { event: Event; onUpdate: (e: Event) 
             </span>
             {event.attend_qr_expires_at && new Date(event.attend_qr_expires_at) > new Date() && (
               <span className="text-xs text-gray-500">
-                auto-closes {fmtDate(event.attend_qr_expires_at)}
+                auto-closes {fmtDateTime(event.attend_qr_expires_at)}
               </span>
             )}
           </div>
@@ -503,7 +548,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Event Management</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Parties use ticket QR scanning. Meetings/workshops/practices/fundraisers use attendance QR.
+            Parties use ticket QR scanning. General Meetings, Risk Management, and GP Events use attendance QR.
           </p>
         </div>
         {!creating && (

@@ -19,7 +19,9 @@ function fmtTime(iso: string) {
 
 /**
  * Ticketed: Party, Other → show prices + register button
- * Free:     Meeting, Workshop, Practice, Fundraising → show points, no registration
+ * Attendance QR: General Meeting, Risk Management, GP Event, Other → members scan to check in
+ * Points: GP Event, Other → award goodphil points on check-in
+ * Regular Event: calendar-only, no QR/points/pricing
  */
 function isTicketed(type: string) {
   return ['party', 'other'].includes(type.toLowerCase())
@@ -28,6 +30,14 @@ function isTicketed(type: string) {
 // Other events are paid + award attendance points — show both price and pts in the badge
 function isHybrid(type: string) {
   return type.toLowerCase() === 'other'
+}
+
+function hasAttendanceQR(type: string) {
+  return ['general meeting', 'risk management', 'gp event', 'other'].includes(type.toLowerCase())
+}
+
+function hasPointsForType(type: string) {
+  return ['gp event', 'other'].includes(type.toLowerCase())
 }
 
 // ── page ──────────────────────────────────────────────────────────────────────
@@ -109,7 +119,7 @@ export default async function EventsPage({
       <p className="text-sm text-gray-600 mb-8">
         {/* only renders the member pricing note when the user is an active member — do not remove this condition */}
         {isMember
-          ? 'Member pricing applied. Limit one ticket per party/event.'
+          ? 'Member pricing applied. Limit one ticket per paid event.'
           : 'Sign in as a member to unlock member pricing on paid events.'}
       </p>
 
@@ -153,9 +163,6 @@ export default async function EventsPage({
                           Early Bird
                         </span>
                       )}
-                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full capitalize">
-                        {event.event_type}
-                      </span>
                     </div>
 
                     <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-600">
@@ -192,8 +199,8 @@ export default async function EventsPage({
                   ) : (
                     <div className="text-right shrink-0">
                       <p className="text-base font-semibold text-gray-700">Free</p>
-                      {/* only renders for free events that still award attendance points — do not remove this condition */}
-                      {event.points != null && event.points > 0 && (
+                      {/* only renders for event types that award goodphil points (GP Event, Other hybrid) — do not remove this condition */}
+                      {hasPointsForType(event.event_type) && event.points != null && event.points > 0 && (
                         <p className="text-sm text-blue-600 font-medium">+{event.points} pts</p>
                       )}
                     </div>
@@ -236,7 +243,11 @@ export default async function EventsPage({
                     )
                   ) : (
                     <p className="text-sm text-gray-500">
-                      Free to attend — no registration required. Scan the QR code at the event to earn points.
+                      {hasPointsForType(event.event_type)
+                        ? 'Free to attend — scan the QR code at the event to earn goodphil points.'
+                        : hasAttendanceQR(event.event_type)
+                          ? 'Free to attend — scan the QR code at the event to check in.'
+                          : 'Free to attend — no registration required.'}
                     </p>
                   )}
                 </div>
