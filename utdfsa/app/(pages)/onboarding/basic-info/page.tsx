@@ -17,7 +17,7 @@ export default async function BasicInfoPage() {
 
   const { data: member } = await supabase
     .from('members')
-    .select('first_name, last_name, phone, year, major, pamilya, membership_status')
+    .select('first_name, last_name, phone, year, major, membership_status')
     .eq('email', user.email!)
     .maybeSingle()
 
@@ -35,7 +35,6 @@ export default async function BasicInfoPage() {
         phone: member.phone ?? '',
         year: member.year ?? '',
         major: member.major ?? '',
-        pamilya: member.pamilya ?? '',
       }}
     />
   )

@@ -55,14 +55,33 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl)
   }
 
-  if (needsMember && user) {
-    const { data: member } = await supabase
+  // single member lookup shared by all three checks below —
+  // runs whenever we need role or membership_status
+  let memberRow: { role: string; membership_status: string } | null = null
+
+  if (user && (needsMember || needsOfficer || pathname === '/membership')) {
+    const { data } = await supabase
       .from('members')
       .select('role, membership_status')
       .eq('email', user.email!)
       .maybeSingle()
+    memberRow = data
+  }
 
-    const isPaid = member?.membership_status === 'active'
+  // redirect active members and officers away from /membership —
+  // they have no reason to see the payment page again
+  if (pathname === '/membership' && user) {
+    const isActive = memberRow?.membership_status === 'active'
+    const isOfficer = memberRow?.role === 'officer' || memberRow?.role === 'admin'
+    if (isActive || isOfficer) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/member/profile'
+      return NextResponse.redirect(url)
+    }
+  }
+
+  if (needsMember && user) {
+    const isPaid = memberRow?.membership_status === 'active'
 
     if (!isPaid) {
       const isAllowed = ALLOWED_UNPAID_PATHS.some(p => pathname.startsWith(p))
@@ -77,13 +96,7 @@ export async function updateSession(request: NextRequest) {
 
   // logged in but trying officer routes — verify role in db
   if (needsOfficer && user) {
-    const { data: member } = await supabase
-      .from('members')
-      .select('role')
-      .eq('email', user.email!)
-      .maybeSingle()
-
-    const isOfficer = member?.role === 'officer' || member?.role === 'admin'
+    const isOfficer = memberRow?.role === 'officer' || memberRow?.role === 'admin'
 
     if (!isOfficer) {
       // not an officer — redirect to their profile with an error flag

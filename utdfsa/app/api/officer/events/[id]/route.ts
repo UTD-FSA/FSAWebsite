@@ -1,6 +1,12 @@
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import { updateEventSchema } from '@/lib/schemas'
+import { z } from 'zod'
 import { NextResponse } from 'next/server'
+
+const qrControlSchema = z.object({
+  attend_qr_open: z.boolean().optional(),
+  attend_qr_expires_at: z.string().datetime({ offset: true }).optional().nullable(),
+})
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -93,9 +99,15 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     if (d.is_active !== undefined)                updates.is_active = d.is_active
   }
 
-  // QR attendance controls
-  if (attend_qr_open !== undefined) updates.attend_qr_open = attend_qr_open
-  if (attend_qr_expires_at !== undefined) updates.attend_qr_expires_at = attend_qr_expires_at
+  // validate and merge QR attendance control fields
+  if (attend_qr_open !== undefined || attend_qr_expires_at !== undefined) {
+    const qrParsed = qrControlSchema.safeParse({ attend_qr_open, attend_qr_expires_at })
+    if (!qrParsed.success) {
+      return NextResponse.json({ error: 'Invalid QR control data.', details: qrParsed.error.flatten() }, { status: 400 })
+    }
+    if (qrParsed.data.attend_qr_open !== undefined) updates.attend_qr_open = qrParsed.data.attend_qr_open
+    if (qrParsed.data.attend_qr_expires_at !== undefined) updates.attend_qr_expires_at = qrParsed.data.attend_qr_expires_at
+  }
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: 'No fields to update.' }, { status: 400 })

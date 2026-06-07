@@ -37,7 +37,8 @@ export async function DELETE(
     .eq('id', id)
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('[galleries] delete error:', error)
+    return NextResponse.json({ error: 'Failed to delete gallery' }, { status: 500 })
   }
 
   return NextResponse.json({ success: true })

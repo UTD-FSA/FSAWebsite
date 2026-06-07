@@ -40,7 +40,7 @@ export default function Navbar({ initialMember }: NavbarProps) {
         if (event === 'SIGNED_IN' && session?.user) {
           const { data } = await supabase
             .from('members')
-            .select('*')
+            .select('id, first_name, last_name, avatar_url, role')
             .eq('email', session.user.email!)
             .maybeSingle()
           setMember(data ?? null)

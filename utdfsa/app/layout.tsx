@@ -28,7 +28,7 @@ export default async function RootLayout({
   if (user?.email) {
     const { data } = await supabase
       .from('members')
-      .select('*')
+      .select('id, first_name, last_name, avatar_url, role')
       .eq('email', user.email)
       .maybeSingle()
 

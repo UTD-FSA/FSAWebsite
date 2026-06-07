@@ -1,11 +1,13 @@
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { phoneField } from '@/lib/schemas'
+import { formatPhone } from '@/lib/format'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
 const schema = z.object({
   first_name: z.string().min(1).max(50).trim(),
   last_name: z.string().min(1).max(50).trim(),
-  phone: z.string().max(20).trim().optional().nullable(),
+  phone: phoneField.optional(),
   year: z.enum(['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate', '']).optional().nullable(),
   major: z.string().max(100).trim().optional().nullable(),
   contact_email: z.string().email().optional().nullable().or(z.literal('')),
@@ -38,7 +40,7 @@ export async function POST(req: Request) {
     .update({
       first_name,
       last_name,
-      phone: phone || null,
+      phone: phone ? formatPhone(phone) : null,
       year: year || null,
       major: major || null,
       // if contact_email is empty string, store null — fall back to login email

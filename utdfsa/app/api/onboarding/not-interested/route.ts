@@ -29,10 +29,12 @@ export async function POST() {
 
   const admin = createAdminClient()
 
+  console.log('[not-interested] updating member_type=not_interested for member.id:', member.id)
   const { error } = await admin
     .from('members')
     .update({ onboarding_complete: true, member_type: 'not_interested' })
     .eq('id', member.id)
+  console.log('[not-interested] update error:', error)
 
   if (error) {
     console.error('[onboarding not-interested]', error)

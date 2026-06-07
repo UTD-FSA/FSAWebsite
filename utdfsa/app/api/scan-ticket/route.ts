@@ -1,4 +1,5 @@
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { scanTicketSchema } from '@/lib/schemas'
 import { NextResponse } from 'next/server'
 
 export async function POST(req: Request) {
@@ -20,11 +21,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { qr_code } = await req.json()
+  const body = await req.json().catch(() => null)
+  const parsed = scanTicketSchema.safeParse(body)
 
-  if (!qr_code) {
-    return NextResponse.json({ error: 'No QR code provided' }, { status: 400 })
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid QR code format' }, { status: 400 })
   }
+
+  const { qr_code } = parsed.data
 
   const admin = createAdminClient()
 

@@ -10,14 +10,11 @@ interface BasicInfoForm {
   phone: string
   year: string
   major: string
-  pamilya: string
 }
 
 interface Props {
   initial: BasicInfoForm
 }
-
-const PAMILYAS = ['Shiballers', 'Gutom Gang', 'Sushi Cuchi', 'Hanobe', 'Moganda', 'SDIYBT', 'Arigyattos']
 
 export default function BasicInfoClient({ initial }: Props) {
   const router = useRouter()
@@ -136,20 +133,6 @@ export default function BasicInfoClient({ initial }: Props) {
             className="w-full border rounded-lg p-2 text-sm"
             placeholder="e.g. Computer Science"
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Pamilya Preference</label>
-          <select
-            value={form.pamilya}
-            onChange={e => set('pamilya', e.target.value)}
-            className="w-full border rounded-lg p-2 text-sm"
-          >
-            <option value="">No Preference</option>
-            {PAMILYAS.map(p => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
         </div>
 
         {/* only renders when there is a validation or API error — do not remove this condition */}

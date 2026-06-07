@@ -766,7 +766,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen }: 
               value={adingForm.mbti}
               onChange={e => setAdingForm(p => ({ ...p, mbti: e.target.value.toUpperCase() }))}
               className={fieldCls}
-              placeholder="e.g. INFP — leave blank if unsure"
+              placeholder="e.g. INFP, INTJ, ENFP"
               maxLength={4}
               required
             />
@@ -870,7 +870,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen }: 
               value={kuyateForm.pamilya_name}
               onChange={e => setKuyateForm(p => ({ ...p, pamilya_name: e.target.value }))}
               className={fieldCls}
-              placeholder="e.g. Shiballers — leave blank if unsure"
+              placeholder="e.g. Shiballers — enter n/a if unsure"
               maxLength={100}
               required
             />

@@ -1,22 +1,23 @@
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { phoneField } from '@/lib/schemas'
+import { formatPhone } from '@/lib/format'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
-// title-case transform matches the pattern used in the onboarding submit route
+// capitalize only the first letter of each word — preserves internal casing like 'DeJesus' or 'de la Cruz'
 const titleCase = (v: string) =>
-  v.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
+  v.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 
 const schema = z.object({
   first_name: z.string().min(1).max(50).trim().transform(titleCase),
   last_name: z.string().min(1).max(50).trim().transform(titleCase),
-  phone: z.string().max(20).trim().optional().nullable(),
+  phone: phoneField.optional(),
   year: z.enum(['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate', '']).optional().nullable(),
   major: z.string().max(100).trim().optional().nullable(),
-  pamilya: z.string().max(50).trim().optional().nullable(),
 })
 
 // POST /api/onboarding/update-basic-info
-// saves profile fields (name, phone, year, major, pamilya) for a member.
+// saves profile fields (name, phone, year, major) for a member.
 // does NOT touch onboarding_complete — that is already set by the not-interested route.
 // used by the /onboarding/basic-info page after a member opts out of the pamilya program.
 export async function POST(req: Request) {
@@ -58,10 +59,9 @@ export async function POST(req: Request) {
     .update({
       first_name: parsed.data.first_name,
       last_name: parsed.data.last_name,
-      phone: parsed.data.phone ?? null,
+      phone: parsed.data.phone ? formatPhone(parsed.data.phone) : null,
       year: parsed.data.year || null,
       major: parsed.data.major ?? null,
-      pamilya: parsed.data.pamilya || null,
     })
     .eq('id', member.id)
 

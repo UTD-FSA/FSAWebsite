@@ -14,7 +14,7 @@ export async function GET() {
   // look them up in members table using their email
   const { data: member, error: dbError } = await supabase
     .from('members')
-    .select('*')
+    .select('id, email, first_name, last_name, phone, year, major, role, membership_status, onboarding_complete, member_type, points, avatar_url, pamilya, contact_email, membership_expires_at, created_at')
     .eq('email', user.email!)
     .single()
 

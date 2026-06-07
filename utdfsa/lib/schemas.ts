@@ -38,7 +38,7 @@ const dollarsToCents = z
 export const createEventSchema = z.object({
   name: z.string().min(1).max(200).trim(),
   description: z.string().max(2000).trim().optional().nullable(),
-  event_type: z.string().min(1).max(50).trim(),
+  event_type: z.enum(['General Meeting', 'Risk Management', 'Party', 'GP Event', 'Regular Event', 'Other']),
   event_date: z.string().min(1),          // ISO string from datetime-local
   location: z.string().max(200).trim().optional().nullable(),
   points: z.number().int().min(0).optional().nullable(),
@@ -59,7 +59,7 @@ function nullIfEmpty(v: unknown) {
 }
 
 // 10-digit phone — accepts formatted or raw; stores digits only
-const phoneField = z.preprocess(
+export const phoneField = z.preprocess(
   nullIfEmpty,
   z.string()
     .transform(v => v.replace(/\D/g, ''))

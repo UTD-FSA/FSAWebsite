@@ -25,13 +25,20 @@ export default async function AttendPage({ searchParams }: Props) {
     redirect(`/login?next=${encodeURIComponent(`/attend?token=${token}`)}`)
   }
 
-  // find the event by its attendance token
-  const { data: event } = await supabase
-    .from('events')
-    .select('id, name, event_date, points, attend_qr_open, attend_qr_expires_at')
-    .eq('attend_qr_token', token)
-    .eq('is_active', true)
-    .maybeSingle()
+  // run event and member queries in parallel — both are independent of each other
+  const [{ data: event }, { data: member }] = await Promise.all([
+    supabase
+      .from('events')
+      .select('id, name, event_date, points, attend_qr_open, attend_qr_expires_at')
+      .eq('attend_qr_token', token)
+      .eq('is_active', true)
+      .maybeSingle(),
+    supabase
+      .from('members')
+      .select('id, points')
+      .eq('email', user.email!)
+      .maybeSingle(),
+  ])
 
   if (!event) {
     return (
@@ -61,13 +68,6 @@ export default async function AttendPage({ searchParams }: Props) {
       </main>
     )
   }
-
-  // get member id
-  const { data: member } = await supabase
-    .from('members')
-    .select('id, points')
-    .eq('email', user.email!)
-    .maybeSingle()
 
   if (!member) redirect('/member/profile')
 

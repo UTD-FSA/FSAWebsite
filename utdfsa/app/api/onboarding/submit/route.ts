@@ -1,7 +1,8 @@
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { adingApplicationSchema, kuyateApplicationSchema, phoneField } from '@/lib/schemas'
+import { formatPhone } from '@/lib/format'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
-import { adingApplicationSchema, kuyateApplicationSchema } from '@/lib/schemas'
 
 const schema = z.object({
   memberType: z.enum(['ading', 'kuyate']),
@@ -14,7 +15,7 @@ const schema = z.object({
       .transform(v => v.split(' ').map(w =>
         w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
       ).join(' ')),
-    phone: z.string().max(20).trim().optional().nullable(),
+    phone: phoneField.optional(),
     year: z.enum(['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate', '']).optional().nullable(),
     major: z.string().max(100).trim().optional().nullable(),
   }),
@@ -82,7 +83,7 @@ export async function POST(req: Request) {
     .update({
       first_name: profileForm.first_name,
       last_name: profileForm.last_name,
-      phone: profileForm.phone ?? null,
+      phone: profileForm.phone ? formatPhone(profileForm.phone) : null,
       year: profileForm.year || null,
       major: profileForm.major ?? null,
     })
@@ -130,8 +131,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'failed to submit ading application' }, { status: 500 })
     }
 
-    // application saved — now mark onboarding complete
-    await admin.from('members').update({ onboarding_complete: true }).eq('id', member.id)
+    // application saved — now mark onboarding complete and set member_type
+    console.log('[onboarding submit] setting member_type=ading for member.id:', member.id)
+    const { error: completeError } = await admin
+      .from('members')
+      .update({ onboarding_complete: true, member_type: 'ading' })
+      .eq('id', member.id)
+    console.log('[onboarding submit] ading complete update error:', completeError)
   } else {
     const d = appParsed.data as z.infer<typeof kuyateApplicationSchema>
 
@@ -157,8 +163,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'failed to submit kuyate application' }, { status: 500 })
     }
 
-    // application saved — now mark onboarding complete
-    await admin.from('members').update({ onboarding_complete: true }).eq('id', member.id)
+    // application saved — now mark onboarding complete and set member_type
+    console.log('[onboarding submit] setting member_type=kuyate for member.id:', member.id)
+    const { error: completeError } = await admin
+      .from('members')
+      .update({ onboarding_complete: true, member_type: 'kuyate' })
+      .eq('id', member.id)
+    console.log('[onboarding submit] kuyate complete update error:', completeError)
   }
 
   return NextResponse.json({ success: true })

@@ -3,10 +3,14 @@ import { uploadToS3 } from '@/utils/s3'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-export async function GET() {
-  const admin = createAdminClient()
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const ALLOWED_GOOGLE_PHOTOS_HOSTS = ['photos.google.com', 'photos.app.goo.gl']
 
-  const { data: galleries, error } = await admin
+// public endpoint — use user client so RLS policies apply
+export async function GET() {
+  const supabase = await createUserClient()
+
+  const { data: galleries, error } = await supabase
     .from('galleries')
     .select('*')
     .eq('is_published', true)
@@ -14,7 +18,8 @@ export async function GET() {
     .order('created_at', { ascending: false })
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    console.error('[galleries] fetch error:', error)
+    return NextResponse.json({ error: 'Failed to load galleries' }, { status: 500 })
   }
 
   return NextResponse.json(galleries ?? [])
@@ -54,11 +59,58 @@ export async function POST(request: NextRequest) {
   const year = yearRaw ? Number(yearRaw) : null
   const coverFile = formData.get('cover') as File | null
 
+  // title required, max 200 chars
   if (!title) {
     return NextResponse.json({ error: 'Title is required' }, { status: 400 })
   }
+  if (title.length > 200) {
+    return NextResponse.json({ error: 'Title must be 200 characters or fewer' }, { status: 400 })
+  }
+
+  // description max 1000 chars
+  if (description && description.length > 1000) {
+    return NextResponse.json({ error: 'Description must be 1000 characters or fewer' }, { status: 400 })
+  }
+
+  // semester enum
+  if (semester !== null && !['Fall', 'Spring', 'Summer'].includes(semester)) {
+    return NextResponse.json({ error: 'Semester must be Fall, Spring, or Summer' }, { status: 400 })
+  }
+
+  // year bounds
+  if (year !== null && (!Number.isInteger(year) || year < 2000 || year > 2050)) {
+    return NextResponse.json({ error: 'Year must be between 2000 and 2050' }, { status: 400 })
+  }
+
+  // google photos url — must start with https:// and match allowed domains
+  if (google_photos_url !== null) {
+    let parsedUrl: URL
+    try {
+      parsedUrl = new URL(google_photos_url)
+    } catch {
+      return NextResponse.json({ error: 'Invalid Google Photos URL' }, { status: 400 })
+    }
+    if (
+      parsedUrl.protocol !== 'https:' ||
+      !ALLOWED_GOOGLE_PHOTOS_HOSTS.includes(parsedUrl.hostname)
+    ) {
+      return NextResponse.json(
+        { error: 'Google Photos URL must be from photos.google.com or photos.app.goo.gl' },
+        { status: 400 }
+      )
+    }
+  }
+
   if (!coverFile || coverFile.size === 0) {
     return NextResponse.json({ error: 'Cover photo is required' }, { status: 400 })
+  }
+
+  // validate cover file type against allowlist
+  if (!ALLOWED_IMAGE_TYPES.includes(coverFile.type)) {
+    return NextResponse.json(
+      { error: 'Invalid file type. Only JPEG, PNG, WEBP, and GIF images are accepted.' },
+      { status: 400 }
+    )
   }
 
   const ext = coverFile.name.split('.').pop() ?? 'jpg'
@@ -69,8 +121,8 @@ export async function POST(request: NextRequest) {
   try {
     publicUrl = await uploadToS3(key, buffer, coverFile.type)
   } catch (err) {
-    console.error('S3 upload error:', err)
-    return NextResponse.json({ error: `Upload failed: ${String(err)}` }, { status: 500 })
+    console.error('[galleries] S3 upload error:', err)
+    return NextResponse.json({ error: 'Upload failed. Please try again.' }, { status: 500 })
   }
 
   const { data: gallery, error: insertError } = await admin
@@ -89,7 +141,8 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (insertError) {
-    return NextResponse.json({ error: insertError.message }, { status: 500 })
+    console.error('[galleries] insert error:', insertError)
+    return NextResponse.json({ error: 'Failed to create gallery' }, { status: 500 })
   }
 
   return NextResponse.json(gallery, { status: 201 })

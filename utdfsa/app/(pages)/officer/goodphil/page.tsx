@@ -1,8 +1,26 @@
-import { createAdminClient } from '@/utils/supabase/server'
+import { createAdminClient, createUserClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
 import type { GoodphilEligibility } from '@/types/database'
 import GoodphilClient from './GoodphilClient'
 
 export default async function GoodphilPage() {
+  // defense-in-depth auth check — middleware also protects this route
+  // but we verify role explicitly here in case middleware is misconfigured
+  const supabase = await createUserClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) redirect('/login')
+
+  const { data: roleRow } = await supabase
+    .from('members')
+    .select('role')
+    .eq('email', user.email!)
+    .maybeSingle()
+
+  if (roleRow?.role !== 'officer' && roleRow?.role !== 'admin') {
+    redirect('/member/profile?error=unauthorized')
+  }
+
   // ============================================================
   // DATA — do not modify this section
   // queries the goodphil_eligibility view for eligibility data;
@@ -12,16 +30,16 @@ export default async function GoodphilPage() {
   // ============================================================
   const admin = createAdminClient()
 
-  const { data: eligibility } = await admin
-    .from('goodphil_eligibility')
-    .select('*')
-    .order('last_name', { ascending: true })
-
-  // fetch phone separately — the view is derived from members but
-  // does not expose phone; pull it directly and join by email
-  const { data: phoneRows } = await admin
-    .from('members')
-    .select('email, phone')
+  // run both independent queries in parallel
+  const [{ data: eligibility }, { data: phoneRows }] = await Promise.all([
+    admin
+      .from('goodphil_eligibility')
+      .select('*')
+      .order('last_name', { ascending: true }),
+    admin
+      .from('members')
+      .select('email, phone'),
+  ])
 
   const phoneByEmail = new Map(
     (phoneRows ?? []).map(r => [r.email as string, r.phone as string | null])
