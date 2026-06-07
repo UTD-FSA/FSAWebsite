@@ -371,14 +371,26 @@ function KuyateCard({
 }
 
 // CSV download helper — uses data: URI so blob: CSP restriction is avoided
-function downloadCSV(filename: string, rows: string[][]): void {
-  const csv = rows.map(row =>
-    row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')
-  ).join('\n')
+function downloadCSV(filename: string, rows: (string | number | null | undefined)[][]): void {
+  const csv = rows
+    .map(row =>
+      row.map(cell => {
+        const value = cell == null ? '' : String(cell)
+        // wrap in quotes if value contains comma or newline
+        return value.includes(',') || value.includes('\n')
+          ? `"${value.replace(/"/g, '""')}"`
+          : value
+      }).join(',')
+    )
+    .join('\n')
+
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
-  a.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`
+  a.href = url
   a.download = filename
   a.click()
+  URL.revokeObjectURL(url)
 }
 
 function exportAdingCSV(apps: AdingApplication[]): void {
