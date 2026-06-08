@@ -58,7 +58,7 @@ export default function Home() {
       </div>
 
       {/* ── WHO ARE WE? ───────────────────────────────────────────── */}
-      <section className="bg-section-bg min-h-[724px]">
+      <section className="bg-section-bg">
         <div className="max-w-[1512px] mx-auto flex px-16 py-20 gap-0">
 
           {/* Left: text */}
@@ -86,7 +86,7 @@ export default function Home() {
       </section>
 
       {/* ── FULL-BLEED PHOTO ──────────────────────────────────────── */}
-      <div className="relative h-[220px] md:h-[320px] lg:h-[420px] w-full overflow-hidden">
+      <div className="relative h-[400px] md:h-[600px] lg:h-[800px] w-full overflow-hidden">
         <Image src="/event-photo.jpg" alt="FSA Event" fill className="object-cover" sizes="100vw" />
       </div>
 
@@ -114,7 +114,7 @@ export default function Home() {
       </section>
 
       {/* ── SECOND FULL-BLEED PHOTO ───────────────────────────────── */}
-      <div className="relative h-[220px] md:h-[320px] lg:h-[420px] w-full overflow-hidden">
+      <div className="relative h-[300px] md:h-[450px] lg:h-[600px] w-full overflow-hidden">
         <Image src="/event-photo-2.jpg" alt="FSA Event" fill className="object-cover" sizes="100vw" />
       </div>
 
@@ -128,21 +128,54 @@ export default function Home() {
           {/* Right side: social icons + chant */}
           <div className="flex flex-col items-end gap-4">
             <div className="flex gap-3 items-center">
-              <a href="#" aria-label="Instagram" className="hover:opacity-70 transition-opacity">
+              <a 
+                href="https://instagram.com/fsautd" 
+                target="_blank" 
+                aria-label="Instagram" 
+                rel="noopener noreferrer" 
+                className="hover:opacity-70 transition-opacity"
+              >
                 <Image src="/instagram.svg" alt="Instagram" width={48} height={48} />
               </a>
-              <a href="#" aria-label="YouTube" className="hover:opacity-70 transition-opacity">
+
+              <a 
+                href="https://youtube.com/@fsautd"
+                target="_blank" 
+                aria-label="YouTube"
+                rel="noopener noreferrer" 
+                className="hover:opacity-70 transition-opacity"
+              >
                 <Image src="/youtube.svg" alt="YouTube" width={48} height={48} />
               </a>
-              <a href="#" aria-label="TikTok" className="hover:opacity-70 transition-opacity">
+
+              <a 
+              href="https://tiktok.com/@YOURACCOUNT" 
+              target="_blank"
+              aria-label="TikTok" 
+              rel="noopener noreferrer"
+              className="hover:opacity-70 transition-opacity"
+              >
                 <Image src="/tiktok.svg" alt="TikTok" width={48} height={48} />
               </a>
-              <a href="#" aria-label="Discord" className="hover:opacity-70 transition-opacity">
+
+              <a 
+              href="#"
+              target="_blank" 
+              aria-label="Discord"
+              rel="noopener noreferrer" 
+              className="hover:opacity-70 transition-opacity"
+              >
                 <Image src="/discord.svg" alt="Discord" width={48} height={48} />
               </a>
-              <a href="#" aria-label="Email" className="hover:opacity-70 transition-opacity">
+
+              <a 
+              href="mailto:fsautd@gmail.com" 
+              aria-label="Email" 
+              className="hover:opacity-70 transition-opacity"
+              >
                 <Image src="/gmail.svg" alt="Email" width={48} height={48} />
               </a>
+
             </div>
 
             <p className="font-display font-semibold text-[14px] text-white text-right leading-relaxed">
@@ -156,7 +189,7 @@ export default function Home() {
         {/* Copyright bar */}
         <div className="bg-dropdown-bg py-2">
           <p className="font-display font-semibold text-[13px] text-white text-center tracking-wide">
-            WEBSITE CURATED BY THE UTD FSA 2025-26 WEB COMMITTEE
+            WEBSITE CURATED BY THE UTD FSA 2026-27 WEB COMMITTEE
           </p>
         </div>
       </footer>
