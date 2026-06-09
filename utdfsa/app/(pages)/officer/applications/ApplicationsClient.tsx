@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // ============================================================
 // DATA — types and constants
@@ -100,6 +100,15 @@ const KUYATE_QUESTION_LABELS: Record<string, string> = {
 
 const KUYATE_QUESTION_KEYS = Object.keys(KUYATE_QUESTION_LABELS)
 
+const ITEMS_PER_PAGE = 15
+
+// Fields that should span the full 2-column width in the modal
+const WIDE_KEYS = new Set([
+  'why_kuyate', 'pam_vibe', 'availability', 'thoughts_on_drinking',
+  'dislikes', 'pam_dealbreakers', 'additional_notes', 'hobbies',
+  'future_kuyate', 'fave_tv_show_movie',
+])
+
 // ============================================================
 // UI — safe to restyle everything below this line
 // ============================================================
@@ -129,7 +138,6 @@ function statusBadge(status: Status) {
   )
 }
 
-// status button set shared by both tabs
 function StatusButtons({
   current,
   onSelect,
@@ -160,7 +168,6 @@ function StatusButtons({
   )
 }
 
-// question value renderer for ading and kuyate cards
 function renderValue(key: string, value: unknown): string | null {
   if (value === null || value === undefined || value === '') return null
   if (key === 'availability' && typeof value === 'object') {
@@ -171,7 +178,6 @@ function renderValue(key: string, value: unknown): string | null {
   return String(value)
 }
 
-// filter bar shared by both tabs
 function FilterBar({ active, onChange, counts }: {
   active: Filter
   onChange: (f: Filter) => void
@@ -200,183 +206,287 @@ function FilterBar({ active, onChange, counts }: {
   )
 }
 
-// ading application card
-function AdingCard({
-  app,
-  expanded,
-  onToggle,
+// ── Application Detail Modal ────────────────────────────────────────────────
+
+function ApplicationDetailModal({
+  application,
+  type,
+  onClose,
   onStatusChange,
   onPamilyaChange,
   pamilyaSaving,
 }: {
-  app: AdingApplication
-  expanded: boolean
-  onToggle: () => void
-  onStatusChange: (s: Status) => void
-  onPamilyaChange: (pamilya: string | null) => void
-  pamilyaSaving: 'saving' | 'saved' | 'error' | null
+  application: AdingApplication | KuyateApplication | null
+  type: 'ading' | 'kuyate'
+  onClose: () => void
+  onStatusChange: (id: string, status: Status) => void
+  onPamilyaChange?: (id: string, pamilya: string | null) => void
+  pamilyaSaving?: 'saving' | 'saved' | 'error' | null
 }) {
-  const m = app.members
+  useEffect(() => {
+    if (!application) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [application, onClose])
+
+  if (!application) return null
+
+  const m = application.members
+  const questionKeys = type === 'ading' ? ADING_QUESTION_KEYS : KUYATE_QUESTION_KEYS
+  const questionLabels = type === 'ading' ? ADING_QUESTION_LABELS : KUYATE_QUESTION_LABELS
 
   return (
-    <div className="border rounded-xl bg-white shadow-sm overflow-hidden">
-      <div className="p-5">
-        {/* header row */}
-        <div className="flex items-start justify-between gap-4 mb-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-bold text-base text-gray-900">
+    <div
+      className="fixed inset-0 z-50 backdrop-blur-sm bg-black/60 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div
+        className={`bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[calc(100vh-6rem)] flex flex-col${type === 'ading' ? ' mt-[80px]' : ''}`}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header — sticky */}
+        <div className="px-6 pt-6 pb-0 shrink-0">
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-xl font-bold text-gray-900 leading-tight">
                 {m.first_name} {m.last_name}
-              </h3>
-              {statusBadge(app.status)}
+              </h2>
+              <p className="text-sm text-gray-600 mt-0.5">{m.email}</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {[m.year, m.major].filter(Boolean).join(' · ')}
+              </p>
+              <div className="mt-2">{statusBadge(application.status)}</div>
             </div>
-            <p className="text-sm text-gray-600 mt-0.5">{m.email}</p>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {[m.year, m.major].filter(Boolean).join(' · ')}
-              {m.pamilya ? ` · ${m.pamilya}` : ''}
-            </p>
-            <p className="text-xs text-gray-400 mt-1">Submitted {fmtDate(app.submitted_at)}</p>
-          </div>
-
-          <button
-            onClick={onToggle}
-            className="text-xs text-blue-600 hover:text-blue-800 font-medium shrink-0"
-          >
-            {expanded ? 'Collapse' : 'Expand'}
-          </button>
-        </div>
-
-        {/* status + pamilya controls */}
-        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-gray-100">
-          <StatusButtons current={app.status} onSelect={onStatusChange} />
-
-          <div className="flex items-center gap-2 ml-auto">
-            <label className="text-xs text-gray-500 shrink-0">Assign Pamilya</label>
-            <select
-              value={m.pamilya ?? ''}
-              onChange={e => onPamilyaChange(e.target.value || null)}
-              className="text-xs border border-gray-300 rounded-lg px-2 py-1 text-gray-800 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors shrink-0 p-1 -mr-1"
+              aria-label="Close"
             >
-              <option value="">Not yet assigned</option>
-              {PAMILYA_OPTIONS.map(p => (
-                <option key={p} value={p}>{p}</option>
-              ))}
-            </select>
-            {pamilyaSaving === 'saving' && (
-              <span className="text-xs text-gray-400">Saving…</span>
-            )}
-            {pamilyaSaving === 'saved' && (
-              <span className="text-xs text-green-600">✓</span>
-            )}
-            {pamilyaSaving === 'error' && (
-              <span className="text-xs text-red-500">Failed</span>
-            )}
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
+          <div className="border-t border-gray-200" />
         </div>
-      </div>
 
-      {/* expanded question answers */}
-      {expanded && (
-        <div className="border-t px-5 py-4 bg-gray-50 w-full max-w-2xl">
-          <dl className="grid grid-cols-1 gap-y-3">
-            {ADING_QUESTION_KEYS.map(key => {
+        {/* Scrollable body */}
+        <div className="overflow-y-auto flex-1 px-6 py-5">
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-5">
+            {questionKeys.map(key => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const raw = (app as any)[key]
+              const raw = (application as any)[key]
+
+              // Availability: render days and times on separate lines
+              if (key === 'availability') {
+                if (!raw || typeof raw !== 'object') return null
+                const av = raw as { days: string[]; times: string }
+                if (!av.days.length && !av.times) return null
+                return (
+                  <div key={key} className="col-span-2">
+                    <dt className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                      {questionLabels[key]}
+                    </dt>
+                    <dd className="text-sm text-gray-800">
+                      {av.days.length > 0 && <p>{av.days.join(', ')}</p>}
+                      {av.times && <p className="text-gray-600">{av.times}</p>}
+                    </dd>
+                  </div>
+                )
+              }
+
               const display = renderValue(key, raw)
               if (display === null) return null
+              const isWide = WIDE_KEYS.has(key)
+
               return (
-                <div key={key} className="flex flex-col gap-0.5">
-                  <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                    {ADING_QUESTION_LABELS[key]}
+                <div key={key} className={isWide ? 'col-span-2' : 'col-span-1'}>
+                  <dt className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                    {questionLabels[key]}
                   </dt>
-                  <dd className="text-sm text-gray-800 break-words whitespace-normal w-full">{display}</dd>
+                  <dd className="text-sm text-gray-800 whitespace-pre-wrap break-words">{display}</dd>
                 </div>
               )
             })}
           </dl>
         </div>
-      )}
-    </div>
-  )
-}
 
-// kuyate application card
-function KuyateCard({
-  app,
-  expanded,
-  onToggle,
-  onStatusChange,
-}: {
-  app: KuyateApplication
-  expanded: boolean
-  onToggle: () => void
-  onStatusChange: (s: Status) => void
-}) {
-  const m = app.members
-
-  return (
-    <div className="border rounded-xl bg-white shadow-sm overflow-hidden">
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-4 mb-3">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="font-bold text-base text-gray-900">
-                {m.first_name} {m.last_name}
-              </h3>
-              {statusBadge(app.status)}
+        {/* Footer — sticky */}
+        <div className="px-6 py-4 border-t border-gray-200 shrink-0">
+          {type === 'kuyate' ? (
+            <div className="flex items-center justify-between gap-3">
+              <button
+                onClick={onClose}
+                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                Close
+              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => onStatusChange(application.id, 'accepted')}
+                  className="text-xs font-medium px-2.5 py-1 rounded-lg border transition-colors border-green-300 text-green-700 hover:bg-green-50"
+                >
+                  Accept
+                </button>
+                <button
+                  onClick={() => onStatusChange(application.id, 'rejected')}
+                  className="text-xs font-medium px-2.5 py-1 rounded-lg border transition-colors border-red-300 text-red-600 hover:bg-red-50"
+                >
+                  Reject
+                </button>
+              </div>
             </div>
-            <p className="text-sm text-gray-600 mt-0.5">{m.email}</p>
-            <p className="text-xs text-gray-500 mt-0.5">
-              {[m.year, m.major].filter(Boolean).join(' · ')}
-              {m.pamilya ? ` · ${m.pamilya}` : ''}
-            </p>
-            <p className="text-xs text-gray-400 mt-1">Submitted {fmtDate(app.submitted_at)}</p>
-          </div>
-
-          <button
-            onClick={onToggle}
-            className="text-xs text-blue-600 hover:text-blue-800 font-medium shrink-0"
-          >
-            {expanded ? 'Collapse' : 'Expand'}
-          </button>
-        </div>
-
-        <div className="pt-3 border-t border-gray-100">
-          <StatusButtons current={app.status} onSelect={onStatusChange} />
+          ) : (
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <button
+                onClick={onClose}
+                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                Close
+              </button>
+              <div className="flex flex-wrap items-center gap-3">
+                <StatusButtons
+                  current={application.status}
+                  onSelect={s => onStatusChange(application.id, s)}
+                />
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-gray-500 shrink-0">Assign Pamilya</label>
+                  <select
+                    value={(application as AdingApplication).members.pamilya ?? ''}
+                    onChange={e => onPamilyaChange?.(application.id, e.target.value || null)}
+                    className="text-xs border border-gray-300 rounded-lg px-2 py-1 text-gray-800 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="">Not yet assigned</option>
+                    {PAMILYA_OPTIONS.map(p => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                  {pamilyaSaving === 'saving' && (
+                    <span className="text-xs text-gray-400">Saving…</span>
+                  )}
+                  {pamilyaSaving === 'saved' && (
+                    <span className="text-xs text-green-600">✓</span>
+                  )}
+                  {pamilyaSaving === 'error' && (
+                    <span className="text-xs text-red-500">Failed</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {expanded && (
-        <div className="border-t px-5 py-4 bg-gray-50">
-          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-            {KUYATE_QUESTION_KEYS.map(key => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const raw = (app as any)[key]
-              const display = renderValue(key, raw)
-              if (display === null) return null
-              return (
-                <div key={key} className={key === 'why_kuyate' ? 'col-span-2' : ''}>
-                  <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-0.5">
-                    {KUYATE_QUESTION_LABELS[key]}
-                  </dt>
-                  <dd className="text-sm text-gray-800 whitespace-pre-wrap">{display}</dd>
-                </div>
-              )
-            })}
-          </dl>
-        </div>
-      )}
     </div>
   )
 }
 
-// CSV download helper — uses data: URI so blob: CSP restriction is avoided
+// ── Application Cards ───────────────────────────────────────────────────────
+
+function AdingCard({ app, onOpen }: { app: AdingApplication; onOpen: () => void }) {
+  const m = app.members
+  return (
+    <div
+      onClick={onOpen}
+      className="border rounded-xl bg-white shadow-sm h-48 overflow-hidden cursor-pointer hover:shadow-lg hover:ring-2 hover:ring-blue-200 transition-all flex flex-col"
+    >
+      <div className="p-4 flex flex-col h-full">
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h3 className="font-bold text-sm text-gray-900 line-clamp-1 flex-1 min-w-0">
+            {m.first_name} {m.last_name}
+          </h3>
+          {statusBadge(app.status)}
+        </div>
+        <p className="text-xs text-gray-600 line-clamp-1">{m.email}</p>
+        <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+          {[m.year, m.major].filter(Boolean).join(' · ')}
+        </p>
+        {m.pamilya && (
+          <p className="text-xs text-blue-600 mt-0.5 line-clamp-1">Pamilya: {m.pamilya}</p>
+        )}
+        <div className="mt-auto pt-2 border-t border-gray-100">
+          <p className="text-xs text-gray-400">Submitted {fmtDate(app.submitted_at)}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function KuyateCard({ app, onOpen }: { app: KuyateApplication; onOpen: () => void }) {
+  const m = app.members
+  return (
+    <div
+      onClick={onOpen}
+      className="border rounded-xl bg-white shadow-sm h-48 overflow-hidden cursor-pointer hover:shadow-lg hover:ring-2 hover:ring-blue-200 transition-all flex flex-col"
+    >
+      <div className="p-4 flex flex-col h-full">
+        <div className="flex items-start justify-between gap-2 mb-1">
+          <h3 className="font-bold text-sm text-gray-900 line-clamp-1 flex-1 min-w-0">
+            {m.first_name} {m.last_name}
+          </h3>
+          {statusBadge(app.status)}
+        </div>
+        <p className="text-xs text-gray-600 line-clamp-1">{m.email}</p>
+        <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+          {[m.year, m.major].filter(Boolean).join(' · ')}
+        </p>
+        <div className="mt-auto pt-2 border-t border-gray-100">
+          <p className="text-xs text-gray-400">Submitted {fmtDate(app.submitted_at)}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Pagination Controls ─────────────────────────────────────────────────────
+
+function PaginationBar({
+  page,
+  total,
+  onPrev,
+  onNext,
+}: {
+  page: number
+  total: number
+  onPrev: () => void
+  onNext: () => void
+}) {
+  const start = (page - 1) * ITEMS_PER_PAGE + 1
+  const end = Math.min(page * ITEMS_PER_PAGE, total)
+  return (
+    <div className="flex items-center justify-between mt-6 text-sm text-gray-600">
+      <span>
+        Showing {start}–{end} of {total} application{total !== 1 ? 's' : ''}
+      </span>
+      <div className="flex gap-2">
+        <button
+          onClick={onPrev}
+          disabled={page === 1}
+          className="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          Previous
+        </button>
+        <button
+          onClick={onNext}
+          disabled={page * ITEMS_PER_PAGE >= total}
+          className="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── CSV helpers ─────────────────────────────────────────────────────────────
+
 function downloadCSV(filename: string, rows: (string | number | null | undefined)[][]): void {
   const csv = rows
     .map(row =>
       row.map(cell => {
         const value = cell == null ? '' : String(cell)
-        // wrap in quotes if value contains comma or newline
         return value.includes(',') || value.includes('\n')
           ? `"${value.replace(/"/g, '""')}"`
           : value
@@ -445,7 +555,7 @@ function exportKuyateCSV(apps: KuyateApplication[]): void {
   downloadCSV('kuyate-applications.csv', [headers, ...rows])
 }
 
-// ── main component ─────────────────────────────────────────────────────────────
+// ── Main component ──────────────────────────────────────────────────────────
 
 export default function ApplicationsClient({
   adingApps: initialAdingApps,
@@ -459,7 +569,10 @@ export default function ApplicationsClient({
   const [kuyateApps, setKuyateApps] = useState<KuyateApplication[]>(initialKuyateApps)
   const [adingFilter, setAdingFilter] = useState<Filter>('pending')
   const [kuyateFilter, setKuyateFilter] = useState<Filter>('pending')
-  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [adingPage, setAdingPage] = useState(1)
+  const [kuyatePage, setKuyatePage] = useState(1)
+  const [selectedAppId, setSelectedAppId] = useState<string | null>(null)
+  const [selectedAppType, setSelectedAppType] = useState<'ading' | 'kuyate'>('ading')
   const [pamilyaSaving, setPamilyaSaving] = useState<Record<string, 'saving' | 'saved' | 'error' | null>>({})
   const [pendingStatus, setPendingStatus] = useState<{
     applicationId: string
@@ -467,7 +580,14 @@ export default function ApplicationsClient({
     status: 'accepted' | 'rejected'
   } | null>(null)
 
-  // computed filtered lists
+  // Derive the live modal app from current state so status/pamilya changes are reflected
+  const currentModalApp: AdingApplication | KuyateApplication | null = selectedAppId
+    ? selectedAppType === 'ading'
+      ? adingApps.find(a => a.id === selectedAppId) ?? null
+      : kuyateApps.find(a => a.id === selectedAppId) ?? null
+    : null
+
+  // Filtered lists (used for CSV export — all filtered, not just current page)
   const filteredAding = adingFilter === 'all'
     ? adingApps
     : adingApps.filter(a => a.status === adingFilter)
@@ -476,7 +596,10 @@ export default function ApplicationsClient({
     ? kuyateApps
     : kuyateApps.filter(a => a.status === kuyateFilter)
 
-  // count helpers
+  // Paginated slices
+  const paginatedAding = filteredAding.slice((adingPage - 1) * ITEMS_PER_PAGE, adingPage * ITEMS_PER_PAGE)
+  const paginatedKuyate = filteredKuyate.slice((kuyatePage - 1) * ITEMS_PER_PAGE, kuyatePage * ITEMS_PER_PAGE)
+
   function adingCounts(): Record<Filter, number> {
     return {
       all: adingApps.length,
@@ -495,7 +618,16 @@ export default function ApplicationsClient({
     }
   }
 
-  // optimistic status updates
+  function handleAdingFilterChange(f: Filter) {
+    setAdingFilter(f)
+    setAdingPage(1)
+  }
+
+  function handleKuyateFilterChange(f: Filter) {
+    setKuyateFilter(f)
+    setKuyatePage(1)
+  }
+
   async function updateAdingStatus(id: string, newStatus: Status) {
     const prev = adingApps
     setAdingApps(apps => apps.map(a => a.id === id ? { ...a, status: newStatus } : a))
@@ -536,7 +668,6 @@ export default function ApplicationsClient({
     })
 
     if (res.ok) {
-      // update the nested members.pamilya in local state
       setAdingApps(apps => apps.map(a => {
         if (a.id !== appId) return a
         return { ...a, members: { ...a.members, pamilya } }
@@ -550,7 +681,7 @@ export default function ApplicationsClient({
   }
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-10">
+    <main className="max-w-6xl mx-auto px-6 py-10">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Applications</h1>
         <p className="text-sm text-gray-500 mt-1">
@@ -579,7 +710,7 @@ export default function ApplicationsClient({
       {tab === 'ading' && (
         <section>
           <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
-            <FilterBar active={adingFilter} onChange={setAdingFilter} counts={adingCounts()} />
+            <FilterBar active={adingFilter} onChange={handleAdingFilterChange} counts={adingCounts()} />
             <button
               onClick={() => exportAdingCSV(filteredAding)}
               className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
@@ -591,19 +722,28 @@ export default function ApplicationsClient({
           {filteredAding.length === 0 ? (
             <p className="text-gray-500 text-sm py-12 text-center">No applications found.</p>
           ) : (
-            <div className="flex flex-col gap-4">
-              {filteredAding.map(app => (
-                <AdingCard
-                  key={app.id}
-                  app={app}
-                  expanded={expandedId === app.id}
-                  onToggle={() => setExpandedId(expandedId === app.id ? null : app.id)}
-                  onStatusChange={s => updateAdingStatus(app.id, s)}
-                  onPamilyaChange={p => updatePamilya(app.id, p)}
-                  pamilyaSaving={pamilyaSaving[app.id] ?? null}
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {paginatedAding.map(app => (
+                  <AdingCard
+                    key={app.id}
+                    app={app}
+                    onOpen={() => {
+                      setSelectedAppId(app.id)
+                      setSelectedAppType('ading')
+                    }}
+                  />
+                ))}
+              </div>
+              {filteredAding.length > ITEMS_PER_PAGE && (
+                <PaginationBar
+                  page={adingPage}
+                  total={filteredAding.length}
+                  onPrev={() => setAdingPage(p => p - 1)}
+                  onNext={() => setAdingPage(p => p + 1)}
                 />
-              ))}
-            </div>
+              )}
+            </>
           )}
         </section>
       )}
@@ -612,7 +752,7 @@ export default function ApplicationsClient({
       {tab === 'kuyate' && (
         <section>
           <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
-            <FilterBar active={kuyateFilter} onChange={setKuyateFilter} counts={kuyateCounts()} />
+            <FilterBar active={kuyateFilter} onChange={handleKuyateFilterChange} counts={kuyateCounts()} />
             <button
               onClick={() => exportKuyateCSV(filteredKuyate)}
               className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
@@ -624,26 +764,56 @@ export default function ApplicationsClient({
           {filteredKuyate.length === 0 ? (
             <p className="text-gray-500 text-sm py-12 text-center">No applications found.</p>
           ) : (
-            <div className="flex flex-col gap-4">
-              {filteredKuyate.map(app => (
-                <KuyateCard
-                  key={app.id}
-                  app={app}
-                  expanded={expandedId === app.id}
-                  onToggle={() => setExpandedId(expandedId === app.id ? null : app.id)}
-                  onStatusChange={s => {
-                    if (s === 'accepted' || s === 'rejected') {
-                      setPendingStatus({ applicationId: app.id, applicantFirstName: app.members.first_name, status: s })
-                    } else {
-                      updateKuyateStatus(app.id, s)
-                    }
-                  }}
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {paginatedKuyate.map(app => (
+                  <KuyateCard
+                    key={app.id}
+                    app={app}
+                    onOpen={() => {
+                      setSelectedAppId(app.id)
+                      setSelectedAppType('kuyate')
+                    }}
+                  />
+                ))}
+              </div>
+              {filteredKuyate.length > ITEMS_PER_PAGE && (
+                <PaginationBar
+                  page={kuyatePage}
+                  total={filteredKuyate.length}
+                  onPrev={() => setKuyatePage(p => p - 1)}
+                  onNext={() => setKuyatePage(p => p + 1)}
                 />
-              ))}
-            </div>
+              )}
+            </>
           )}
         </section>
       )}
+
+      {/* Application detail modal */}
+      <ApplicationDetailModal
+        application={currentModalApp}
+        type={selectedAppType}
+        onClose={() => setSelectedAppId(null)}
+        onStatusChange={(id, s) => {
+          if (selectedAppType === 'kuyate') {
+            if (s === 'accepted' || s === 'rejected') {
+              const app = kuyateApps.find(a => a.id === id)
+              if (app) {
+                setPendingStatus({ applicationId: id, applicantFirstName: app.members.first_name, status: s })
+              }
+            } else {
+              updateKuyateStatus(id, s)
+            }
+          } else {
+            updateAdingStatus(id, s)
+          }
+        }}
+        onPamilyaChange={(id, pamilya) => updatePamilya(id, pamilya)}
+        pamilyaSaving={selectedAppId ? (pamilyaSaving[selectedAppId] ?? null) : null}
+      />
+
+      {/* Kuyate confirmation modal — z-50 so it layers above the detail modal */}
       {pendingStatus && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-2xl">
