@@ -40,7 +40,7 @@ export const createEventSchema = z.object({
   description: z.string().max(2000).trim().optional().nullable(),
   event_type: z.enum(['General Meeting', 'Risk Management', 'Party', 'GP Event', 'Regular Event', 'Other']),
   event_date: z.string().min(1),          // ISO string from datetime-local
-  location: z.string().max(200).trim().optional().nullable(),
+  location: z.string().min(1, 'Location is required').trim().max(200),
   points: z.number().int().min(0).optional().nullable(),
   price_dollars_members: dollarsToCents,
   price_dollars_nonmembers: dollarsToCents,
