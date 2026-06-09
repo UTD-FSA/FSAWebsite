@@ -31,6 +31,11 @@ export default function BasicInfoClient({ initial }: Props) {
       setError('first and last name are required')
       return
     }
+
+    if (!form.phone || form.phone.replace(/\D/g, '').length < 10) {
+      setError('a valid phone number is required')
+      return
+    }
     setLoading(true)
     setError(null)
 
@@ -97,7 +102,9 @@ export default function BasicInfoClient({ initial }: Props) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Phone Number</label>
+          <label className="block text-sm font-medium mb-1">
+            Phone Number <span className="text-red-500">*</span>
+          </label>
           <input
             type="tel"
             value={form.phone}
@@ -105,6 +112,7 @@ export default function BasicInfoClient({ initial }: Props) {
             className="w-full border rounded-lg p-2 text-sm"
             placeholder="(xxx) xxx-xxxx"
             maxLength={14}
+            required
           />
         </div>
 
@@ -115,12 +123,12 @@ export default function BasicInfoClient({ initial }: Props) {
             onChange={e => set('year', e.target.value)}
             className="w-full border rounded-lg p-2 text-sm"
           >
-            <option value="">Select Your Year</option>
-            <option value="Freshman">Freshman</option>
-            <option value="Sophomore">Sophomore</option>
-            <option value="Junior">Junior</option>
-            <option value="Senior">Senior</option>
-            <option value="Graduate">Graduate</option>
+            <option value="" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Select Your Year</option>
+            <option value="Freshman" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Freshman</option>
+            <option value="Sophomore" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Sophomore</option>
+            <option value="Junior" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Junior</option>
+            <option value="Senior" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Senior</option>
+            <option value="Graduate" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Graduate</option>
           </select>
         </div>
 

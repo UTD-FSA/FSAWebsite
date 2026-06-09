@@ -6,15 +6,25 @@ import { toTitleCase, formatPhone } from '@/lib/format'
 
 /**
  * Props — passed down from OnboardingPage server component (onboarding/page.tsx)
- *   memberId       — the Supabase members.id of the signed-in user; sent to the submit API
- *   firstName      — pre-filled greeting name pulled from the member row
- *   isKuyateOpen   — whether kuyate applications are currently open (from settings table);
- *                    when false, only ading + not-interested are offered in the pick step
+ *   memberId        — the Supabase members.id of the signed-in user; sent to the submit API
+ *   firstName       — pre-filled greeting name pulled from the member row
+ *   isKuyateOpen    — whether kuyate applications are currently open (from settings table);
+ *                     when false, only ading + not-interested are offered in the pick step
+ *   initialType     — when set, skips the pick step and goes straight to profile with memberType preset
+ *   existingProfile — pre-fills the profile info step with data already on the member row
  */
 interface Props {
   memberId: string
   firstName: string
   isKuyateOpen: boolean
+  initialType: 'ading' | 'kuyate' | null
+  existingProfile: {
+    first_name: string
+    last_name: string
+    phone: string | null
+    year: string | null
+    major: string | null
+  }
 }
 
 // the two membership types members can pick from
@@ -47,20 +57,20 @@ const fieldDateCls = `${fieldCls} [&::-webkit-calendar-picker-indicator]:invert`
 // Do not merge steps, reorder them, or replace the step state with a router-based flow.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export default function OnboardingClient({ memberId, firstName, isKuyateOpen }: Props) {
+export default function OnboardingClient({ memberId, firstName, isKuyateOpen, initialType, existingProfile }: Props) {
   const router = useRouter()
-  const [step, setStep] = useState<'pick' | 'ading' | 'kuyate' | 'profile'>('pick')
-  const [memberType, setMemberType] = useState<MemberType | null>(null)
+  const [step, setStep] = useState<'pick' | 'ading' | 'kuyate' | 'profile'>(initialType ? 'profile' : 'pick')
+  const [memberType, setMemberType] = useState<MemberType | null>(initialType ?? null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // basic profile fields — collected regardless of member type
   const [profileForm, setProfileForm] = useState({
-    first_name: '',
-    last_name: '',
-    phone: '',
-    year: '',
-    major: '',
+    first_name: existingProfile.first_name ?? '',
+    last_name: existingProfile.last_name ?? '',
+    phone: existingProfile.phone ?? '',
+    year: existingProfile.year ?? '',
+    major: existingProfile.major ?? '',
   })
 
   // DATA ─────────────────────────────────────────────────────────────────────
@@ -353,15 +363,16 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen }: 
             <select
               value={profileForm.year}
               onChange={e => setProfileForm(p => ({ ...p, year: e.target.value }))}
-              className={fieldCls}
+              className={`${fieldCls} pr-8 text-gray-900`}
+              style={{ colorScheme: 'light' }}
               required
             >
-              <option value="">Select Your Year</option>
-              <option value="Freshman">Freshman</option>
-              <option value="Sophomore">Sophomore</option>
-              <option value="Junior">Junior</option>
-              <option value="Senior">Senior</option>
-              <option value="Graduate">Graduate</option>
+              <option value="" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Select Your Year</option>
+              <option value="Freshman" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Freshman</option>
+              <option value="Sophomore" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Sophomore</option>
+              <option value="Junior" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Junior</option>
+              <option value="Senior" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Senior</option>
+              <option value="Graduate" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Graduate</option>
             </select>
           </div>
 

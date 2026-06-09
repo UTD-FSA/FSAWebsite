@@ -145,11 +145,11 @@ export default async function ProfilePage() {
       {/* do not remove this condition */}
       {member.member_type === 'not_interested' && (
         <section className="mb-6 p-4 border border-blue-200 rounded-lg bg-blue-50">
-          <h3 className="font-semibold mb-1">Changed your mind?</h3>
-          <p className="text-sm text-gray-800 mb-3">You can still apply.</p>
+          <h3 className="font-semibold mb-1 text-gray-900">Changed your mind?</h3>
+          <p className="text-sm text-gray-900 mb-3">You can still apply.</p>
           <div className="flex gap-3 flex-wrap">
             <a
-              href="/onboarding?reapply=true"
+              href="/onboarding?reapply=true&type=ading"
               className="text-sm font-medium px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
             >
               Apply as Ading
@@ -157,7 +157,7 @@ export default async function ProfilePage() {
             {/* only renders when kuyate applications are open — do not remove this condition */}
             {kuyateApplicationsOpen && (
               <a
-                href="/onboarding?reapply=true"
+                href="/onboarding?reapply=true&type=kuyate"
                 className="text-sm font-medium px-4 py-2 bg-white hover:bg-gray-50 text-blue-600 border border-blue-300 rounded-lg"
               >
                 Apply as Kuya/Ate

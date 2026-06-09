@@ -5,11 +5,11 @@ import { getSettings } from '@/lib/settings'
 import OnboardingClient from './OnboardingClient'
 
 interface Props {
-  searchParams: Promise<{ session_id?: string; reapply?: string }>
+  searchParams: Promise<{ session_id?: string; reapply?: string; type?: string }>
 }
 
 export default async function OnboardingPage({ searchParams }: Props) {
-  const { session_id, reapply } = await searchParams
+  const { session_id, reapply, type } = await searchParams
 
   const supabase = await createUserClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -20,7 +20,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
 
   const { data: member } = await admin
     .from('members')
-    .select('id, first_name, membership_status, onboarding_complete, role, member_type')
+    .select('id, first_name, last_name, phone, year, major, membership_status, onboarding_complete, role, member_type')
     .eq('email', user.email!)
     .maybeSingle()
 
@@ -92,6 +92,14 @@ export default async function OnboardingPage({ searchParams }: Props) {
       memberId={member.id}
       firstName={member.first_name}
       isKuyateOpen={kuyateApplicationsOpen}
+      initialType={(type === 'ading' || type === 'kuyate') ? type : null}
+      existingProfile={{
+        first_name: member.first_name ?? '',
+        last_name: member.last_name ?? '',
+        phone: member.phone ?? null,
+        year: member.year ?? null,
+        major: member.major ?? null,
+      }}
     />
   )
 }
