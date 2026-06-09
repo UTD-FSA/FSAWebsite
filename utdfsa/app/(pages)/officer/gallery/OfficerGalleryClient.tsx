@@ -272,9 +272,12 @@ export default function OfficerGalleryClient({ galleries }: Props) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-1">Album Link</label>
+                <label className="block text-sm font-semibold text-gray-900 mb-1">
+                  Album Link <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="url"
+                  required
                   value={form.google_photos_url}
                   onChange={set('google_photos_url')}
                   className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"

@@ -277,8 +277,8 @@ function AdingCard({
 
       {/* expanded question answers */}
       {expanded && (
-        <div className="border-t px-5 py-4 bg-gray-50">
-          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+        <div className="border-t px-5 py-4 bg-gray-50 w-full max-w-2xl">
+          <dl className="grid grid-cols-1 gap-y-3">
             {ADING_QUESTION_KEYS.map(key => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const raw = (app as any)[key]
@@ -289,7 +289,7 @@ function AdingCard({
                   <dt className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                     {ADING_QUESTION_LABELS[key]}
                   </dt>
-                  <dd className="text-sm text-gray-800 whitespace-pre-wrap">{display}</dd>
+                  <dd className="text-sm text-gray-800 break-words whitespace-normal w-full">{display}</dd>
                 </div>
               )
             })}
@@ -461,6 +461,11 @@ export default function ApplicationsClient({
   const [kuyateFilter, setKuyateFilter] = useState<Filter>('pending')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [pamilyaSaving, setPamilyaSaving] = useState<Record<string, 'saving' | 'saved' | 'error' | null>>({})
+  const [pendingStatus, setPendingStatus] = useState<{
+    applicationId: string
+    applicantFirstName: string
+    status: 'accepted' | 'rejected'
+  } | null>(null)
 
   // computed filtered lists
   const filteredAding = adingFilter === 'all'
@@ -626,12 +631,55 @@ export default function ApplicationsClient({
                   app={app}
                   expanded={expandedId === app.id}
                   onToggle={() => setExpandedId(expandedId === app.id ? null : app.id)}
-                  onStatusChange={s => updateKuyateStatus(app.id, s)}
+                  onStatusChange={s => {
+                    if (s === 'accepted' || s === 'rejected') {
+                      setPendingStatus({ applicationId: app.id, applicantFirstName: app.members.first_name, status: s })
+                    } else {
+                      updateKuyateStatus(app.id, s)
+                    }
+                  }}
                 />
               ))}
             </div>
           )}
         </section>
+      )}
+      {pendingStatus && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-2xl">
+            <h2 className="text-base font-bold text-gray-900 mb-2">
+              {pendingStatus.status === 'accepted' ? 'Confirm Acceptance' : 'Confirm Rejection'}
+            </h2>
+            <p className="text-sm text-gray-600 mb-5">
+              {pendingStatus.status === 'accepted'
+                ? `This will send an acceptance email to ${pendingStatus.applicantFirstName}. This email cannot be unsent. Are you sure?`
+                : `This will send a rejection email to ${pendingStatus.applicantFirstName}. This email cannot be unsent. Are you sure?`}
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setPendingStatus(null)}
+                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Go Back
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  updateKuyateStatus(pendingStatus.applicationId, pendingStatus.status)
+                  setPendingStatus(null)
+                }}
+                className={`flex-1 px-4 py-2 text-sm font-semibold text-white rounded-lg ${
+                  pendingStatus.status === 'accepted'
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-red-600 hover:bg-red-700'
+                }`}
+              >
+                {pendingStatus.status === 'accepted' ? 'Yes, Accept' : 'Yes, Reject'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </main>
   )

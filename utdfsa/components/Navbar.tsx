@@ -82,7 +82,7 @@ export default function Navbar({ initialMember }: NavbarProps) {
   const dropdownItemClass = "block px-5 py-3 text-sm text-white font-display font-semibold uppercase tracking-wide hover:bg-white/10 transition-colors"
 
   return (
-    <nav className="flex justify-between items-center px-14 bg-brand-bg h-20 sticky top-0 z-50">
+    <nav className="flex justify-between items-center px-14 bg-brand-bg h-20 sticky top-0 z-[60]">
       {/* route: / — home page — do not change this path */}
       <Link href="/" className="flex items-center gap-3">
         <Image
