@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono, Unbounded } from "next/font/google"
 import "./globals.css"
 import Navbar from "@/components/Navbar"
+import Footer from "@/components/Footer"
 import { createUserClient } from "@/utils/supabase/server"
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
@@ -46,6 +47,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <Navbar initialMember={initialMember} />
         {children}
+        <Footer />
         <Analytics />
         <SpeedInsights />
       </body>

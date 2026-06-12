@@ -46,3 +46,76 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), Arial, sans-serif;
 }
+
+@keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes modalIn { from { opacity: 0; transform: translateY(14px) scale(0.985); } to { opacity: 1; transform: none; } }
+
+.event-card {
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.event-card:hover {
+  border-color: rgba(151, 113, 255, 0.55);
+  box-shadow: 0 0 0 1px rgba(151, 113, 255, 0.22), 0 18px 38px -16px rgba(151, 113, 255, 0.42);
+  transform: translateY(-4px);
+}
+
+.week-pill {
+  transition: border-color .18s ease;
+}
+.week-pill:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ── FullCalendar dark theme overrides ──────────────────────────────────── */
+.fc-dark .fc-theme-standard td,
+.fc-dark .fc-theme-standard th,
+.fc-dark .fc-theme-standard .fc-scrollgrid { border-color: rgba(255,255,255,0.08); }
+.fc-dark table { background: transparent; }
+.fc-dark .fc-scrollgrid { background: transparent; }
+
+/* FIX 1 — title left-justified */
+.fc-dark .fc-header-toolbar { justify-content: space-between; align-items: center; }
+.fc-dark .fc-toolbar-chunk:first-child { flex: 1; }
+.fc-dark .fc-toolbar-title { text-align: left; color: #fff; font-weight: 700; font-size: 1.25rem; letter-spacing: -0.01em; }
+
+/* FIX 2 — days-of-week header background matches page */
+.fc-dark .fc-col-header { background-color: #0f0f0f; }
+.fc-dark .fc-col-header-cell { background-color: #0f0f0f; border-color: rgba(255,255,255,0.1); }
+.fc-dark .fc-col-header-cell-cushion { color: rgba(255,255,255,0.5); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; text-decoration: none; padding: 8px 0; }
+
+/* FIX 3 — nav buttons circular, right-grouped */
+.fc-dark .fc-button,
+.fc-dark .fc-button-primary { background: transparent !important; border: 1px solid rgba(255,255,255,0.3) !important; color: #fff !important; box-shadow: none !important; border-radius: 50% !important; width: 32px !important; height: 32px !important; padding: 0 !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; font-size: 0.75rem !important; }
+.fc-dark .fc-button:hover,
+.fc-dark .fc-button-primary:hover { background: rgba(255,255,255,0.1) !important; border-color: rgba(255,255,255,0.6) !important; }
+.fc-dark .fc-button:focus,
+.fc-dark .fc-button-primary:focus { outline: none !important; box-shadow: none !important; }
+.fc-dark .fc-button-group { gap: 4px; display: flex !important; }
+
+/* FIX 4 — day numbers left-justified */
+.fc-dark .fc-daygrid-day-top { flex-direction: row; }
+.fc-dark .fc-daygrid-day-number { color: rgba(255,255,255,0.6); font-size: 0.875rem; font-weight: 600; text-decoration: none; text-align: left; float: left; padding: 4px 8px; }
+.fc-dark .fc-day-today .fc-daygrid-day-number { color: #fff; background: #9747FF; border-radius: 999px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; padding: 0; margin: 4px; font-size: 0.72rem; }
+.fc-dark .fc-day-today { background: rgba(255,255,255,0.03) !important; }
+
+/* event pills + overflow */
+.fc-dark .fc-daygrid-event { border-radius: 5px; font-size: 0.68rem; font-weight: 600; padding: 1px 5px; border: none !important; }
+.fc-dark .fc-daygrid-event:hover { filter: brightness(1.2); }
+.fc-dark .fc-daygrid-more-link { color: #6f6f6f; font-size: 0.65rem; font-weight: 600; }
+
+/* popover */
+.fc-dark .fc-popover { background: #1e1e1e !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 12px !important; }
+.fc-dark .fc-popover-title { color: #fff !important; background: transparent !important; }
+.fc-dark .fc-popover-body { background: transparent !important; }
+
+/* FIX 5 — arrow icons: hide broken icon font, inject unicode chevrons */
+.fc-dark .fc-prev-button .fc-icon,
+.fc-dark .fc-next-button .fc-icon { display: none !important; }
+.fc-dark .fc-prev-button::after { content: '‹'; font-size: 1.2rem; line-height: 1; }
+.fc-dark .fc-next-button::after { content: '›'; font-size: 1.2rem; line-height: 1; }
+
+/* scrollbar for this-week strip */
+.tw-scroll::-webkit-scrollbar { height: 8px; }
+.tw-scroll::-webkit-scrollbar-track { background: transparent; }
+.tw-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+.tw-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }

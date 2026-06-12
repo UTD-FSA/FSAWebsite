@@ -100,24 +100,56 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
     }
   }
 
+  const fieldCls = [
+    'w-full rounded-lg px-3 py-2 text-sm transition-colors',
+    'focus:outline-none focus:ring-1',
+    'text-white bg-[#1e1e1e] border border-white/[0.12]',
+    'placeholder:text-white/30 focus:ring-[#9747FF] focus:border-[#9747FF]',
+    'disabled:opacity-50 disabled:cursor-not-allowed',
+  ].join(' ')
+
+  const labelCls = 'block font-display font-bold text-[10px] uppercase tracking-widest mb-1.5'
+
   return (
     <>
       <button
         onClick={() => setOpen(true)}
-        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-lg text-sm transition-colors"
+        className="w-full rounded-[13px] text-white font-bold text-[15px] tracking-[0.01em] transition-all"
+        style={{
+          padding: '16px',
+          background: '#9747FF',
+        }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLButtonElement).style.background = '#a85eff'
+          ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 14px 34px -12px rgba(151,71,255,0.75)'
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLButtonElement).style.background = '#9747FF'
+          ;(e.currentTarget as HTMLButtonElement).style.boxShadow = 'none'
+        }}
       >
-        Register
+        Get Tickets
       </button>
 
-      {/* only renders when the user has clicked the Register button — do not remove this condition */}
+      {/* only renders when the user has clicked the Get Tickets button — do not remove this condition */}
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(5,5,5,0.72)', backdropFilter: 'blur(9px)', WebkitBackdropFilter: 'blur(9px)' }}
+        >
+          <div
+            className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[22px]"
+            style={{
+              background: '#141414',
+              border: '1px solid rgba(255,255,255,0.1)',
+              boxShadow: '0 50px 100px -30px rgba(0,0,0,0.85)',
+            }}
+          >
             {/* header */}
-            <div className="flex items-start justify-between p-6 border-b">
+            <div className="flex items-start justify-between p-6" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
               <div>
-                <h2 className="text-lg font-bold text-gray-900">{event.name}</h2>
-                <p className="text-sm text-gray-600 mt-0.5">
+                <h2 className="text-lg font-bold text-white">{event.name}</h2>
+                <p className="text-sm font-medium mt-0.5" style={{ color: '#8c8c8c' }}>
                   {new Date(event.event_date).toLocaleDateString('en-US', {
                     weekday: 'short', month: 'short', day: 'numeric',
                   })}
@@ -126,31 +158,40 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
               </div>
               <button
                 onClick={() => setOpen(false)}
-                className="text-gray-400 hover:text-gray-600 text-xl leading-none ml-4"
+                className="flex items-center justify-center rounded-full ml-4 flex-none transition-colors"
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  color: '#9a9a9a',
+                }}
               >
-                ✕
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <path d="M18 6L6 18M6 6l12 12" />
+                </svg>
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
 
               {/* pricing notice */}
-              <div className="bg-gray-50 rounded-lg p-3 text-sm">
+              <div className="rounded-[14px] p-3.5 text-sm" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
                 {/* only renders the member-rate label when the user is an active member — do not remove this condition */}
                 {isMember ? (
-                  <p className="text-blue-700 font-medium">
+                  <p className="font-semibold" style={{ color: '#bb9eff' }}>
                     Member rate · {fmt(pricePerTicket)}/ticket
                     {event.is_early_bird && ' (Early Bird)'}
                   </p>
                 ) : (
-                  <p className="text-gray-600">
+                  <p style={{ color: '#a8a8a8' }}>
                     General admission · {fmt(pricePerTicket)}/ticket
                     {event.is_early_bird && ' (Early Bird)'}
                   </p>
                 )}
                 {/* only renders the 1-ticket limit notice for members — do not remove this condition */}
                 {isMember && (
-                  <p className="text-gray-400 text-xs mt-1">
+                  <p className="text-xs mt-1" style={{ color: '#6f6f6f' }}>
                     Members are limited to one ticket per event.
                   </p>
                 )}
@@ -158,17 +199,18 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
 
               {/* ticket fields */}
               {tickets.map((ticket, i) => (
-                <div key={i} className="border rounded-lg p-4 flex flex-col gap-3 relative">
+                <div key={i} className="rounded-[14px] p-4 flex flex-col gap-3" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-gray-700">
-                      <span className="text-gray-800">{i === 0 ? 'Your info' : `Attendee ${i + 1}`}</span>
+                    <p className="text-sm font-semibold text-white">
+                      {i === 0 ? 'Your info' : `Attendee ${i + 1}`}
                     </p>
                     {/* only renders the Remove button for non-member extra attendees (not the first slot) — do not remove this condition */}
                     {!isMember && i > 0 && (
                       <button
                         type="button"
                         onClick={() => removeTicket(i)}
-                        className="text-xs text-red-500 hover:text-red-700"
+                        className="text-xs font-medium transition-colors"
+                        style={{ color: '#ff84b0' }}
                       >
                         Remove
                       </button>
@@ -177,33 +219,33 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-medium text-gray-600 block mb-1">First Name</label>
+                      <label className={labelCls} style={{ color: '#7a7a7a' }}>First Name</label>
                       {/* disabled for the member's own first ticket — their name comes from memberInfo — do not remove disabled */}
                       <input
                         required
                         value={ticket.fname}
                         onChange={e => updateTicket(i, 'fname', e.target.value)}
                         disabled={isMember && i === 0}
-                        className="w-full border rounded-lg px-3 py-2 text-sm text-gray-900 disabled:bg-gray-50 disabled:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className={fieldCls}
                         placeholder="First"
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-gray-600 block mb-1">Last Name</label>
+                      <label className={labelCls} style={{ color: '#7a7a7a' }}>Last Name</label>
                       {/* disabled for the member's own first ticket — their name comes from memberInfo — do not remove disabled */}
                       <input
                         required
                         value={ticket.lname}
                         onChange={e => updateTicket(i, 'lname', e.target.value)}
                         disabled={isMember && i === 0}
-                        className="w-full border rounded-lg px-3 py-2 text-sm text-gray-900 disabled:bg-gray-50 disabled:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className={fieldCls}
                         placeholder="Last"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-xs font-medium text-gray-600 block mb-1">Email</label>
+                    <label className={labelCls} style={{ color: '#7a7a7a' }}>Email</label>
                     {/* disabled for the member's own first ticket — their contact_email comes from memberInfo — do not remove disabled */}
                     <input
                       required
@@ -211,7 +253,7 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
                       value={ticket.email}
                       onChange={e => updateTicket(i, 'email', e.target.value)}
                       disabled={isMember && i === 0}
-                      className="w-full border rounded-lg px-3 py-2 text-sm text-gray-900 disabled:bg-gray-50 disabled:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className={fieldCls}
                       placeholder="email@example.com"
                     />
                   </div>
@@ -223,25 +265,29 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
                 <button
                   type="button"
                   onClick={addTicket}
-                  className="w-full border-2 border-dashed border-gray-200 text-gray-400 hover:border-blue-300 hover:text-blue-500 rounded-lg py-3 text-sm font-medium transition-colors"
+                  className="w-full rounded-[14px] py-3 text-sm font-medium transition-colors"
+                  style={{
+                    border: '1px dashed rgba(255,255,255,0.14)',
+                    color: '#6f6f6f',
+                  }}
                 >
                   + Add another attendee
                 </button>
               )}
 
               {/* total */}
-              <div className="flex justify-between items-center pt-1 border-t text-sm">
-                <span className="text-gray-700">
+              <div className="flex justify-between items-center pt-1 text-sm" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <span style={{ color: '#9a9a9a' }}>
                   {tickets.length} ticket{tickets.length !== 1 ? 's' : ''}
                 </span>
-                <span className="font-bold text-base text-gray-900">
+                <span className="font-bold text-base text-white">
                   {total === 0 ? 'Free' : fmt(total)}
                 </span>
               </div>
 
               {/* only renders when the API or network returned an error — do not remove this condition */}
               {error && (
-                <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                <p className="text-sm rounded-[14px] px-3 py-2.5" style={{ color: '#ff84b0', background: 'rgba(255,92,150,0.08)', border: '1px solid rgba(255,120,170,0.2)' }}>
                   {error}
                 </p>
               )}
@@ -249,7 +295,8 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold py-3 rounded-xl text-sm transition-colors"
+                className="w-full text-white font-bold py-4 rounded-[13px] text-[15px] tracking-[0.01em] transition-opacity disabled:opacity-60"
+                style={{ background: '#9747FF' }}
               >
                 {/* only shows "Processing…" while the checkout API call is in flight — do not remove this condition */}
                 {loading

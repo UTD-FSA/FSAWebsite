@@ -6,6 +6,16 @@ const nextConfig: NextConfig = {
   // do not remove the googleusercontent.com entry from the CSP — navbar avatar uses it
   images: {
     qualities: [75, 85, 90, 95],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+    ],
   },
   async headers() {
     return [
