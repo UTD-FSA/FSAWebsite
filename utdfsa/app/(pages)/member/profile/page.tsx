@@ -24,164 +24,275 @@ export default async function ProfilePage() {
 
   const { kuyateApplicationsOpen } = await getSettings()
 
+  const { data: generalAndRiskEvents } = await supabase
+    .from('events')
+    .select('id')
+    .in('event_type', ['General Meeting', 'Risk Management'])
+
+  const generalAndRiskEventIds = generalAndRiskEvents?.map((e: { id: string }) => e.id) ?? []
+
+  const { count: meetingCount } = await supabase
+    .from('attendance')
+    .select('id', { count: 'exact', head: true })
+    .eq('member_id', member.id)
+    .in('event_id', generalAndRiskEventIds.length > 0 ? generalAndRiskEventIds : ['__none__'])
+
+  const { data: riskMgmtEvents } = await supabase
+    .from('events')
+    .select('id')
+    .eq('event_type', 'Risk Management')
+
+  const riskMgmtEventIds = riskMgmtEvents?.map((e: { id: string }) => e.id) ?? []
+
+  const { count: riskMgmtCount } = await supabase
+    .from('attendance')
+    .select('id', { count: 'exact', head: true })
+    .eq('member_id', member.id)
+    .in('event_id', riskMgmtEventIds.length > 0 ? riskMgmtEventIds : ['__none__'])
+
   // ============================================================
   // UI — safe to restyle everything below this line
   // available data:
   //   member (Member) — full member row
   //   kuyateApplicationsOpen (bool) — whether kuyate applications are open;
   //     used to show/hide the kuya/ate re-apply link
+  //   meetingCount (number | null) — meetings attended (General Meeting + Risk Management)
+  //   riskMgmtCount (number | null) — Risk Management sessions attended
   // change classnames, layout, colors, and typography freely
   // do not remove or rename the variables being rendered
   // ============================================================
+  const riskMgmtAttended = (riskMgmtCount ?? 0) > 0
+  const goodphilPoints = member.points ?? 0
+  const goodphilMeetings = meetingCount ?? 0
+  const isGoodphilEligible = goodphilPoints >= 6 && goodphilMeetings >= 3 && riskMgmtAttended
+
   return (
-    <main className="max-w-2xl mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-6">My Profile</h1>
+    <main className="bg-section-bg min-h-screen text-white">
+      <div className="max-w-2xl mx-auto px-6 py-12">
 
-      {/* Avatar and name */}
-      <div className="flex items-center gap-4 mb-8">
-        {member.avatar_url ? (
-          <img
-            src={member.avatar_url}
-            alt="profile"
-            className="w-16 h-16 rounded-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <div className="w-16 h-16 rounded-full bg-gray-400 flex items-center justify-center text-white text-2xl font-bold">
-            {member.first_name?.[0]}{member.last_name?.[0]}
-          </div>
-        )}
-        <div>
-          <h2 className="text-xl font-semibold">
-            {member.first_name} {member.last_name}
-          </h2>
-          <p className="text-gray-500">{member.email}</p>
-        </div>
-      </div>
+        <h1 className="font-display font-black text-[clamp(36px,5vw,64px)] text-white uppercase leading-none tracking-tight mb-10">
+          MY PROFILE
+        </h1>
 
-      {/* Membership status */}
-      <section className="mb-6 p-4 border rounded-lg">
-        <h3 className="font-semibold mb-3">Membership</h3>
-        <div className="flex flex-col gap-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-500">Status</span>
-            <span className={
-              member.membership_status === 'active'
-                ? 'text-green-600 font-medium'
-                : 'text-yellow-600 font-medium'
-            }>
-              {member.membership_status ?? 'Pending'}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Role</span>
-            <span className="capitalize">{member.role}</span>
-          </div>
-          {/* only renders when pamilya is assigned — do not remove this condition */}
-          {member.pamilya && (
-            <div className="flex justify-between">
-              <span className="text-gray-500">Pamilya</span>
-              <span>{member.pamilya}</span>
+        {/* Avatar and name */}
+        <div className="flex items-center gap-5 mb-10">
+          {member.avatar_url ? (
+            <img
+              src={member.avatar_url}
+              alt="profile"
+              className="w-16 h-16 rounded-full object-cover border-2 border-white/20"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-brand-bg border-2 border-white/20 flex items-center justify-center font-display font-black text-white text-xl">
+              {member.first_name?.[0]}{member.last_name?.[0]}
             </div>
           )}
-          {/* only renders when membership has an expiry date — do not remove this condition */}
-          {member.membership_expires_at && (
-            <div className="flex justify-between">
-              <span className="text-gray-500">Expires</span>
-              <span>
-                {new Date(member.membership_expires_at).toLocaleDateString()}
+          <div>
+            <h2 className="font-display font-black text-xl text-white uppercase">
+              {member.first_name} {member.last_name}
+            </h2>
+            <p className="font-sans text-sm text-white/50 mt-0.5">{member.email}</p>
+          </div>
+        </div>
+
+        {/* Membership status */}
+        <section className="mb-4 p-6 border-2 border-white/20 rounded-[27px] bg-brand-bg">
+          <h3 className="font-display font-black text-xs uppercase tracking-widest text-white/50 mb-4">Membership</h3>
+          <div className="flex flex-col gap-3">
+            <div className="flex justify-between items-center">
+              <span className="font-sans text-sm text-white/50">Status</span>
+              <span className={`font-display font-bold text-sm uppercase tracking-wide ${
+                member.membership_status === 'active'
+                  ? 'text-accent-green'
+                  : 'text-accent-gold'
+              }`}>
+                {member.membership_status ?? 'Pending'}
               </span>
             </div>
-          )}
-        </div>
-      </section>
-
-      {/* Points */}
-      <section className="mb-6 p-4 border rounded-lg">
-        <h3 className="font-semibold mb-3">Points</h3>
-        <p className="text-4xl font-black">{member.points ?? 0}</p>
-        <p className="text-sm text-gray-500 mt-1">
-          Earned from meetings and events
-        </p>
-      </section>
-
-      {/* Personal info */}
-      <section className="mb-6 p-4 border rounded-lg">
-        <h3 className="font-semibold mb-3">Personal Info</h3>
-        <div className="flex flex-col gap-2 text-sm">
-          {/* contact email — always shown */}
-          <div className="flex justify-between items-start gap-4">
-            <div>
-              <span className="text-gray-500 block">Contact Email</span>
-              <span className="text-xs text-gray-400">used for emails and other notifications from the website</span>
+            <div className="w-full h-px bg-white/10" />
+            <div className="flex justify-between items-center">
+              <span className="font-sans text-sm text-white/50">Role</span>
+              <span className="font-sans text-sm text-white capitalize">{member.role}</span>
             </div>
-            <span className="text-right shrink-0">{member.email}</span>
-          </div>
-          {/* only renders when phone is set — do not remove this condition */}
-          {member.phone && (
-            <div className="flex justify-between">
-              <span className="text-gray-500">Phone</span>
-              <span>{member.phone}</span>
-            </div>
-          )}
-          {/* only renders when year is set — do not remove this condition */}
-          {member.year && (
-            <div className="flex justify-between">
-              <span className="text-gray-500">Year</span>
-              <span>{member.year}</span>
-            </div>
-          )}
-          {/* only renders when major is set — do not remove this condition */}
-          {member.major && (
-            <div className="flex justify-between">
-              <span className="text-gray-500">Major</span>
-              <span>{member.major}</span>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Re-apply section — only renders for members who opted out of the pamilya program */}
-      {/* do not remove this condition */}
-      {member.member_type === 'not_interested' && (
-        <section className="mb-6 p-4 border border-blue-200 rounded-lg bg-blue-50">
-          <h3 className="font-semibold mb-1 text-gray-900">Changed your mind?</h3>
-          <p className="text-sm text-gray-900 mb-3">You can still apply.</p>
-          <div className="flex gap-3 flex-wrap">
-            <a
-              href="/onboarding?reapply=true&type=ading"
-              className="text-sm font-medium px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
-            >
-              Apply as Ading
-            </a>
-            {/* only renders when kuyate applications are open — do not remove this condition */}
-            {kuyateApplicationsOpen && (
-              <a
-                href="/onboarding?reapply=true&type=kuyate"
-                className="text-sm font-medium px-4 py-2 bg-white hover:bg-gray-50 text-blue-600 border border-blue-300 rounded-lg"
-              >
-                Apply as Kuya/Ate
-              </a>
+            {/* only renders when pamilya is assigned — do not remove this condition */}
+            {member.pamilya && (
+              <>
+                <div className="w-full h-px bg-white/10" />
+                <div className="flex justify-between items-center">
+                  <span className="font-sans text-sm text-white/50">Pamilya</span>
+                  <span className="font-sans text-sm text-white">{member.pamilya}</span>
+                </div>
+              </>
+            )}
+            {/* only renders when membership has an expiry date — do not remove this condition */}
+            {member.membership_expires_at && (
+              <>
+                <div className="w-full h-px bg-white/10" />
+                <div className="flex justify-between items-center">
+                  <span className="font-sans text-sm text-white/50">Expires</span>
+                  <span className="font-sans text-sm text-white">
+                    {new Date(member.membership_expires_at).toLocaleDateString()}
+                  </span>
+                </div>
+              </>
             )}
           </div>
         </section>
-      )}
 
-      {/* edit profile button — safe to restyle, keep the href */}
-      <a href="/member/profile/edit" className="inline-block mt-4 text-sm text-blue-600 underline hover:text-blue-800">
-        Edit Profile
-      </a>
+        {/* Points */}
+        <section className="mb-4 p-6 border-2 border-white/20 rounded-[27px] bg-brand-bg">
+          <h3 className="font-display font-black text-xs uppercase tracking-widest text-white/50 mb-4">Points</h3>
+          <p className="font-display font-black text-[56px] text-white leading-none">{member.points ?? 0}</p>
+          <p className="font-sans text-sm text-white/50 mt-1 mb-6">
+            Earned from meetings and events
+          </p>
 
-      {/* Unpaid membership banner — only renders when membership is not active */}
-      {/* do not remove this condition */}
-      {member.membership_status !== 'active' && (
-        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
-          Your membership is not yet active.{' '}
-          <a href="/membership" className="underline font-medium">
-            Complete payment to activate.
-          </a>
-        </div>
-      )}
+          {/* Goodphil eligibility progress */}
+          <div className="border-t border-white/10 pt-5">
+            <p className="font-display font-black text-xs uppercase tracking-widest text-white/50 mb-4">
+              Goodphil Eligibility
+            </p>
+
+            {/* Points bar */}
+            <div className="mb-5">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="font-sans text-xs text-white/60">Goodphil Points (6 required)</span>
+                <span className="font-display font-bold text-xs text-white/60">{Math.min(goodphilPoints, 6)} / 6</span>
+              </div>
+              <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-accent-green transition-all"
+                  style={{ width: `${Math.min((goodphilPoints / 6) * 100, 100)}%` }}
+                />
+              </div>
+              {goodphilPoints >= 6 && (
+                <p className="font-sans text-xs text-accent-green mt-1">✓ Points requirement met</p>
+              )}
+            </div>
+
+            {/* Meetings bar */}
+            <div className="mb-4">
+              <div className="flex justify-between items-center mb-1.5">
+                <span className="font-sans text-xs text-white/60">Meetings Attended (3 required, must include Risk Management)</span>
+                <span className="font-display font-bold text-xs text-white/60">{Math.min(goodphilMeetings, 3)} / 3</span>
+              </div>
+              <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-accent-green transition-all"
+                  style={{ width: `${Math.min((goodphilMeetings / 3) * 100, 100)}%` }}
+                />
+              </div>
+              <p className={`font-sans text-xs mt-1 ${riskMgmtAttended ? 'text-accent-green' : 'text-white/40'}`}>
+                {riskMgmtAttended ? '✓ Risk Management: Attended' : 'Risk Management: Not yet attended'}
+              </p>
+            </div>
+
+            {/* Eligibility status */}
+            <div className="pt-3 border-t border-white/10">
+              {isGoodphilEligible ? (
+                <p className="font-display font-bold text-sm text-accent-green uppercase tracking-wide">
+                  ✓ Goodphil Eligible
+                </p>
+              ) : (
+                <p className="font-sans text-sm text-white/40">
+                  Requirements not yet met
+                </p>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* Personal info */}
+        <section className="mb-4 p-6 border-2 border-white/20 rounded-[27px] bg-brand-bg">
+          <h3 className="font-display font-black text-xs uppercase tracking-widest text-white/50 mb-4">Personal Info</h3>
+          <div className="flex flex-col gap-3">
+            {/* contact email — always shown */}
+            <div className="flex justify-between items-start gap-4">
+              <div>
+                <span className="font-sans text-sm text-white/50 block">Contact Email</span>
+                <span className="font-sans text-xs text-white/30">used for emails and other notifications from the website</span>
+              </div>
+              <span className="font-sans text-sm text-white text-right shrink-0">{member.email}</span>
+            </div>
+            {/* only renders when phone is set — do not remove this condition */}
+            {member.phone && (
+              <>
+                <div className="w-full h-px bg-white/10" />
+                <div className="flex justify-between items-center">
+                  <span className="font-sans text-sm text-white/50">Phone</span>
+                  <span className="font-sans text-sm text-white">{member.phone}</span>
+                </div>
+              </>
+            )}
+            {/* only renders when year is set — do not remove this condition */}
+            {member.year && (
+              <>
+                <div className="w-full h-px bg-white/10" />
+                <div className="flex justify-between items-center">
+                  <span className="font-sans text-sm text-white/50">Year</span>
+                  <span className="font-sans text-sm text-white">{member.year}</span>
+                </div>
+              </>
+            )}
+            {/* only renders when major is set — do not remove this condition */}
+            {member.major && (
+              <>
+                <div className="w-full h-px bg-white/10" />
+                <div className="flex justify-between items-center">
+                  <span className="font-sans text-sm text-white/50">Major</span>
+                  <span className="font-sans text-sm text-white">{member.major}</span>
+                </div>
+              </>
+            )}
+          </div>
+        </section>
+
+        {/* Re-apply section — only renders for members who opted out of the pamilya program */}
+        {/* do not remove this condition */}
+        {member.member_type === 'not_interested' && (
+          <section className="mb-4 p-6 border-2 border-white/20 rounded-[27px] bg-brand-bg">
+            <h3 className="font-display font-black text-sm text-white uppercase mb-1">Changed your mind?</h3>
+            <p className="font-sans text-sm text-white/50 mb-4">You can still apply.</p>
+            <div className="flex gap-3 flex-wrap">
+              <a
+                href="/onboarding?reapply=true&type=ading"
+                className="font-display font-bold text-xs uppercase tracking-widest px-5 py-2.5 bg-accent-green text-[#0e0e0e] rounded-lg hover:opacity-90 transition-opacity"
+              >
+                Apply as Ading
+              </a>
+              {/* only renders when kuyate applications are open — do not remove this condition */}
+              {kuyateApplicationsOpen && (
+                <a
+                  href="/onboarding?reapply=true&type=kuyate"
+                  className="font-display font-bold text-xs uppercase tracking-widest px-5 py-2.5 border-2 border-white/30 text-white rounded-lg hover:border-white/60 transition-colors"
+                >
+                  Apply as Kuya/Ate
+                </a>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* edit profile button — safe to restyle, keep the href */}
+        <a href="/member/profile/edit" className="inline-block mt-2 font-display font-bold text-xs text-accent-green uppercase tracking-widest hover:opacity-70 transition-opacity">
+          Edit Profile →
+        </a>
+
+        {/* Unpaid membership banner — only renders when membership is not active */}
+        {/* do not remove this condition */}
+        {member.membership_status !== 'active' && (
+          <div className="mt-6 p-5 border-2 border-accent-gold/40 rounded-[27px] bg-brand-bg">
+            <p className="font-sans text-sm text-accent-gold">
+              Your membership is not yet active.{' '}
+              <a href="/membership" className="underline font-bold">
+                Complete payment to activate.
+              </a>
+            </p>
+          </div>
+        )}
+
+      </div>
     </main>
   )
 }

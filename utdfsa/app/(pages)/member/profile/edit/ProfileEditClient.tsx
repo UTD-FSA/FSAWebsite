@@ -79,127 +79,136 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
     setTimeout(() => router.push('/member/profile'), 1200)
   }
 
+  const fieldCls = 'w-full border border-white/30 rounded-lg p-2.5 text-sm text-white bg-brand-bg placeholder:text-white/40 focus:outline-none focus:ring-1 focus:ring-accent-green focus:border-accent-green transition-colors'
+  const labelCls = 'block font-display font-bold text-xs uppercase tracking-widest text-white/60 mb-1.5'
+
   return (
-    <main className="max-w-lg mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-2">Edit Profile</h1>
+    <main className="bg-section-bg min-h-screen text-white">
+      <div className="max-w-lg mx-auto px-6 py-12">
+        <h1 className="font-display font-black text-[clamp(28px,4vw,48px)] text-white uppercase leading-none mb-6">
+          Edit Profile
+        </h1>
 
-      {/* loginEmail is the Google OAuth address — shown read-only because it cannot be changed here */}
-      <div className="mb-6 p-3 bg-gray-50 border rounded-lg text-sm text-gray-500">
-        <span className="font-medium">Login email:</span> {loginEmail}
-        <p className="text-xs mt-1">
-          This is tied to your Google account and cannot be changed here.
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">First Name</label>
-            <input
-              type="text"
-              value={form.first_name}
-              onChange={e => set('first_name', toTitleCase(e.target.value))}
-              className="w-full border rounded-lg p-2 text-sm"
-              required
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">Last Name</label>
-            <input
-              type="text"
-              value={form.last_name}
-              onChange={e => set('last_name', toTitleCase(e.target.value))}
-              className="w-full border rounded-lg p-2 text-sm"
-              required
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Contact Email
-            <span className="text-gray-400 font-normal ml-1">
-              (for event tickets and notifications)
-            </span>
-          </label>
-          <input
-            type="email"
-            value={form.contact_email}
-            onChange={e => set('contact_email', e.target.value)}
-            className="w-full border rounded-lg p-2 text-sm"
-            placeholder={loginEmail}
-          />
-          <p className="text-xs text-gray-400 mt-1">
-            Leave blank to use your Google email for notifications.
+        {/* loginEmail is the Google OAuth address — shown read-only because it cannot be changed here */}
+        <div className="mb-6 p-3 bg-white/5 border border-white/10 rounded-lg">
+          <span className={labelCls}>Login email</span>
+          <p className="font-sans text-sm text-white/70">{loginEmail}</p>
+          <p className="font-sans text-xs text-white/40 mt-1">
+            This is tied to your Google account and cannot be changed here.
           </p>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Phone</label>
-          <input
-            type="tel"
-            value={form.phone ?? ''}
-            onChange={e => set('phone', formatPhone(e.target.value))}
-            className="w-full border rounded-lg p-2 text-sm"
-            placeholder="(xxx) xxx-xxxx"
-            maxLength={14}
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <label className={labelCls}>First Name</label>
+              <input
+                type="text"
+                value={form.first_name}
+                onChange={e => set('first_name', toTitleCase(e.target.value))}
+                className={fieldCls}
+                required
+              />
+            </div>
+            <div className="flex-1">
+              <label className={labelCls}>Last Name</label>
+              <input
+                type="text"
+                value={form.last_name}
+                onChange={e => set('last_name', toTitleCase(e.target.value))}
+                className={fieldCls}
+                required
+              />
+            </div>
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Year</label>
-          <select
-            value={form.year ?? ''}
-            onChange={e => set('year', e.target.value)}
-            className="w-full border rounded-lg p-2 text-sm"
+          <div>
+            <label className={labelCls}>
+              Contact Email
+              <span className="text-white/30 font-normal normal-case tracking-normal ml-1">
+                (for event tickets and notifications)
+              </span>
+            </label>
+            <input
+              type="email"
+              value={form.contact_email}
+              onChange={e => set('contact_email', e.target.value)}
+              className={fieldCls}
+              placeholder={loginEmail}
+            />
+            <p className="font-sans text-xs text-white/40 mt-1">
+              Leave blank to use your Google email for notifications.
+            </p>
+          </div>
+
+          <div>
+            <label className={labelCls}>Phone</label>
+            <input
+              type="tel"
+              value={form.phone ?? ''}
+              onChange={e => set('phone', formatPhone(e.target.value))}
+              className={fieldCls}
+              placeholder="(xxx) xxx-xxxx"
+              maxLength={14}
+            />
+          </div>
+
+          <div>
+            <label className={labelCls}>Year</label>
+            <select
+              value={form.year ?? ''}
+              onChange={e => set('year', e.target.value)}
+              className={`${fieldCls} pr-8 text-gray-900`}
+              style={{ colorScheme: 'light' }}
+            >
+              <option value="" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Select your year</option>
+              <option value="Freshman" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Freshman</option>
+              <option value="Sophomore" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Sophomore</option>
+              <option value="Junior" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Junior</option>
+              <option value="Senior" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Senior</option>
+              <option value="Graduate" style={{ color: '#111827', backgroundColor: '#ffffff' }}>Graduate</option>
+            </select>
+          </div>
+
+          <div>
+            <label className={labelCls}>Major</label>
+            <input
+              type="text"
+              value={form.major ?? ''}
+              onChange={e => set('major', toTitleCase(e.target.value))}
+              className={fieldCls}
+              placeholder="e.g. Computer Science"
+            />
+          </div>
+
+          {/* only renders when the API returned a validation or server error — do not remove this condition */}
+          {error && <p className="font-sans text-sm text-red-400">{error}</p>}
+
+          {/* only renders for ~1.2 s after a successful save, before the router redirect fires — do not remove this condition */}
+          {success && (
+            <p className="font-sans text-sm text-green-400">
+              Profile updated! Redirecting...
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-accent-green text-[#0e0e0e] font-display font-black uppercase tracking-widest py-3.5 rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity mt-2"
           >
-            <option value="">Select your year</option>
-            <option value="Freshman">Freshman</option>
-            <option value="Sophomore">Sophomore</option>
-            <option value="Junior">Junior</option>
-            <option value="Senior">Senior</option>
-            <option value="Graduate">Graduate</option>
-          </select>
-        </div>
+            {/* only shows "Saving..." while the API call is in flight — do not remove this condition */}
+            {loading ? 'Saving...' : 'Save Changes'}
+          </button>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Major</label>
-          <input
-            type="text"
-            value={form.major ?? ''}
-            onChange={e => set('major', toTitleCase(e.target.value))}
-            className="w-full border rounded-lg p-2 text-sm"
-            placeholder="e.g. Computer Science"
-          />
-        </div>
-
-        {/* only renders when the API returned a validation or server error — do not remove this condition */}
-        {error && <p className="text-sm text-red-500">{error}</p>}
-
-        {/* only renders for ~1.2 s after a successful save, before the router redirect fires — do not remove this condition */}
-        {success && (
-          <p className="text-sm text-green-600 font-medium">
-            Profile updated! Redirecting...
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50"
-        >
-          {/* only shows "Saving..." while the API call is in flight — do not remove this condition */}
-          {loading ? 'Saving...' : 'Save Changes'}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => router.push('/member/profile')}
-          className="text-sm text-gray-400 hover:text-gray-600 text-center"
-        >
-          Cancel
-        </button>
-      </form>
+          <button
+            type="button"
+            onClick={() => router.push('/member/profile')}
+            className="font-sans text-sm text-white/40 hover:text-white/60 text-center transition-colors"
+          >
+            Cancel
+          </button>
+        </form>
+      </div>
     </main>
   )
 }

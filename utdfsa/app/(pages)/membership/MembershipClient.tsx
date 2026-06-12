@@ -58,68 +58,88 @@ export default function MembershipClient({
   }
 
   return (
-    <main className="max-w-lg mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-2">Become a Member</h1>
-      <p className="text-gray-500 mb-8">
-        Join UTD FSA and get access to all events, pamilya placement, and more!
-      </p>
+    <main className="bg-section-bg min-h-screen text-white">
+      <div className="max-w-lg mx-auto px-6 py-12">
 
-      <div className="border rounded-lg p-6 mb-6">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h2 className="font-semibold text-lg">UTD FSA Membership</h2>
-            <p className="text-sm text-gray-500">{membershipYear}</p>
+        <h1 className="font-display font-black text-[clamp(36px,5vw,64px)] text-white uppercase leading-none tracking-tight mb-2">
+          Become a Member
+        </h1>
+        <p className="font-sans text-sm text-white/50 mb-10">
+          Join UTD FSA and get access to all events, pamilya placement, and more!
+        </p>
+
+        <div className="border-2 border-white/20 rounded-[27px] p-8 mb-6 bg-brand-bg">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h2 className="font-display font-black text-base text-white uppercase tracking-wide">UTD FSA Membership</h2>
+              <p className="font-sans text-xs text-white/50 mt-1">{membershipYear}</p>
+            </div>
+
+            <div className="text-right">
+              {isEarlyBird ? (
+                <>
+                  {/* show discounted price prominently, crossed out regular price */}
+                  <p className="font-display font-black text-2xl text-accent-green">
+                    {formatPrice(displayPrice)}
+                  </p>
+                  <p className="font-sans text-sm text-white/30 line-through">
+                    {formatPrice(regularPrice)}
+                  </p>
+                  <p className="font-display font-bold text-xs text-accent-green uppercase tracking-wide mt-0.5">
+                    Early Bird
+                  </p>
+                  <p className="font-sans text-xs text-white/40 mt-1">
+                    ends {new Date(earlyBirdDeadline).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </p>
+                </>
+              ) : (
+                <p className="font-display font-black text-2xl text-white">{formatPrice(displayPrice)}</p>
+              )}
+            </div>
           </div>
 
-          <div className="text-right">
-            {isEarlyBird ? (
-              <>
-                {/* show discounted price prominently, crossed out regular price */}
-                <p className="text-2xl font-bold text-green-600">
-                  {formatPrice(displayPrice)}
-                </p>
-                <p className="text-sm text-gray-400 line-through">
-                  {formatPrice(regularPrice)}
-                </p>
-                <p className="text-xs text-green-600 font-medium">
-                  Early Bird Pricing
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  ends {new Date(earlyBirdDeadline).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </p>
-              </>
-            ) : (
-              <p className="text-2xl font-bold">{formatPrice(displayPrice)}</p>
-            )}
+          <div className="border-t border-white/10 pt-5 mb-6">
+            <ul className="flex flex-col gap-2.5">
+              <li className="flex items-center gap-2.5 font-sans text-sm text-white">
+                <span className="text-accent-green font-bold shrink-0">✓</span>
+                Member pricing on all events
+              </li>
+              <li className="flex items-center gap-2.5 font-sans text-sm text-white">
+                <span className="text-accent-green font-bold shrink-0">✓</span>
+                Pamilya placement
+              </li>
+              <li className="flex items-center gap-2.5 font-sans text-sm text-white">
+                <span className="text-accent-green font-bold shrink-0">✓</span>
+                Points tracking and attendance history
+              </li>
+              <li className="flex items-center gap-2.5 font-sans text-sm text-white">
+                <span className="text-accent-green font-bold shrink-0">✓</span>
+                Access to member-only content
+              </li>
+            </ul>
           </div>
+
+          {error && (
+            <p className="font-sans text-sm text-red-400 mb-4">{error}</p>
+          )}
+
+          <button
+            onClick={handlePayment}
+            disabled={loading}
+            className="w-full bg-accent-green text-[#0e0e0e] font-display font-black uppercase tracking-widest py-3.5 rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            {loading ? 'Redirecting to payment...' : `Pay ${formatPrice(displayPrice)}`}
+          </button>
         </div>
 
-        <ul className="text-sm text-gray-600 flex flex-col gap-1 mb-6">
-          <li>✓ Member pricing on all events</li>
-          <li>✓ Pamilya placement</li>
-          <li>✓ Points tracking and attendance history</li>
-          <li>✓ Access to member-only content</li>
-        </ul>
+        <p className="font-sans text-xs text-white/30 text-center">
+          Secure payment powered by Stripe. Have an officer code? You can enter it on the next page.
+        </p>
 
-        {error && (
-          <p className="text-sm text-red-500 mb-4">{error}</p>
-        )}
-
-        <button
-          onClick={handlePayment}
-          disabled={loading}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors"
-        >
-          {loading ? 'redirecting to payment...' : `Pay ${formatPrice(displayPrice)}`}
-        </button>
       </div>
-
-      <p className="text-xs text-gray-400 text-center">
-        Secure payment powered by stripe. Have an officer code? You can enter it on the next page.
-      </p>
     </main>
   )
 }
