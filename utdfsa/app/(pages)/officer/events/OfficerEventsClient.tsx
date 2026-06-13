@@ -93,6 +93,7 @@ interface EventFormData {
   eb_price_dollars_nonmembers: string
   eb_deadline: string
   is_active: boolean
+  is_visible: boolean
   registration_closes_at: string
 }
 
@@ -100,7 +101,7 @@ const emptyForm = (): EventFormData => ({
   name: '', description: '', event_type: 'General Meeting', event_date: '',
   location: '', points: '', price_dollars_members: '', price_dollars_nonmembers: '',
   eb_enabled: false, eb_price_dollars_members: '', eb_price_dollars_nonmembers: '',
-  eb_deadline: '', is_active: true,
+  eb_deadline: '', is_active: true, is_visible: true,
   registration_closes_at: '',
 })
 
@@ -119,6 +120,7 @@ function eventToForm(e: Event): EventFormData {
     eb_price_dollars_nonmembers: e.eb_price_nonmembers != null ? toDollars(e.eb_price_nonmembers) : '',
     eb_deadline: toDatetimeLocal(e.eb_deadline),
     is_active: e.is_active,
+    is_visible: e.is_visible,
     registration_closes_at: toDatetimeLocal(e.registration_closes_at),
   }
 }
@@ -142,6 +144,7 @@ function formToPayload(f: EventFormData) {
     eb_deadline: ticketed && f.eb_enabled && f.eb_deadline
       ? new Date(f.eb_deadline).toISOString() : null,
     is_active: f.is_active,
+    is_visible: f.is_visible,
     registration_closes_at: f.registration_closes_at
       ? new Date(f.registration_closes_at).toISOString() : null,
   }
@@ -375,11 +378,21 @@ function EventForm({
 
       {coverPhotoSlot}
 
-      <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none border-t pt-4">
-        <input type="checkbox" checked={form.is_active}
-          onChange={e => set('is_active', e.target.checked)} className="rounded" />
-        Visible to members (active)
-      </label>
+      <div className="flex flex-col gap-3 border-t pt-4">
+        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+          <input type="checkbox" checked={form.is_visible}
+            onChange={e => set('is_visible', e.target.checked)} className="rounded" />
+          Visible to Members
+        </label>
+        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+          <input type="checkbox" checked={form.is_active}
+            onChange={e => set('is_active', e.target.checked)} className="rounded" />
+          Registration &amp; Check-in Open
+        </label>
+        <p className="text-xs text-gray-400 ml-6">
+          Turn off after the event ends to close registration and disable QR attendance.
+        </p>
+      </div>
 
       {error && (
         <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
@@ -792,9 +805,9 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="font-bold text-base text-gray-900">{event.name}</h3>
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                          event.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                          event.is_visible ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
                         }`}>
-                          {event.is_active ? 'Active' : 'Hidden'}
+                          {event.is_visible ? 'Visible' : 'Hidden'}
                         </span>
                         <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-medium">
                           {event.event_type}

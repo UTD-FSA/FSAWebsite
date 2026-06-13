@@ -17,12 +17,21 @@ export default async function EventsPage({
   const { success } = await searchParams
   const admin = createAdminClient()
 
-  // only active events are shown to the public
-  const { data: events } = await admin
+  // visible events shown to the public; upcoming first, then past most-recent first
+  const { data: allEvents } = await admin
     .from('events')
     .select('*')
-    .eq('is_active', true)
+    .eq('is_visible', true)
     .order('event_date', { ascending: true })
+
+  const now = new Date()
+  const upcoming = (allEvents ?? [])
+    .filter(e => new Date(e.event_date) >= now)
+    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+  const past = (allEvents ?? [])
+    .filter(e => new Date(e.event_date) < now)
+    .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+  const sortedEvents = [...upcoming, ...past]
 
   // resolve caller (page is public — members get different display)
   const supabase = await createUserClient()
@@ -72,7 +81,7 @@ export default async function EventsPage({
   // ============================================================
   return (
     <EventsPageClient
-      events={(events ?? []) as Event[]}
+      events={sortedEvents as Event[]}
       isMember={isMember}
       member={member}
       registeredEventIds={[...registeredEventIds]}

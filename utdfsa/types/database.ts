@@ -49,6 +49,7 @@ export interface Event {
   eb_price_nonmembers: number | null
   eb_deadline: string | null
   is_active: boolean
+  is_visible: boolean
   cover_photo_url: string | null
   registration_closes_at: string | null
 }

@@ -29,9 +29,8 @@ export default async function AttendPage({ searchParams }: Props) {
   const [{ data: event }, { data: member }] = await Promise.all([
     supabase
       .from('events')
-      .select('id, name, event_date, points, attend_qr_open, attend_qr_expires_at')
+      .select('id, name, event_date, points, is_active, attend_qr_open, attend_qr_expires_at')
       .eq('attend_qr_token', token)
-      .eq('is_active', true)
       .maybeSingle(),
     supabase
       .from('members')
@@ -45,6 +44,16 @@ export default async function AttendPage({ searchParams }: Props) {
       <main className="flex flex-col items-center justify-center min-h-screen">
         <h1 className="text-2xl font-bold text-red-600">Invalid QR Code</h1>
         <p className="text-gray-500 mt-2">This attendance code is not valid.</p>
+      </main>
+    )
+  }
+
+  // check if event is still active (master switch)
+  if (!event.is_active) {
+    return (
+      <main className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <h1 className="text-2xl font-bold text-yellow-600">Check-in Closed</h1>
+        <p className="text-gray-500">Attendance is no longer open for this event.</p>
       </main>
     )
   }

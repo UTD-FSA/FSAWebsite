@@ -203,6 +203,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[22px]">
               {events.map(event => {
                 const badge = getBadge(event.event_type)
+                const isPastCard = new Date(event.event_date) < now
                 return (
                   <button
                     key={event.id}
@@ -227,11 +228,21 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                           src={event.cover_photo_url}
                           alt={event.name}
                           fill
-                          className="object-cover object-top"
+                          className={`object-cover object-top${isPastCard ? ' brightness-75' : ''}`}
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         />
                       ) : (
                         <PhotoPlaceholder ratio="4:5" />
+                      )}
+                      {isPastCard && (
+                        <div className="absolute top-2.5 left-2.5 z-10">
+                          <span
+                            className="text-[10px] font-bold tracking-[0.06em] uppercase px-2.5 py-1 rounded-full"
+                            style={{ background: 'rgba(0,0,0,0.55)', color: '#9a9a9a', border: '1px solid rgba(255,255,255,0.12)', backdropFilter: 'blur(4px)' }}
+                          >
+                            Past Event
+                          </span>
+                        </div>
                       )}
                     </div>
 
@@ -310,9 +321,14 @@ export default function EventsPageClient({ events, isMember, member, registeredE
         const memberPrice = isEB ? event.eb_price_members! : event.price_cents_members
         const nonMemberPrice = isEB ? event.eb_price_nonmembers! : event.price_cents_nonmembers
         const alreadyRegistered = ticketed && registeredEventIds.includes(event.id)
+        const gracePeriodMs = 24 * 60 * 60 * 1000
+        const pastGracePeriod =
+          nowTs.getTime() - new Date(event.event_date).getTime() > gracePeriodMs
+        const effectivelyInactive = !event.is_active || pastGracePeriod
         const registrationClosed =
-          event.registration_closes_at != null &&
-          new Date() > new Date(event.registration_closes_at)
+          effectivelyInactive ||
+          (event.registration_closes_at != null &&
+           new Date() > new Date(event.registration_closes_at))
 
         return (
           <div
