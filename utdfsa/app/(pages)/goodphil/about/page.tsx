@@ -21,7 +21,37 @@ export default function GoodphilAboutPage() {
     <main className="bg-section-bg text-white overflow-x-hidden">
 
       {/* ── SECTION 1 — HERO ──────────────────────────────────────── */}
-      <section className="relative w-full overflow-hidden bg-[#1f1f1f] h-[1040px]">
+
+      {/* Mobile hero — simplified single-image layout for small screens */}
+      <div className="block md:hidden">
+        <div className="relative w-full h-[50vh] overflow-hidden bg-[#1f1f1f]">
+          <Image
+            src="/hero-2-gp.jpg"
+            alt="Goodphil"
+            fill
+            className="object-cover object-center"
+            priority
+            quality={85}
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-black/30" />
+          <h1 className="absolute bottom-4 left-4 font-display font-black text-5xl text-white leading-none z-10">
+            GOODPHIL
+          </h1>
+        </div>
+        <div className="bg-brand-bg h-[56px] flex items-center overflow-hidden">
+          <div className="flex gap-8 whitespace-nowrap w-max animate-marquee">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <span key={i} className="font-display font-bold text-[18px] text-white shrink-0">
+                THE INTERCOLLEGIATE COMPETITION OF THE YEAR.
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop hero — full-height absolute layout, hidden on mobile */}
+      <section className="hidden md:block relative w-full overflow-hidden bg-[#1f1f1f] h-[1040px]">
 
         {/* /gp-back.png watermark — top-left anchor, 50% width, height auto, z-0 */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -224,18 +254,18 @@ export default function GoodphilAboutPage() {
               <Link
                 key={name}
                 href={href}
-                className="relative h-56 rounded-xl overflow-hidden block hover:brightness-110 hover:scale-[1.02] transition-all duration-200"
+                className="relative h-32 sm:h-48 lg:h-56 rounded-xl overflow-hidden block hover:brightness-110 hover:scale-[1.02] transition-all duration-200"
               >
                 <Image
                   src={photo}
                   alt={name}
                   fill
                   className="object-cover object-center"
-                  sizes="(max-width: 768px) 100vw, 50vw"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1024px) 50vw, 700px"
                   quality={85}
                 />
                 <div className="absolute inset-0 bg-black/40" />
-                <span className="absolute inset-0 flex items-center justify-center font-display font-black text-[clamp(28px,4vw,64px)] text-white text-center leading-none">
+                <span className="absolute inset-0 flex items-center justify-center font-display font-black text-[clamp(20px,4vw,64px)] text-white text-center leading-none">
                   {name}
                 </span>
               </Link>
