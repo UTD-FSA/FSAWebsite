@@ -3,8 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import QRCode from 'qrcode'
 import type { Event } from '@/types/database'
+import Image from 'next/image'
 import DeleteEventModal from './DeleteEventModal'
-import CoverPhotoCropper from '@/components/CoverPhotoCropper'
 
 // ============================================================
 // LOGIC — do not modify this section
@@ -543,99 +543,89 @@ function AttendanceQR({ event, onUpdate }: { event: Event; onUpdate: (e: Event) 
 
 function CoverPhotoUpload({ event, onUpdate }: { event: Event; onUpdate: (e: Event) => void }) {
   const [uploading, setUploading] = useState(false)
-  // preview tracks what to show — starts as the saved URL (if any), overwritten on new upload
   const [preview, setPreview] = useState<string | null>(event.cover_photo_url ?? null)
-  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // keep preview in sync if the parent event prop changes (e.g. after a save)
   useEffect(() => { setPreview(event.cover_photo_url ?? null) }, [event.cover_photo_url])
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    setPendingFile(file)
     if (fileInputRef.current) fileInputRef.current.value = ''
-  }
+    setUploadError(null)
 
-  async function handleCropConfirm(blob: Blob) {
-    const file = new File([blob], 'cover.jpg', { type: 'image/jpeg' })
-    setPendingFile(null)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    const maxSizeMb = 5
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError('Please upload a JPEG, PNG, or WEBP image.')
+      return
+    }
+    if (file.size > maxSizeMb * 1024 * 1024) {
+      setUploadError('Image must be under 5MB.')
+      return
+    }
 
-    // show a data: URI preview immediately while the upload is in flight
-    // (FileReader not createObjectURL — CSP allows data: but blocks blob:)
-    const reader = new FileReader()
-    reader.onload = ev => setPreview(ev.target?.result as string)
-    reader.readAsDataURL(file)
-
-    setUploading(true)
     const body = new FormData()
     body.append('file', file)
-
+    setUploading(true)
     // api: calls POST /api/officer/events/[id]/cover — uploads and stores the event cover photo — do not change this endpoint or method
     const res = await fetch(`/api/officer/events/${event.id}/cover`, { method: 'POST', body })
+    const data = await res.json().catch(() => ({}))
+    setUploading(false)
 
     if (res.ok) {
-      const data = await res.json()
+      setPreview(data.url)
       onUpdate({ ...event, cover_photo_url: data.url })
     } else {
-      setPreview(event.cover_photo_url ?? null)
-      const data = await res.json().catch(() => ({}))
-      alert(data.error ?? 'Upload failed.')
+      setUploadError(data.error ?? 'Upload failed.')
     }
-    setUploading(false)
-  }
-
-  function handleCropCancel() {
-    setPendingFile(null)
-    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   return (
-    <>
-      <CoverPhotoCropper
-        file={pendingFile}
-        onConfirm={handleCropConfirm}
-        onCancel={handleCropCancel}
+    <div className="border-t mt-5 pt-5">
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">
+        Cover Photo
+      </p>
+
+      {preview ? (
+        <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden mb-2">
+          <Image src={preview} alt="Event cover" fill className="object-cover object-top" sizes="320px" />
+          {uploading && (
+            <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+              <span className="text-sm text-gray-700 font-medium">Uploading…</span>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="w-full aspect-[4/5] bg-gray-100 rounded-xl flex items-center justify-center mb-2">
+          <span className="text-sm text-gray-400">No cover photo</span>
+        </div>
+      )}
+
+      <p className="text-xs text-gray-400 mb-2">Cover photo · 4:5 ratio (as shown on event cards)</p>
+
+      {uploadError && (
+        <p className="text-xs text-red-600 mb-2">{uploadError}</p>
+      )}
+
+      <button
+        type="button"
+        disabled={uploading}
+        onClick={() => fileInputRef.current?.click()}
+        className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+      >
+        {uploading ? 'Uploading…' : preview ? 'Change Cover' : 'Upload Cover'}
+      </button>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        onChange={handleFileChange}
+        className="hidden"
       />
-      <div className="border-t mt-5 pt-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">
-          Cover Photo
-        </p>
-
-        {preview ? (
-          <div className="relative mb-3 rounded-lg overflow-hidden">
-            <img src={preview} alt="Event cover" className="w-full h-40 object-cover" />
-            {uploading && (
-              <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-                <span className="text-sm text-gray-700 font-medium">Uploading…</span>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center mb-3">
-            <span className="text-sm text-gray-400">No cover photo</span>
-          </div>
-        )}
-
-        <button
-          type="button"
-          disabled={uploading}
-          onClick={() => fileInputRef.current?.click()}
-          className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-60"
-        >
-          {uploading ? 'Uploading…' : preview ? 'Change Cover' : 'Upload Cover'}
-        </button>
-        {/* hidden file input — triggered by the button above */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          className="hidden"
-        />
-      </div>
-    </>
+    </div>
   )
 }
 
@@ -643,62 +633,63 @@ function CoverPhotoUpload({ event, onUpdate }: { event: Event; onUpdate: (e: Eve
 
 function PendingCoverPhotoUpload({ onChange }: { onChange: (file: File | null) => void }) {
   const [preview, setPreview] = useState<string | null>(null)
-  const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    setPendingFile(file)
     if (fileInputRef.current) fileInputRef.current.value = ''
-  }
+    setUploadError(null)
 
-  function handleCropConfirm(blob: Blob) {
-    const file = new File([blob], 'cover.jpg', { type: 'image/jpeg' })
-    setPendingFile(null)
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    const maxSizeMb = 5
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError('Please upload a JPEG, PNG, or WEBP image.')
+      return
+    }
+    if (file.size > maxSizeMb * 1024 * 1024) {
+      setUploadError('Image must be under 5MB.')
+      return
+    }
+
     const reader = new FileReader()
     reader.onload = ev => setPreview(ev.target?.result as string)
     reader.readAsDataURL(file)
     onChange(file)
   }
 
-  function handleCropCancel() {
-    setPendingFile(null)
-    if (fileInputRef.current) fileInputRef.current.value = ''
-  }
-
   return (
-    <>
-      <CoverPhotoCropper
-        file={pendingFile}
-        onConfirm={handleCropConfirm}
-        onCancel={handleCropCancel}
-      />
-      <div className="border-t mt-5 pt-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">
-          Cover Photo
-        </p>
+    <div className="border-t mt-5 pt-5">
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">
+        Cover Photo
+      </p>
 
-        {preview ? (
-          <div className="mb-3 rounded-lg overflow-hidden">
-            <img src={preview} alt="Event cover" className="w-full h-40 object-cover" />
-          </div>
-        ) : (
-          <div className="w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center mb-3">
-            <span className="text-sm text-gray-400">No cover photo</span>
-          </div>
-        )}
+      {preview ? (
+        <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden mb-2">
+          <Image src={preview} alt="Event cover" fill className="object-cover object-top" sizes="320px" />
+        </div>
+      ) : (
+        <div className="w-full aspect-[4/5] bg-gray-100 rounded-xl flex items-center justify-center mb-2">
+          <span className="text-sm text-gray-400">No cover photo</span>
+        </div>
+      )}
 
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
-        >
-          {preview ? 'Change Cover' : 'Upload Cover'}
-        </button>
-        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-      </div>
-    </>
+      <p className="text-xs text-gray-400 mb-2">Cover photo · 4:5 ratio (as shown on event cards)</p>
+
+      {uploadError && (
+        <p className="text-xs text-red-600 mb-2">{uploadError}</p>
+      )}
+
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+      >
+        {preview ? 'Change Cover' : 'Upload Cover'}
+      </button>
+      <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFileChange} className="hidden" />
+    </div>
   )
 }
 
