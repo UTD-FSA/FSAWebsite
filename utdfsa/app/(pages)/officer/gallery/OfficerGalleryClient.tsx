@@ -35,6 +35,11 @@ const EMPTY_FORM = {
 // change classnames, layout, colors, and typography freely
 // do not remove or rename the variables being rendered
 // ============================================================
+
+const inputCls = 'w-full px-3.5 py-3 rounded-xl bg-[#0d0d0d] border border-white/10 text-white text-sm placeholder:text-[#5a5a5a] focus:outline-none focus:border-[#9747FF] focus:shadow-[0_0_0_3px_rgba(151,71,255,0.18)] transition-[border-color,box-shadow] font-[inherit]'
+const selectCls = `${inputCls} officer-select appearance-none cursor-pointer pr-10`
+const labelCls = 'block text-[11px] font-bold tracking-[0.07em] uppercase text-[#7e7e7e] mb-2'
+
 export default function OfficerGalleryClient({ galleries }: Props) {
   const router = useRouter()
   const [modalOpen, setModalOpen] = useState(false)
@@ -84,7 +89,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
     reader.readAsDataURL(file)
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault()
     if (!coverFile) {
       setError('Please select a cover photo.')
@@ -145,47 +150,64 @@ export default function OfficerGalleryClient({ galleries }: Props) {
   }
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-10">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gallery Management</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Create and delete photo archives.</p>
+    <main className="min-h-screen bg-[#070707] px-6 md:px-10 py-10">
+      <div className="max-w-5xl mx-auto">
+        {/* page header */}
+        <div className="flex items-start justify-between gap-6 mb-8">
+          <div>
+            <h1 className="font-display font-black text-[32px] text-white tracking-tight leading-[1.02] mb-2">
+              Gallery Management
+            </h1>
+            <p className="text-[14.5px] text-[#8c8c8c] font-medium">Create and delete photo archives.</p>
+          </div>
+          <button
+            onClick={() => setModalOpen(true)}
+            className="flex-shrink-0 flex items-center gap-2 px-5 py-3 border-none rounded-[13px] bg-[#9747FF] hover:bg-[#a85eff] text-white text-sm font-bold cursor-pointer transition-colors hover:shadow-[0_14px_34px_-12px_rgba(151,71,255,0.75)]"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            New Archive
+          </button>
         </div>
-        <button
-          onClick={() => setModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition-colors"
-        >
-          + New Archive
-        </button>
-      </div>
 
-      {/* only renders when no galleries exist yet — do not remove this condition */}
-      {galleries.length === 0 ? (
-        <p className="text-gray-500 text-sm py-16 text-center">No archives yet. Create one above.</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {galleries.map((gallery) => (
-            <div key={gallery.id} className="rounded-xl border bg-white shadow-sm overflow-hidden">
-              <div className="h-40 bg-gray-100 overflow-hidden">
-                <img
-                  src={gallery.cover_photo_url}
-                  alt={gallery.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-4">
-                <h2 className="font-semibold text-gray-900 truncate">{gallery.title}</h2>
-                {/* only renders when at least one of semester/year is set — do not remove this condition */}
-                {(gallery.semester || gallery.year) && (
-                  <p className="text-xs text-gray-500 mt-0.5">
-                    {[gallery.semester, gallery.year].filter(Boolean).join(' ')}
-                  </p>
-                )}
-                {/* only renders when the gallery has a description — do not remove this condition */}
-                {gallery.description && (
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{gallery.description}</p>
-                )}
-                <div className="flex items-center gap-3 mt-3">
+        {/* gallery list */}
+        {/* only renders when no galleries exist yet — do not remove this condition */}
+        {galleries.length === 0 ? (
+          <p className="text-[#5e5e5e] text-sm text-center py-16">No archives yet. Create one above.</p>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {galleries.map((gallery) => (
+              <div
+                key={gallery.id}
+                className="flex items-center gap-5 bg-[#121212] border border-white/8 rounded-2xl p-4 hover:border-white/16 transition-colors group"
+              >
+                {/* cover thumbnail */}
+                <div className="w-[72px] h-[72px] rounded-[13px] overflow-hidden flex-shrink-0 bg-[#0d0d0d] border border-white/8">
+                  <img
+                    src={gallery.cover_photo_url}
+                    alt={gallery.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                {/* info */}
+                <div className="flex-1 min-w-0">
+                  <h2 className="font-bold text-[15.5px] text-white truncate leading-snug">{gallery.title}</h2>
+                  {/* only renders when at least one of semester/year is set — do not remove this condition */}
+                  {(gallery.semester || gallery.year) && (
+                    <p className="text-[12.5px] text-[#8c8c8c] font-medium mt-0.5">
+                      {[gallery.semester, gallery.year].filter(Boolean).join(' ')}
+                    </p>
+                  )}
+                  {/* only renders when the gallery has a description — do not remove this condition */}
+                  {gallery.description && (
+                    <p className="text-[12.5px] text-[#6e6e6e] font-medium mt-1 line-clamp-1">{gallery.description}</p>
+                  )}
+                </div>
+
+                {/* actions */}
+                <div className="flex items-center gap-3 flex-shrink-0">
                   {/* only renders when the gallery has a linked album URL — do not remove this condition */}
                   {gallery.google_photos_url && (
                     // route: gallery.google_photos_url — opens the Google Photos album in a new tab — do not change this path
@@ -193,71 +215,80 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                       href={gallery.google_photos_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:underline"
+                      className="flex items-center gap-1 text-[13px] text-[#5fa8e8] font-semibold hover:text-[#8ec5f5] transition-colors"
                     >
-                      View Album ↗
+                      View Album
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
+                      </svg>
                     </a>
                   )}
                   <button
                     onClick={() => handleDelete(gallery.id, gallery.title)}
                     disabled={deletingId === gallery.id}
-                    className="ml-auto text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
+                    className="text-[13px] font-semibold text-[#6e6e6e] hover:text-[#ef6f6f] disabled:opacity-50 transition-colors"
                   >
                     {/* only shows "Deleting…" while this specific gallery's delete call is in flight — do not remove this condition */}
                     {deletingId === gallery.id ? 'Deleting…' : 'Delete'}
                   </button>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* only renders when the officer has opened the New Archive modal — do not remove this condition */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-gray-900">New Archive</h2>
-              <button
-                type="button"
-                onClick={closeModal}
-                className="text-gray-400 hover:text-gray-600 text-xl leading-none"
-              >
-                ✕
-              </button>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 pt-[100px]">
+          <div
+            className="bg-[#141414] border border-white/10 rounded-[20px] shadow-[0_32px_72px_-16px_rgba(0,0,0,0.8)] w-full max-w-md max-h-[90vh] overflow-y-auto"
+            style={{ animation: 'modalIn 0.18s ease-out' }}
+          >
+            <div className="px-7 pt-7 pb-0">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-[7px] h-[7px] rounded-full bg-[#9747FF]" />
+                  <h2 className="font-display font-bold text-[17px] text-white tracking-[-0.01em]">New Archive</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-[#8c8c8c] hover:text-white transition-colors"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+
+              {/* only renders when the API or file validation returned an error — do not remove this condition */}
+              {error && (
+                <p className="text-[13px] text-[#ef6f6f] bg-[rgba(239,111,111,0.08)] border border-[rgba(239,111,111,0.25)] rounded-xl px-4 py-3 mb-5">
+                  {error}
+                </p>
+              )}
             </div>
 
-            {/* only renders when the API or file validation returned an error — do not remove this condition */}
-            {error && (
-              <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-4">
-                {error}
-              </p>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="px-7 pb-7 flex flex-col gap-5">
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-1">
-                  Archive Name <span className="text-red-500">*</span>
-                </label>
+                <label className={labelCls}>Archive Name <span className="text-[#ef6f6f]">*</span></label>
                 <input
                   type="text"
                   required
                   value={form.title}
                   onChange={set('title')}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={inputCls}
                   placeholder="e.g. Spring Formal 2025"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-1">
-                  Cover Photo <span className="text-red-500">*</span>
-                </label>
+                <label className={labelCls}>Cover Photo <span className="text-[#ef6f6f]">*</span></label>
                 {/* clicking anywhere in this div opens the hidden file input — do not remove the onClick */}
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full h-40 border-2 border-dashed border-gray-300 rounded-lg overflow-hidden cursor-pointer hover:border-blue-400 transition-colors"
+                  className="w-full h-44 border-2 border-dashed border-white/18 rounded-xl overflow-hidden cursor-pointer hover:border-[rgba(151,71,255,0.55)] hover:bg-[#101010] transition-colors bg-[#0d0d0d]"
                 >
                   {/* only renders the preview once a file has been selected — do not remove this condition */}
                   {coverPreview ? (
@@ -267,9 +298,17 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="h-full flex flex-col items-center justify-center text-gray-400 text-sm gap-1">
-                      <span className="text-2xl">+</span>
-                      <span>Click to select a photo</span>
+                    <div className="h-full flex flex-col items-center justify-center gap-3 text-center">
+                      <div className="w-10 h-10 rounded-xl bg-white/4 flex items-center justify-center">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" strokeWidth={1.7}>
+                          <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.7"/>
+                          <path d="M21 15l-5-5L4 21"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-[#d4d4d4]">Click to select a photo</div>
+                        <div className="text-xs text-[#6e6e6e] font-medium mt-0.5">JPEG, PNG, or WEBP</div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -290,7 +329,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                       setCoverPreview(null)
                       if (fileInputRef.current) fileInputRef.current.value = ''
                     }}
-                    className="mt-1 text-xs text-gray-400 hover:text-red-500"
+                    className="mt-2 text-[12px] text-[#6e6e6e] hover:text-[#ef6f6f] font-medium transition-colors"
                   >
                     Remove photo
                   </button>
@@ -298,26 +337,24 @@ export default function OfficerGalleryClient({ galleries }: Props) {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-1">
-                  Album Link <span className="text-red-500">*</span>
-                </label>
+                <label className={labelCls}>Album Link <span className="text-[#ef6f6f]">*</span></label>
                 <input
                   type="url"
                   required
                   value={form.google_photos_url}
                   onChange={set('google_photos_url')}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={inputCls}
                   placeholder="https://photos.google.com/..."
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1">Semester</label>
+                  <label className={labelCls}>Semester</label>
                   <select
                     value={form.semester}
                     onChange={set('semester')}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={selectCls}
                   >
                     <option value="">—</option>
                     <option value="Spring">Spring</option>
@@ -326,26 +363,26 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-1">Year</label>
+                  <label className={labelCls}>Year</label>
                   <input
                     type="number"
                     min="2000"
                     max="2100"
                     value={form.year}
                     onChange={set('year')}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={inputCls}
                     placeholder="2025"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-1">Description</label>
+                <label className={labelCls}>Description</label>
                 <textarea
                   value={form.description}
                   onChange={set('description')}
                   rows={2}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`${inputCls} resize-none`}
                   placeholder="Optional description…"
                 />
               </div>
@@ -354,14 +391,14 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="flex-1 border border-gray-300 text-gray-700 rounded-lg px-4 py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors"
+                  className="flex-1 border border-white/16 bg-transparent text-[#cfcfcf] rounded-xl px-4 py-2.5 text-sm font-semibold hover:border-white/32 hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors"
+                  className="flex-1 bg-[#9747FF] hover:bg-[#a85eff] disabled:opacity-50 text-white rounded-xl px-4 py-2.5 text-sm font-bold border-none cursor-pointer transition-colors"
                 >
                   {/* only shows "Saving…" while the upload+insert API call is in flight — do not remove this condition */}
                   {submitting ? 'Saving…' : 'Create Archive'}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
+
 import QRCode from 'qrcode'
 import type { Event } from '@/types/database'
 import Image from 'next/image'
@@ -164,8 +165,54 @@ function formToPayload(f: EventFormData) {
 
 // ── shared input styles ───────────────────────────────────────────────────────
 
-const inputCls = 'w-full border rounded-lg px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500'
-const labelCls = 'text-xs font-medium text-gray-600 block mb-1'
+const inputCls = 'w-full px-3.5 py-3 rounded-xl bg-[#0d0d0d] border border-white/10 text-white text-sm placeholder:text-[#5a5a5a] focus:outline-none focus:border-[#9747FF] focus:shadow-[0_0_0_3px_rgba(151,71,255,0.18)] transition-[border-color,box-shadow] font-[inherit]'
+const selectCls = `${inputCls} officer-select appearance-none cursor-pointer pr-10`
+const labelCls = 'block text-[11px] font-bold tracking-[0.07em] uppercase text-[#7e7e7e] mb-2'
+
+function typeBadgeCls(type: string) {
+  switch (type.toLowerCase()) {
+    case 'party':           return 'bg-[rgba(255,85,36,0.13)] text-[#ff8a63] border border-[rgba(255,85,36,0.3)]'
+    case 'general meeting': return 'bg-[rgba(95,168,232,0.13)] text-[#5fa8e8] border border-[rgba(95,168,232,0.3)]'
+    case 'risk management': return 'bg-[rgba(255,170,50,0.13)] text-[#ffb347] border border-[rgba(255,170,50,0.3)]'
+    case 'gp event':        return 'bg-[rgba(95,207,143,0.13)] text-[#5fcf8f] border border-[rgba(95,207,143,0.3)]'
+    case 'regular event':   return 'bg-white/5 text-[#9a9a9a] border border-white/12'
+    default:                return 'bg-[rgba(151,71,255,0.13)] text-[#c4a3ff] border border-[rgba(151,71,255,0.3)]'
+  }
+}
+
+// ── pill toggle ───────────────────────────────────────────────────────────────
+
+function PillToggle({
+  checked,
+  onChange,
+  label,
+  sublabel,
+}: {
+  checked: boolean
+  onChange: (v: boolean) => void
+  label: string
+  sublabel?: string
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <div>
+        <div className="text-sm font-semibold text-[#e8e8e8]">{label}</div>
+        {sublabel && <div className="text-[12.5px] text-[#7e7e7e] font-medium mt-0.5">{sublabel}</div>}
+      </div>
+      <label className="relative cursor-pointer select-none flex-shrink-0">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={e => onChange(e.target.checked)}
+          className="sr-only"
+        />
+        <div className={`w-[46px] h-[27px] rounded-full relative transition-colors duration-150 ${checked ? 'bg-[#9747FF]' : 'bg-white/12'}`}>
+          <span className={`absolute top-[3px] w-[21px] h-[21px] rounded-full bg-white shadow-[0_2px_6px_rgba(0,0,0,0.4)] transition-all duration-150 ${checked ? 'left-[22px]' : 'left-[3px]'}`} />
+        </div>
+      </label>
+    </div>
+  )
+}
 
 // ── EventForm ─────────────────────────────────────────────────────────────────
 
@@ -199,7 +246,7 @@ function EventForm({
   const ebExpired =
     form.eb_enabled && form.eb_deadline && new Date(form.eb_deadline) < new Date()
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault()
     setError(null)
     setSaving(true)
@@ -213,18 +260,18 @@ function EventForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
       {/* ── General info (all types) ────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2">
-          <label className={labelCls}>Event Name *</label>
+          <label className={labelCls}>Event Name <span className="text-[#ef6f6f]">*</span></label>
           <input required value={form.name} onChange={e => set('name', e.target.value)}
             className={inputCls} placeholder="Spring Fiesta 2025" />
         </div>
 
         <div>
-          <label className={labelCls}>Event Type *</label>
+          <label className={labelCls}>Event Type <span className="text-[#ef6f6f]">*</span></label>
           <select required value={form.event_type}
             onChange={e => {
               const newType = e.target.value
@@ -234,30 +281,32 @@ function EventForm({
                 ...(newType !== 'Party' && newType !== 'Other' ? { registration_closes_at: '' } : {}),
               }))
             }}
-            className={inputCls}>
+            className={selectCls}>
             {EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
 
         <div>
-          <label className={labelCls}>Date & Time *</label>
+          <label className={labelCls}>Date &amp; Time <span className="text-[#ef6f6f]">*</span></label>
           <input required type="datetime-local" value={form.event_date}
-            onChange={e => set('event_date', e.target.value)} className={inputCls} />
+            onChange={e => set('event_date', e.target.value)}
+            className={inputCls} style={{ colorScheme: 'dark' }} />
         </div>
 
         {(form.event_type === 'Party' || form.event_type === 'Other') && (
-          <div>
+          <div className="col-span-2">
             <label className={labelCls}>Registration Closes At</label>
             <input type="datetime-local" value={form.registration_closes_at}
-              onChange={e => set('registration_closes_at', e.target.value)} className={inputCls} />
-            <p className="text-xs text-gray-400 mt-1">
+              onChange={e => set('registration_closes_at', e.target.value)}
+              className={inputCls} style={{ colorScheme: 'dark' }} />
+            <p className="text-[12px] text-[#6e6e6e] font-medium mt-2 leading-relaxed">
               Optional. After this date and time, the registration button will be hidden for members. Leave blank to allow registration until the event date.
             </p>
           </div>
         )}
 
         <div className="col-span-2">
-          <label className={labelCls}>Location *</label>
+          <label className={labelCls}>Location <span className="text-[#ef6f6f]">*</span></label>
           <input required value={form.location} onChange={e => set('location', e.target.value)}
             className={inputCls} placeholder="Student Union, Room 2.410" />
         </div>
@@ -273,21 +322,23 @@ function EventForm({
       {/* ── Ticketed events: pricing + early bird ───────────────────────────── */}
       {ticketed && (
         <>
-          <div className="border-t pt-4">
-            <p className="text-sm font-semibold text-gray-800 mb-1">Ticket Pricing</p>
-            <p className="text-xs text-gray-500 mb-3">
-              Members are limited to one ticket. Non-members can buy multiple.
-            </p>
+          <div className="border-t border-white/7 pt-5">
+            <div className="flex flex-col gap-1 mb-4">
+              <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#9a9a9a]">Ticketing</p>
+              <p className="text-[12.5px] text-[#6e6e6e] font-medium">
+                Members are limited to one ticket. Non-members can buy multiple.
+              </p>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={labelCls}>Member Price ($ / ticket) *</label>
+                <label className={labelCls}>Member Price ($ / ticket) <span className="text-[#ef6f6f]">*</span></label>
                 <input required type="number" min="0" step="0.01"
                   value={form.price_dollars_members}
                   onChange={e => set('price_dollars_members', e.target.value)}
                   className={inputCls} placeholder="10.00" />
               </div>
               <div>
-                <label className={labelCls}>Non-Member Price ($ / ticket) *</label>
+                <label className={labelCls}>Non-Member Price ($ / ticket) <span className="text-[#ef6f6f]">*</span></label>
                 <input required type="number" min="0" step="0.01"
                   value={form.price_dollars_nonmembers}
                   onChange={e => set('price_dollars_nonmembers', e.target.value)}
@@ -296,19 +347,22 @@ function EventForm({
             </div>
           </div>
 
-          <div className="border-t pt-4">
-            <label className="flex items-center gap-2 cursor-pointer select-none">
+          <div className="border-t border-white/7 pt-5">
+            <label className="flex items-center gap-2.5 cursor-pointer select-none mb-1">
               <input type="checkbox" checked={form.eb_enabled}
                 onChange={e => set('eb_enabled', e.target.checked)}
-                className="rounded" />
-              <span className="text-sm font-semibold text-gray-800">Early Bird Pricing</span>
+                className="sr-only" />
+              <div className={`w-[42px] h-[25px] rounded-full relative transition-colors duration-150 flex-shrink-0 ${form.eb_enabled ? 'bg-[#9747FF]' : 'bg-white/12'}`}>
+                <span className={`absolute top-[3px] w-[19px] h-[19px] rounded-full bg-white shadow-[0_2px_5px_rgba(0,0,0,0.4)] transition-all duration-150 ${form.eb_enabled ? 'left-[20px]' : 'left-[3px]'}`} />
+              </div>
+              <span className="text-sm font-semibold text-[#e8e8e8]">Early Bird Pricing</span>
             </label>
-            <p className="text-xs text-gray-500 mt-1 ml-6">
+            <p className="text-[12.5px] text-[#6e6e6e] font-medium ml-[52px]">
               Early bird prices are shown until the deadline, then regular prices kick in automatically — no action needed.
             </p>
 
             {form.eb_enabled && (
-              <div className="grid grid-cols-2 gap-4 mt-3">
+              <div className="grid grid-cols-2 gap-4 mt-4">
                 <div>
                   <label className={labelCls}>EB Member Price ($ / ticket)</label>
                   <input type="number" min="0" step="0.01"
@@ -327,18 +381,18 @@ function EventForm({
                   <label className={labelCls}>Early Bird Deadline</label>
                   <input type="datetime-local" value={form.eb_deadline}
                     onChange={e => set('eb_deadline', e.target.value)}
-                    className={inputCls} />
+                    className={inputCls} style={{ colorScheme: 'dark' }} />
                 </div>
 
                 {/* status indicator */}
                 {form.eb_deadline && (
                   <div className="col-span-2">
                     {ebExpired ? (
-                      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                      <p className="text-[12.5px] text-[#ffb347] bg-[rgba(255,170,50,0.08)] border border-[rgba(255,170,50,0.25)] rounded-xl px-4 py-2.5">
                         ⚠️ Early bird ended {fmtDate(form.eb_deadline)} — attendees now see regular prices.
                       </p>
                     ) : (
-                      <p className="text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                      <p className="text-[12.5px] text-[#5fcf8f] bg-[rgba(95,207,143,0.08)] border border-[rgba(95,207,143,0.22)] rounded-xl px-4 py-2.5">
                         ✓ Early bird active until {fmtDate(form.eb_deadline)}.
                       </p>
                     )}
@@ -352,11 +406,11 @@ function EventForm({
 
       {/* ── Attendance (QR tracking + optional points) ─────────────────────── */}
       {hasAttendanceQR(form.event_type) && (
-        <div className="border-t pt-4">
-          <p className="text-sm font-semibold text-gray-800 mb-1">Attendance</p>
+        <div className="border-t border-white/7 pt-5">
+          <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#9a9a9a] mb-1">Attendance</p>
           {hasPoints(form.event_type) ? (
             <>
-              <p className="text-xs text-gray-500 mb-3">
+              <p className="text-[12.5px] text-[#6e6e6e] font-medium mb-4">
                 {isHybrid(form.event_type)
                   ? 'Members earn goodphil points by scanning the attendance QR in addition to buying a ticket.'
                   : 'Members scan the attendance QR code to earn goodphil points. Open/close the QR in the edit panel after saving.'}
@@ -369,7 +423,7 @@ function EventForm({
               </div>
             </>
           ) : (
-            <p className="text-xs text-gray-500">
+            <p className="text-[12.5px] text-[#6e6e6e] font-medium">
               Attendance is tracked via QR code. Open/close the QR in the edit panel after saving.
               No goodphil points are awarded for this event type.
             </p>
@@ -379,39 +433,42 @@ function EventForm({
 
       {coverPhotoSlot}
 
-      <div className="flex flex-col gap-3 border-t pt-4">
-        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
-          <input type="checkbox" checked={form.is_visible}
-            onChange={e => set('is_visible', e.target.checked)} className="rounded" />
-          Visible to Members
-        </label>
-        <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
-          <input type="checkbox" checked={form.is_active}
-            onChange={e => set('is_active', e.target.checked)} className="rounded" />
-          Registration &amp; Check-in Open
-        </label>
-        <p className="text-xs text-gray-400 ml-6">
+      {/* ── Visibility toggles ──────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-4 pt-5 border-t border-white/7">
+        <PillToggle
+          checked={form.is_visible}
+          onChange={v => set('is_visible', v)}
+          label="Visible to Members"
+          sublabel="Show this event on the public Events page"
+        />
+        <PillToggle
+          checked={form.is_active}
+          onChange={v => set('is_active', v)}
+          label="Registration &amp; Check-in Open"
+          sublabel="Allow members to register and scan in"
+        />
+        <p className="text-[12px] text-[#6e6e6e] font-medium">
           Turn off after the event ends to close registration and disable QR attendance.
         </p>
       </div>
 
       {error && (
-        <p className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+        <p className="text-[13px] text-[#ef6f6f] bg-[rgba(239,111,111,0.08)] border border-[rgba(239,111,111,0.25)] rounded-xl px-4 py-3">
           {error}
         </p>
       )}
 
       {beforeButtons}
 
-      <div className="flex items-center justify-between border-t pt-4">
+      <div className="flex items-center justify-between pt-5 border-t border-white/7">
         <div>{leftButtons}</div>
-        <div className="flex gap-3">
+        <div className="flex gap-2.5">
           <button type="button" onClick={onCancel}
-            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900">
+            className="px-5 py-2.5 rounded-xl bg-transparent border border-white/16 text-[#cfcfcf] text-sm font-semibold hover:border-white/32 hover:text-white transition-colors">
             Cancel
           </button>
           <button type="submit" disabled={saving}
-            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-semibold rounded-lg text-sm">
+            className="px-6 py-2.5 rounded-xl border-none bg-[#9747FF] hover:bg-[#a85eff] disabled:opacity-50 text-white font-bold text-sm transition-colors">
             {saving ? 'Saving…' : submitLabel}
           </button>
         </div>
@@ -471,71 +528,73 @@ function AttendanceQR({ event, onUpdate }: { event: Event; onUpdate: (e: Event) 
   }
 
   return (
-    <div className="border-t mt-5 pt-5">
-      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">
-        Attendance QR Code
-      </p>
-      <p className="text-xs text-gray-500 mb-4">
-        {hasPoints(event.event_type)
-          ? 'Members scan this at the event to log attendance and earn goodphil points. Open it when the event starts and close it when done.'
-          : 'Members scan this at the event to log attendance. No goodphil points are awarded for this event type.'}
-      </p>
-
-      <div className="flex gap-5 items-start flex-wrap">
-        {qrDataUrl && isOpen && (
-          <img src={qrDataUrl} alt="Attendance QR" width={120} height={120}
-            className="rounded-lg border shadow-sm shrink-0" />
-        )}
-
-        <div className="flex flex-col gap-2 flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-              isOpen ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-            }`}>
-              {isOpen ? '● Open' : '○ Closed'}
-            </span>
-            {event.attend_qr_expires_at && new Date(event.attend_qr_expires_at) > new Date() && (
-              <span className="text-xs text-gray-500">
-                auto-closes {fmtDateTime(event.attend_qr_expires_at)}
-              </span>
-            )}
+    <div className="rounded-[14px] bg-[rgba(151,71,255,0.05)] border border-[rgba(151,71,255,0.2)] p-5 mt-5">
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-3">
+          <div className="w-[42px] h-[42px] rounded-[11px] bg-[rgba(151,71,255,0.12)] flex items-center justify-center flex-shrink-0">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#c4a3ff" strokeWidth={1.7}>
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+              <path d="M14 14h3v3M21 14v.01M17 21h.01M21 21v-3.5M21 17.5h-3.5"/>
+            </svg>
           </div>
-
-          <div className="flex gap-2 flex-wrap">
-            <button disabled={saving}
-              onClick={() => patch({ attend_qr_open: !isOpen })}
-              className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors disabled:opacity-60 border ${
-                isOpen
-                  ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
-                  : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
-              }`}>
-              {saving ? '…' : isOpen ? 'Close QR' : 'Open QR'}
-            </button>
-
-            {isOpen && (
-              <button disabled={saving}
-                onClick={() => {
-                  const mins = prompt('Auto-close after how many minutes? (leave blank to remove expiry)')
-                  if (mins === null) return
-                  const expiry = mins.trim()
-                    ? new Date(Date.now() + parseInt(mins) * 60_000).toISOString()
-                    : null
-                  patch({ attend_qr_expires_at: expiry })
-                }}
-                className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50">
-                Set Auto-Close
-              </button>
-            )}
-
-            {attendUrl && (
-              <a href={attendUrl} target="_blank" rel="noreferrer"
-                className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50">
-                Preview ↗
-              </a>
-            )}
+          <div>
+            <div className="text-[14.5px] font-bold text-white">Attendance QR</div>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className={`w-[7px] h-[7px] rounded-full ${isOpen ? 'bg-[#5fcf8f]' : 'bg-[#6e6e6e]'}`} />
+              <span className={`text-[12.5px] font-semibold ${isOpen ? 'text-[#5fcf8f]' : 'text-[#8c8c8c]'}`}>
+                {isOpen ? 'QR Open' : 'QR Closed'}
+              </span>
+            </div>
           </div>
         </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <button disabled={saving}
+            onClick={() => patch({ attend_qr_open: !isOpen })}
+            className={`text-sm font-bold px-4 py-2 rounded-[10px] border-none cursor-pointer transition-colors disabled:opacity-60 ${
+              isOpen
+                ? 'bg-[rgba(239,111,111,0.16)] text-[#ef6f6f] hover:bg-[rgba(239,111,111,0.24)]'
+                : 'bg-[#9747FF] text-white hover:bg-[#a85eff]'
+            }`}>
+            {saving ? '…' : isOpen ? 'Close QR' : 'Open QR'}
+          </button>
+
+          {isOpen && (
+            <button disabled={saving}
+              onClick={() => {
+                const mins = prompt('Auto-close after how many minutes? (leave blank to remove expiry)')
+                if (mins === null) return
+                const expiry = mins.trim()
+                  ? new Date(Date.now() + parseInt(mins) * 60_000).toISOString()
+                  : null
+                patch({ attend_qr_expires_at: expiry })
+              }}
+              className="text-sm font-semibold px-4 py-2 rounded-[10px] bg-transparent border border-white/16 text-[#cfcfcf] hover:border-white/30 hover:text-white transition-colors">
+              Set Auto-Close
+            </button>
+          )}
+
+          {attendUrl && (
+            <a href={attendUrl} target="_blank" rel="noreferrer"
+              className="flex items-center gap-1 px-4 py-2 text-[#9a9a9a] text-sm font-semibold hover:text-white transition-colors">
+              Preview <span className="text-xs">↗</span>
+            </a>
+          )}
+        </div>
       </div>
+
+      {qrDataUrl && isOpen && (
+        <div className="mt-4 pt-4 border-t border-white/7">
+          <img src={qrDataUrl} alt="Attendance QR" width={120} height={120}
+            className="rounded-xl border border-white/10 shrink-0" />
+          {event.attend_qr_expires_at && new Date(event.attend_qr_expires_at) > new Date() && (
+            <p className="text-[12px] text-[#6e6e6e] font-medium mt-2">
+              Auto-closes {fmtDateTime(event.attend_qr_expires_at)}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -599,40 +658,63 @@ function CoverPhotoUpload({ event, onUpdate }: { event: Event; onUpdate: (e: Eve
   }
 
   return (
-    <div className="border-t mt-5 pt-5">
-      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">
-        Cover Photo
-      </p>
+    <div className="border-t border-white/7 pt-5">
+      <label className={labelCls}>Cover Photo</label>
 
-      {preview ? (
-        <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden mb-2">
-          <Image src={preview} alt="Event cover" fill className="object-cover object-top" sizes="320px" />
-          {uploading && (
-            <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-              <span className="text-sm text-gray-700 font-medium">Uploading…</span>
+      <div className="flex gap-4 items-start flex-wrap">
+        <div className="flex-1 min-w-[220px]">
+          {preview ? (
+            <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden mb-3">
+              <Image src={preview} alt="Event cover" fill className="object-cover object-top" sizes="320px" />
+              {uploading && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                  <span className="text-sm text-white font-medium">Uploading…</span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full aspect-[4/5] border-2 border-dashed border-white/18 rounded-xl bg-[#0d0d0d] flex flex-col items-center justify-center gap-3 text-center cursor-pointer hover:border-[rgba(151,71,255,0.55)] hover:bg-[#101010] transition-colors mb-3"
+            >
+              <div className="w-11 h-11 rounded-xl bg-white/4 flex items-center justify-center">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" strokeWidth={1.7}>
+                  <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.7"/>
+                  <path d="M21 15l-5-5L4 21"/>
+                </svg>
+              </div>
+              <div className="text-sm font-semibold text-[#d4d4d4]">Click to upload cover photo</div>
+              <div className="text-xs text-[#6e6e6e] font-medium">PNG or JPG · 4:5 portrait</div>
             </div>
           )}
+
+          {uploadError && (
+            <p className="text-xs text-[#ef6f6f] mb-2">{uploadError}</p>
+          )}
+
+          <button
+            type="button"
+            disabled={uploading}
+            onClick={() => fileInputRef.current?.click()}
+            className="text-xs font-semibold px-3.5 py-1.5 rounded-lg border border-white/16 text-[#cfcfcf] hover:border-white/30 hover:text-white disabled:opacity-50 transition-colors"
+          >
+            {uploading ? 'Uploading…' : preview ? 'Change Cover' : 'Upload Cover'}
+          </button>
         </div>
-      ) : (
-        <div className="w-full aspect-[4/5] bg-gray-100 rounded-xl flex items-center justify-center mb-2">
-          <span className="text-sm text-gray-400">No cover photo</span>
+
+        <div className="flex-shrink-0">
+          <div className="w-[100px] aspect-[4/5] rounded-xl border border-white/10 bg-[#141414] flex flex-col items-center justify-center gap-2"
+            style={{ backgroundImage: 'repeating-linear-gradient(135deg,transparent 0 11px,rgba(255,255,255,0.025) 11px 12px)' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth={1.4}>
+              <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.7"/>
+              <path d="M21 15l-5-5L4 21"/>
+            </svg>
+            <span className="font-mono text-[8px] tracking-[0.1em] text-white/30">4:5</span>
+          </div>
+          <p className="text-[10px] text-[#6e6e6e] font-medium mt-1.5 text-center max-w-[100px]">as shown on event cards</p>
         </div>
-      )}
+      </div>
 
-      <p className="text-xs text-gray-400 mb-2">Cover photo · 4:5 ratio (as shown on event cards)</p>
-
-      {uploadError && (
-        <p className="text-xs text-red-600 mb-2">{uploadError}</p>
-      )}
-
-      <button
-        type="button"
-        disabled={uploading}
-        onClick={() => fileInputRef.current?.click()}
-        className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-60"
-      >
-        {uploading ? 'Uploading…' : preview ? 'Change Cover' : 'Upload Cover'}
-      </button>
       <input
         ref={fileInputRef}
         type="file"
@@ -690,34 +772,57 @@ function PendingCoverPhotoUpload({ onChange }: { onChange: (file: File | null) =
   }
 
   return (
-    <div className="border-t mt-5 pt-5">
-      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-3">
-        Cover Photo
-      </p>
+    <div className="border-t border-white/7 pt-5">
+      <label className={labelCls}>Cover Photo</label>
 
-      {preview ? (
-        <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden mb-2">
-          <Image src={preview} alt="Event cover" fill className="object-cover object-top" sizes="320px" />
+      <div className="flex gap-4 items-start flex-wrap">
+        <div className="flex-1 min-w-[220px]">
+          {preview ? (
+            <div className="relative w-full aspect-[4/5] rounded-xl overflow-hidden mb-3">
+              <Image src={preview} alt="Event cover" fill className="object-cover object-top" sizes="320px" />
+            </div>
+          ) : (
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full aspect-[4/5] border-2 border-dashed border-white/18 rounded-xl bg-[#0d0d0d] flex flex-col items-center justify-center gap-3 text-center cursor-pointer hover:border-[rgba(151,71,255,0.55)] hover:bg-[#101010] transition-colors mb-3"
+            >
+              <div className="w-11 h-11 rounded-xl bg-white/4 flex items-center justify-center">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" strokeWidth={1.7}>
+                  <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.7"/>
+                  <path d="M21 15l-5-5L4 21"/>
+                </svg>
+              </div>
+              <div className="text-sm font-semibold text-[#d4d4d4]">Click to upload cover photo</div>
+              <div className="text-xs text-[#6e6e6e] font-medium">PNG or JPG · recommended 4:5 portrait</div>
+            </div>
+          )}
+
+          {uploadError && (
+            <p className="text-xs text-[#ef6f6f] mb-2">{uploadError}</p>
+          )}
+
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="text-xs font-semibold px-3.5 py-1.5 rounded-lg border border-white/16 text-[#cfcfcf] hover:border-white/30 hover:text-white transition-colors"
+          >
+            {preview ? 'Change Cover' : 'Upload Cover'}
+          </button>
         </div>
-      ) : (
-        <div className="w-full aspect-[4/5] bg-gray-100 rounded-xl flex items-center justify-center mb-2">
-          <span className="text-sm text-gray-400">No cover photo</span>
+
+        <div className="flex-shrink-0">
+          <div className="w-[100px] aspect-[4/5] rounded-xl border border-white/10 bg-[#141414] flex flex-col items-center justify-center gap-2"
+            style={{ backgroundImage: 'repeating-linear-gradient(135deg,transparent 0 11px,rgba(255,255,255,0.025) 11px 12px)' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth={1.4}>
+              <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.7"/>
+              <path d="M21 15l-5-5L4 21"/>
+            </svg>
+            <span className="font-mono text-[8px] tracking-[0.1em] text-white/30">4:5</span>
+          </div>
+          <p className="text-[10px] text-[#6e6e6e] font-medium mt-1.5 text-center max-w-[100px]">as shown on event cards</p>
         </div>
-      )}
+      </div>
 
-      <p className="text-xs text-gray-400 mb-2">Cover photo · 4:5 ratio (as shown on event cards)</p>
-
-      {uploadError && (
-        <p className="text-xs text-red-600 mb-2">{uploadError}</p>
-      )}
-
-      <button
-        type="button"
-        onClick={() => fileInputRef.current?.click()}
-        className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
-      >
-        {preview ? 'Change Cover' : 'Upload Cover'}
-      </button>
       <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFileChange} className="hidden" />
     </div>
   )
@@ -777,122 +882,160 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
   }, [])
 
   return (
-    <main className="max-w-4xl mx-auto px-6 py-10">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Event Management</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Parties use ticket QR scanning. General Meetings, Risk Management, and GP Events use attendance QR.
-          </p>
+    <main className="min-h-screen bg-[#070707] px-6 md:px-10 py-10">
+      <div className="max-w-4xl mx-auto">
+        {/* page header */}
+        <div className="flex items-start justify-between gap-6 mb-7">
+          <div>
+            <h1 className="font-display font-black text-[32px] text-white tracking-tight leading-[1.02] mb-2">
+              Event Management
+            </h1>
+            <p className="text-[14.5px] text-[#8c8c8c] font-medium">
+              Parties use ticket QR scanning. Meetings use attendance QR.
+            </p>
+          </div>
+          {!creating && (
+            <button
+              onClick={() => { setCreating(true); setEditingId(null) }}
+              className="flex-shrink-0 flex items-center gap-2 px-5 py-3 border-none rounded-[13px] bg-[#9747FF] hover:bg-[#a85eff] text-white text-sm font-bold cursor-pointer transition-colors hover:shadow-[0_14px_34px_-12px_rgba(151,71,255,0.75)]"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+                <path d="M12 5v14M5 12h14"/>
+              </svg>
+              New Event
+            </button>
+          )}
         </div>
-        {!creating && (
-          <button onClick={() => { setCreating(true); setEditingId(null) }}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-lg text-sm">
-            + New Event
-          </button>
+
+        {/* create form */}
+        {creating && (
+          <div className="bg-[#141414] border border-[rgba(151,71,255,0.28)] rounded-[18px] p-7 mb-6 shadow-[0_0_0_1px_rgba(151,71,255,0.08),0_24px_60px_-36px_rgba(151,71,255,0.5)]">
+            <div className="flex items-center gap-2.5 mb-6">
+              <span className="w-[7px] h-[7px] rounded-full bg-[#9747FF]" />
+              <h2 className="font-display font-bold text-[17px] text-white tracking-[-0.01em]">Create New Event</h2>
+            </div>
+            <EventForm
+              initial={emptyForm()}
+              onSubmit={handleCreate}
+              onCancel={() => { setCreating(false); setPendingCoverFile(null) }}
+              submitLabel="Create Event"
+              coverPhotoSlot={<PendingCoverPhotoUpload onChange={setPendingCoverFile} />}
+            />
+          </div>
         )}
-      </div>
 
-      {/* create form */}
-      {creating && (
-        <div className="border rounded-xl p-6 bg-white shadow-sm mb-6">
-          <h2 className="text-base font-bold text-gray-900 mb-4">Create Event</h2>
-          <EventForm
-            initial={emptyForm()}
-            onSubmit={handleCreate}
-            onCancel={() => { setCreating(false); setPendingCoverFile(null) }}
-            submitLabel="Create Event"
-            coverPhotoSlot={<PendingCoverPhotoUpload onChange={setPendingCoverFile} />}
-          />
+        {/* existing events header */}
+        <div className="flex items-center gap-3 mb-5">
+          <span className="font-display font-bold text-[12px] tracking-[0.16em] text-[#9a9a9a] uppercase">Existing Events</span>
+          <span className="h-px flex-1 bg-white/7" />
+          <span className="text-[12.5px] text-[#6e6e6e] font-medium">{events.length} event{events.length !== 1 ? 's' : ''}</span>
         </div>
-      )}
 
-      {/* event list */}
-      {events.length === 0 ? (
-        <p className="text-gray-500 text-sm">No events yet. Create your first one!</p>
-      ) : (
-        <div className="flex flex-col gap-4">
-          {events.map(event => {
-            const ticketed = isTicketed(event.event_type)
-            const showQR = hasAttendanceQR(event.event_type)
-            const isEditing = editingId === event.id
+        {/* event list */}
+        {events.length === 0 ? (
+          <p className="text-[#5e5e5e] text-sm text-center py-12">No events yet. Create your first one!</p>
+        ) : (
+          <div className="flex flex-col gap-4">
+            {events.map(event => {
+              const ticketed = isTicketed(event.event_type)
+              const showQR = hasAttendanceQR(event.event_type)
+              const isEditing = editingId === event.id
 
-            return (
-              <div key={event.id} className="border rounded-xl bg-white shadow-sm overflow-hidden">
-                {/* summary row */}
-                <div className="p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-bold text-base text-gray-900">{event.name}</h3>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                          event.is_visible ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                        }`}>
-                          {event.is_visible ? 'Visible' : 'Hidden'}
-                        </span>
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-medium">
-                          {event.event_type}
-                        </span>
+              return (
+                <div
+                  key={event.id}
+                  className={`rounded-2xl overflow-hidden transition-[border-color] duration-150 ${
+                    isEditing
+                      ? 'bg-[#121212] border border-[rgba(151,71,255,0.3)]'
+                      : 'bg-[#121212] border border-white/8 hover:border-white/16'
+                  } ${!event.is_visible ? 'opacity-80' : ''}`}
+                >
+                  {/* summary row */}
+                  <div className="p-5 pb-[18px]">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2.5 flex-wrap mb-2">
+                          <h3 className="font-bold text-[17px] text-white tracking-[-0.01em]">{event.name}</h3>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-bold tracking-[0.05em] uppercase ${typeBadgeCls(event.event_type)}`}>
+                            {event.event_type}
+                          </span>
+                        </div>
+
+                        <p className="text-sm text-[#8c8c8c] font-medium mb-1">
+                          {fmtDate(event.event_date)}
+                          {event.location && ` · ${event.location}`}
+                        </p>
+
+                        <p className="text-sm text-[#9a9a9a] font-medium">
+                          {ticketed
+                            ? `Members ${fmt(event.price_cents_members)} · Non-members ${fmt(event.price_cents_nonmembers)}${
+                                event.eb_price_members != null
+                                  ? ` · EB ${fmt(event.eb_price_members)}/${fmt(event.eb_price_nonmembers!)}`
+                                  : ''
+                              }${isHybrid(event.event_type) && event.points ? ` · +${event.points} pts` : ''}`
+                            : event.points
+                              ? `+${event.points} attendance pts`
+                              : 'Free attendance'
+                          }
+                        </p>
                       </div>
 
-                      <p className="text-sm text-gray-600 mt-0.5">
-                        {fmtDate(event.event_date)}
-                        {event.location && ` · ${event.location}`}
-                      </p>
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11.5px] font-bold ${
+                          event.is_visible
+                            ? 'bg-[rgba(95,207,143,0.12)] border border-[rgba(95,207,143,0.28)] text-[#5fcf8f]'
+                            : 'bg-white/5 border border-white/12 text-[#8c8c8c]'
+                        }`}>
+                          {event.is_visible ? (
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#5fcf8f]" />
+                          ) : (
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" strokeWidth={2}>
+                              <path d="M17.94 17.94A10 10 0 0 1 12 20c-7 0-11-8-11-8a18 18 0 0 1 5.06-5.94M9.9 4.24A9 9 0 0 1 12 4c7 0 11 8 11 8a18 18 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"/>
+                            </svg>
+                          )}
+                          {event.is_visible ? 'Active' : 'Hidden'}
+                        </span>
 
-                      <p className="text-sm text-gray-500 mt-0.5">
-                        {ticketed
-                          ? `Members ${fmt(event.price_cents_members)} · Non-members ${fmt(event.price_cents_nonmembers)}${
-                              event.eb_price_members != null
-                                ? ` · EB ${fmt(event.eb_price_members)}/${fmt(event.eb_price_nonmembers!)}`
-                                : ''
-                            }${isHybrid(event.event_type) && event.points ? ` · +${event.points} pts` : ''}`
-                          : event.points
-                            ? `${event.points} attendance pts`
-                            : 'Free attendance'
-                        }
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={() => setEditingId(isEditing ? null : event.id)}
-                      className="text-sm text-blue-600 hover:text-blue-800 font-medium shrink-0">
-                      {isEditing ? 'Close' : 'Edit'}
-                    </button>
-                  </div>
-
-                </div>
-
-                {/* inline edit */}
-                {isEditing && (
-                  <div className="border-t p-5 bg-gray-50">
-                    <EventForm
-                      initial={eventToForm(event)}
-                      onSubmit={handleUpdate(event.id)}
-                      onCancel={() => setEditingId(null)}
-                      submitLabel="Save Changes"
-                      beforeButtons={
-                        <>
-                          <CoverPhotoUpload event={event} onUpdate={upsert} />
-                          {showQR && <AttendanceQR event={event} onUpdate={upsert} />}
-                        </>
-                      }
-                      leftButtons={
                         <button
-                          type="button"
-                          onClick={() => setDeleteTarget({ id: event.id, name: event.name })}
-                          className="text-xs font-medium px-3 py-1.5 rounded-lg border border-red-300 text-red-500 hover:border-red-400 hover:bg-red-50 transition-colors">
-                          Delete
+                          onClick={() => setEditingId(isEditing ? null : event.id)}
+                          className="bg-transparent border-none text-[#5fa8e8] text-[13.5px] font-bold cursor-pointer hover:text-[#8ec5f5] transition-colors p-0">
+                          {isEditing ? 'Close' : 'Edit'}
                         </button>
-                      }
-                    />
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      )}
+
+                  {/* inline edit */}
+                  {isEditing && (
+                    <div className="border-t border-white/7 p-5 pt-5">
+                      <EventForm
+                        initial={eventToForm(event)}
+                        onSubmit={handleUpdate(event.id)}
+                        onCancel={() => setEditingId(null)}
+                        submitLabel="Save Changes"
+                        beforeButtons={
+                          <>
+                            <CoverPhotoUpload event={event} onUpdate={upsert} />
+                            {showQR && <AttendanceQR event={event} onUpdate={upsert} />}
+                          </>
+                        }
+                        leftButtons={
+                          <button
+                            type="button"
+                            onClick={() => setDeleteTarget({ id: event.id, name: event.name })}
+                            className="px-4 py-2.5 rounded-[11px] bg-transparent border border-[rgba(239,111,111,0.4)] text-[#ef6f6f] text-sm font-bold cursor-pointer hover:bg-[rgba(239,111,111,0.1)] transition-colors">
+                            Delete Event
+                          </button>
+                        }
+                      />
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
 
       {deleteTarget && (
         <DeleteEventModal

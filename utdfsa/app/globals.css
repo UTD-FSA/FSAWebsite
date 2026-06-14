@@ -12,6 +12,11 @@
   /* carousel peek layout — overridden per breakpoint below */
   --carousel-card-w: 75%;
   --carousel-offset: 10%;
+  /* officer page design tokens */
+  --color-officer-bg: #070707;
+  --color-officer-card: #141414;
+  --color-officer-accent: #9747FF;
+  --color-officer-border: rgba(255, 255, 255, 0.1);
 }
 
 @media (max-width: 767px) {
@@ -127,6 +132,15 @@ body {
 .fc-dark .fc { overflow: hidden !important; }
 .fc-dark .fc-scroller { overflow: hidden !important; }
 .fc-dark .fc-scroller-liquid-absolute { overflow: hidden !important; }
+
+/* ── Officer page select arrow ──────────────────────────────────────────── */
+.officer-select {
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238c8c8c' stroke-width='2.4'><path d='M6 9l6 6 6-6'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 13px center;
+}
 
 /* scrollbar for this-week strip */
 .tw-scroll::-webkit-scrollbar { height: 8px; }

@@ -122,9 +122,9 @@ function fmtDate(iso: string) {
 
 function statusBadge(status: Status) {
   const cls: Record<Status, string> = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    accepted: 'bg-green-100 text-green-700',
-    rejected: 'bg-red-100 text-red-700',
+    pending:  'bg-[rgba(227,174,61,0.12)] border border-[rgba(227,174,61,0.35)] text-[#f0c869]',
+    accepted: 'bg-[rgba(95,207,143,0.12)] border border-[rgba(95,207,143,0.35)] text-[#5fcf8f]',
+    rejected: 'bg-[rgba(239,111,111,0.12)] border border-[rgba(239,111,111,0.35)] text-[#ef6f6f]',
   }
   const label: Record<Status, string> = {
     pending: 'Pending',
@@ -132,7 +132,7 @@ function statusBadge(status: Status) {
     rejected: 'Rejected',
   }
   return (
-    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${cls[status]}`}>
+    <span className={`text-[10.5px] font-bold tracking-[0.04em] px-2.5 py-0.5 rounded-full ${cls[status]}`}>
       {label[status]}
     </span>
   )
@@ -145,25 +145,38 @@ function StatusButtons({
   current: Status
   onSelect: (s: Status) => void
 }) {
-  const buttons: { value: Status; label: string; cls: string; activeCls: string }[] = [
-    { value: 'pending',  label: 'Pending',  cls: 'border-yellow-300 text-yellow-700 hover:bg-yellow-50', activeCls: 'bg-yellow-100 border-yellow-400 text-yellow-800' },
-    { value: 'accepted', label: 'Accept',   cls: 'border-green-300 text-green-700 hover:bg-green-50',   activeCls: 'bg-green-100 border-green-400 text-green-800' },
-    { value: 'rejected', label: 'Reject',   cls: 'border-red-300 text-red-600 hover:bg-red-50',         activeCls: 'bg-red-100 border-red-400 text-red-700' },
-  ]
-
   return (
     <div className="flex gap-1.5">
-      {buttons.map(b => (
-        <button
-          key={b.value}
-          onClick={() => onSelect(b.value)}
-          className={`text-xs font-medium px-2.5 py-1 rounded-lg border transition-colors ${
-            current === b.value ? b.activeCls : b.cls
-          }`}
-        >
-          {b.label}
-        </button>
-      ))}
+      <button
+        onClick={() => onSelect('pending')}
+        className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border transition-colors ${
+          current === 'pending'
+            ? 'bg-[rgba(227,174,61,0.16)] border-[rgba(227,174,61,0.5)] text-[#f0c869]'
+            : 'bg-transparent border-white/12 text-[#7e7e7e] hover:border-white/24 hover:text-[#cfcfcf]'
+        }`}
+      >
+        Pending
+      </button>
+      <button
+        onClick={() => onSelect('accepted')}
+        className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border-none transition-colors ${
+          current === 'accepted'
+            ? 'bg-[#3a9d63] text-white'
+            : 'bg-[rgba(58,157,99,0.14)] text-[#5fcf8f] hover:bg-[rgba(58,157,99,0.22)]'
+        }`}
+      >
+        Accept
+      </button>
+      <button
+        onClick={() => onSelect('rejected')}
+        className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border-none transition-colors ${
+          current === 'rejected'
+            ? 'bg-[#cf4d4d] text-white'
+            : 'bg-[rgba(207,77,77,0.14)] text-[#ef6f6f] hover:bg-[rgba(207,77,77,0.22)]'
+        }`}
+      >
+        Reject
+      </button>
     </div>
   )
 }
@@ -193,13 +206,13 @@ function FilterBar({ active, onChange, counts }: {
         <button
           key={f}
           onClick={() => onChange(f)}
-          className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${
+          className={`text-[13px] font-semibold px-3.5 py-1.5 rounded-[10px] border transition-colors ${
             active === f
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+              ? 'bg-[#9747FF] text-white border-transparent'
+              : 'bg-transparent text-[#8c8c8c] border-white/14 hover:border-white/28 hover:text-[#cfcfcf]'
           }`}
         >
-          {labels[f]} <span className="opacity-70">({counts[f]})</span>
+          {labels[f]} <span className={`${active === f ? 'opacity-70' : 'opacity-50'}`}>({counts[f]})</span>
         </button>
       ))}
     </div>
@@ -240,37 +253,41 @@ function ApplicationDetailModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 backdrop-blur-sm bg-black/60 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 backdrop-blur-sm bg-black/70 flex items-center justify-center p-4"
+      style={{ animation: 'backdropIn 0.15s ease-out' }}
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[calc(100vh-6rem)] flex flex-col${type === 'ading' ? ' mt-[80px]' : ''}`}
+        className={`bg-[#141414] border border-white/10 rounded-2xl shadow-[0_32px_80px_-20px_rgba(0,0,0,0.85)] max-w-2xl w-full max-h-[calc(100vh-6rem)] flex flex-col${type === 'ading' ? ' mt-[80px]' : ''}`}
+        style={{ animation: 'modalIn 0.18s ease-out' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header — sticky */}
         <div className="px-6 pt-6 pb-0 shrink-0">
-          <div className="flex items-start justify-between gap-4 mb-3">
+          <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold text-gray-900 leading-tight">
+              <h2 className="text-[20px] font-bold text-white leading-tight">
                 {m.first_name} {m.last_name}
               </h2>
-              <p className="text-sm text-gray-600 mt-0.5">{m.email}</p>
-              <p className="text-xs text-gray-500 mt-0.5">
-                {[m.year, m.major].filter(Boolean).join(' · ')}
-              </p>
-              <div className="mt-2">{statusBadge(application.status)}</div>
+              <p className="text-[13.5px] text-[#8c8c8c] font-medium mt-0.5">{m.email}</p>
+              {(m.year || m.major) && (
+                <p className="text-[12.5px] text-[#6e6e6e] font-medium mt-0.5">
+                  {[m.year, m.major].filter(Boolean).join(' · ')}
+                </p>
+              )}
+              <div className="mt-2.5">{statusBadge(application.status)}</div>
             </div>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors shrink-0 p-1 -mr-1"
+              className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-[#8c8c8c] hover:text-white transition-colors shrink-0"
               aria-label="Close"
             >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+                <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round"/>
               </svg>
             </button>
           </div>
-          <div className="border-t border-gray-200" />
+          <div className="border-t border-white/8" />
         </div>
 
         {/* Scrollable body */}
@@ -287,12 +304,12 @@ function ApplicationDetailModal({
                 if (!av.days.length && !av.times) return null
                 return (
                   <div key={key} className="col-span-2">
-                    <dt className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                    <dt className="text-[10.5px] font-bold text-[#6e6e6e] uppercase tracking-[0.08em] mb-1.5">
                       {questionLabels[key]}
                     </dt>
-                    <dd className="text-sm text-gray-800">
-                      {av.days.length > 0 && <p>{av.days.join(', ')}</p>}
-                      {av.times && <p className="text-gray-600">{av.times}</p>}
+                    <dd className="text-[13.5px] text-[#d4d4d4]">
+                      {av.days.length > 0 && <p className="font-medium">{av.days.join(', ')}</p>}
+                      {av.times && <p className="text-[#8c8c8c] mt-0.5">{av.times}</p>}
                     </dd>
                   </div>
                 )
@@ -304,10 +321,10 @@ function ApplicationDetailModal({
 
               return (
                 <div key={key} className={isWide ? 'col-span-2' : 'col-span-1'}>
-                  <dt className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                  <dt className="text-[10.5px] font-bold text-[#6e6e6e] uppercase tracking-[0.08em] mb-1.5">
                     {questionLabels[key]}
                   </dt>
-                  <dd className="text-sm text-gray-800 whitespace-pre-wrap break-words">{display}</dd>
+                  <dd className="text-[13.5px] text-[#d4d4d4] font-medium whitespace-pre-wrap break-words">{display}</dd>
                 </div>
               )
             })}
@@ -315,25 +332,25 @@ function ApplicationDetailModal({
         </div>
 
         {/* Footer — sticky */}
-        <div className="px-6 py-4 border-t border-gray-200 shrink-0">
+        <div className="px-6 py-4 border-t border-white/8 shrink-0">
           {type === 'kuyate' ? (
             <div className="flex items-center justify-between gap-3">
               <button
                 onClick={onClose}
-                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                className="text-sm text-[#6e6e6e] hover:text-[#cfcfcf] font-medium transition-colors"
               >
                 Close
               </button>
               <div className="flex gap-2">
                 <button
                   onClick={() => onStatusChange(application.id, 'accepted')}
-                  className="text-xs font-medium px-2.5 py-1 rounded-lg border transition-colors border-green-300 text-green-700 hover:bg-green-50"
+                  className="text-xs font-bold px-3 py-1.5 rounded-[9px] border-none bg-[#3a9d63] hover:bg-[#44b572] text-white transition-colors"
                 >
                   Accept
                 </button>
                 <button
                   onClick={() => onStatusChange(application.id, 'rejected')}
-                  className="text-xs font-medium px-2.5 py-1 rounded-lg border transition-colors border-red-300 text-red-600 hover:bg-red-50"
+                  className="text-xs font-bold px-3 py-1.5 rounded-[9px] border-none bg-[#cf4d4d] hover:bg-[#e05555] text-white transition-colors"
                 >
                   Reject
                 </button>
@@ -343,7 +360,7 @@ function ApplicationDetailModal({
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <button
                 onClick={onClose}
-                className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                className="text-sm text-[#6e6e6e] hover:text-[#cfcfcf] font-medium transition-colors"
               >
                 Close
               </button>
@@ -353,11 +370,11 @@ function ApplicationDetailModal({
                   onSelect={s => onStatusChange(application.id, s)}
                 />
                 <div className="flex items-center gap-2">
-                  <label className="text-xs text-gray-500 shrink-0">Assign Pamilya</label>
+                  <label className="text-[11.5px] text-[#7e7e7e] font-semibold shrink-0">Assign Pamilya</label>
                   <select
                     value={(application as AdingApplication).members.pamilya ?? ''}
                     onChange={e => onPamilyaChange?.(application.id, e.target.value || null)}
-                    className="text-xs border border-gray-300 rounded-lg px-2 py-1 text-gray-800 bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="text-[12px] border border-white/12 rounded-[9px] px-2.5 py-1.5 text-[#d4d4d4] bg-[#0d0d0d] focus:outline-none focus:border-[#9747FF] officer-select appearance-none pr-8 font-[inherit]"
                   >
                     <option value="">Not yet assigned</option>
                     {PAMILYA_OPTIONS.map(p => (
@@ -365,13 +382,15 @@ function ApplicationDetailModal({
                     ))}
                   </select>
                   {pamilyaSaving === 'saving' && (
-                    <span className="text-xs text-gray-400">Saving…</span>
+                    <span className="text-[11.5px] text-[#6e6e6e] font-medium">Saving…</span>
                   )}
                   {pamilyaSaving === 'saved' && (
-                    <span className="text-xs text-green-600">✓</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5fcf8f" strokeWidth={2.4}>
+                      <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
                   )}
                   {pamilyaSaving === 'error' && (
-                    <span className="text-xs text-red-500">Failed</span>
+                    <span className="text-[11.5px] text-[#ef6f6f] font-medium">Failed</span>
                   )}
                 </div>
               </div>
@@ -390,24 +409,24 @@ function AdingCard({ app, onOpen }: { app: AdingApplication; onOpen: () => void 
   return (
     <div
       onClick={onOpen}
-      className="border rounded-xl bg-white shadow-sm h-48 overflow-hidden cursor-pointer hover:shadow-lg hover:ring-2 hover:ring-blue-200 transition-all flex flex-col"
+      className="bg-[#121212] border border-white/8 rounded-2xl h-48 overflow-hidden cursor-pointer hover:border-[rgba(151,71,255,0.4)] hover:shadow-[0_0_0_1px_rgba(151,71,255,0.14),0_18px_38px_-16px_rgba(151,71,255,0.35)] transition-all flex flex-col"
     >
-      <div className="p-4 flex flex-col h-full">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="font-bold text-sm text-gray-900 line-clamp-1 flex-1 min-w-0">
+      <div className="p-5 flex flex-col h-full">
+        <div className="flex items-start justify-between gap-2 mb-1.5">
+          <h3 className="font-bold text-[14.5px] text-white line-clamp-1 flex-1 min-w-0">
             {m.first_name} {m.last_name}
           </h3>
           {statusBadge(app.status)}
         </div>
-        <p className="text-xs text-gray-600 line-clamp-1">{m.email}</p>
-        <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+        <p className="text-[12.5px] text-[#8c8c8c] font-medium line-clamp-1">{m.email}</p>
+        <p className="text-[12px] text-[#6e6e6e] font-medium line-clamp-1 mt-0.5">
           {[m.year, m.major].filter(Boolean).join(' · ')}
         </p>
         {m.pamilya && (
-          <p className="text-xs text-blue-600 mt-0.5 line-clamp-1">Pamilya: {m.pamilya}</p>
+          <p className="text-[12px] text-[#9747FF] mt-0.5 line-clamp-1 font-semibold">Pamilya: {m.pamilya}</p>
         )}
-        <div className="mt-auto pt-2 border-t border-gray-100">
-          <p className="text-xs text-gray-400">Submitted {fmtDate(app.submitted_at)}</p>
+        <div className="mt-auto pt-3 border-t border-white/6">
+          <p className="text-[11.5px] text-[#5a5a5a] font-medium">Submitted {fmtDate(app.submitted_at)}</p>
         </div>
       </div>
     </div>
@@ -419,21 +438,21 @@ function KuyateCard({ app, onOpen }: { app: KuyateApplication; onOpen: () => voi
   return (
     <div
       onClick={onOpen}
-      className="border rounded-xl bg-white shadow-sm h-48 overflow-hidden cursor-pointer hover:shadow-lg hover:ring-2 hover:ring-blue-200 transition-all flex flex-col"
+      className="bg-[#121212] border border-white/8 rounded-2xl h-48 overflow-hidden cursor-pointer hover:border-[rgba(151,71,255,0.4)] hover:shadow-[0_0_0_1px_rgba(151,71,255,0.14),0_18px_38px_-16px_rgba(151,71,255,0.35)] transition-all flex flex-col"
     >
-      <div className="p-4 flex flex-col h-full">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="font-bold text-sm text-gray-900 line-clamp-1 flex-1 min-w-0">
+      <div className="p-5 flex flex-col h-full">
+        <div className="flex items-start justify-between gap-2 mb-1.5">
+          <h3 className="font-bold text-[14.5px] text-white line-clamp-1 flex-1 min-w-0">
             {m.first_name} {m.last_name}
           </h3>
           {statusBadge(app.status)}
         </div>
-        <p className="text-xs text-gray-600 line-clamp-1">{m.email}</p>
-        <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+        <p className="text-[12.5px] text-[#8c8c8c] font-medium line-clamp-1">{m.email}</p>
+        <p className="text-[12px] text-[#6e6e6e] font-medium line-clamp-1 mt-0.5">
           {[m.year, m.major].filter(Boolean).join(' · ')}
         </p>
-        <div className="mt-auto pt-2 border-t border-gray-100">
-          <p className="text-xs text-gray-400">Submitted {fmtDate(app.submitted_at)}</p>
+        <div className="mt-auto pt-3 border-t border-white/6">
+          <p className="text-[11.5px] text-[#5a5a5a] font-medium">Submitted {fmtDate(app.submitted_at)}</p>
         </div>
       </div>
     </div>
@@ -456,22 +475,22 @@ function PaginationBar({
   const start = (page - 1) * ITEMS_PER_PAGE + 1
   const end = Math.min(page * ITEMS_PER_PAGE, total)
   return (
-    <div className="flex items-center justify-between mt-6 text-sm text-gray-600">
-      <span>
+    <div className="flex items-center justify-between mt-6">
+      <span className="text-[13px] text-[#6e6e6e] font-medium">
         Showing {start}–{end} of {total} application{total !== 1 ? 's' : ''}
       </span>
       <div className="flex gap-2">
         <button
           onClick={onPrev}
           disabled={page === 1}
-          className="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-2 rounded-[10px] border border-white/12 bg-transparent text-[13px] font-semibold text-[#8c8c8c] hover:border-white/24 hover:text-[#cfcfcf] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           Previous
         </button>
         <button
           onClick={onNext}
           disabled={page * ITEMS_PER_PAGE >= total}
-          className="px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-2 rounded-[10px] border border-white/12 bg-transparent text-[13px] font-semibold text-[#8c8c8c] hover:border-white/24 hover:text-[#cfcfcf] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           Next
         </button>
@@ -684,176 +703,191 @@ export default function ApplicationsClient({
   }
 
   return (
-    <main className="max-w-6xl mx-auto px-6 py-10">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Applications</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Review and update ading and kuyate applications.
-        </p>
-      </div>
+    <main className="min-h-screen bg-[#070707] px-6 md:px-10 py-10">
+      <div className="max-w-6xl mx-auto">
+        {/* page header */}
+        <div className="mb-8">
+          <h1 className="font-display font-black text-[32px] text-white tracking-tight leading-[1.02] mb-2">Applications</h1>
+          <p className="text-[14.5px] text-[#8c8c8c] font-medium">
+            Review and update ading and kuyate applications.
+          </p>
+        </div>
 
-      {/* tab bar */}
-      <div className="flex gap-1 border-b border-gray-200 mb-6">
-        {(['ading', 'kuyate'] as const).map(t => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-5 py-2.5 text-sm font-semibold transition-colors ${
-              tab === t
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-500 hover:text-gray-800'
-            }`}
-          >
-            {t === 'ading' ? 'Ading' : 'Kuyate'}
-          </button>
-        ))}
-      </div>
-
-      {/* ading tab */}
-      {tab === 'ading' && (
-        <section>
-          <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
-            <FilterBar active={adingFilter} onChange={handleAdingFilterChange} counts={adingCounts()} />
+        {/* tab bar */}
+        <div className="flex gap-0 border-b border-white/8 mb-6">
+          {(['ading', 'kuyate'] as const).map(t => (
             <button
-              onClick={() => exportAdingCSV(filteredAding)}
-              className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
+              key={t}
+              onClick={() => setTab(t)}
+              className={`px-6 py-3 text-[14px] font-bold transition-colors relative ${
+                tab === t
+                  ? 'text-white'
+                  : 'text-[#6e6e6e] hover:text-[#a0a0a0]'
+              }`}
             >
-              Export CSV
-            </button>
-          </div>
-
-          {filteredAding.length === 0 ? (
-            <p className="text-gray-500 text-sm py-12 text-center">No applications found.</p>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {paginatedAding.map(app => (
-                  <AdingCard
-                    key={app.id}
-                    app={app}
-                    onOpen={() => {
-                      setSelectedAppId(app.id)
-                      setSelectedAppType('ading')
-                    }}
-                  />
-                ))}
-              </div>
-              {filteredAding.length > ITEMS_PER_PAGE && (
-                <PaginationBar
-                  page={adingPage}
-                  total={filteredAding.length}
-                  onPrev={() => setAdingPage(p => p - 1)}
-                  onNext={() => setAdingPage(p => p + 1)}
-                />
+              {t === 'ading' ? 'Ading' : 'Kuyate'}
+              {tab === t && (
+                <span className="absolute bottom-0 left-0 right-0 h-[2.5px] bg-[#9747FF] rounded-t-full" />
               )}
-            </>
-          )}
-        </section>
-      )}
-
-      {/* kuyate tab */}
-      {tab === 'kuyate' && (
-        <section>
-          <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
-            <FilterBar active={kuyateFilter} onChange={handleKuyateFilterChange} counts={kuyateCounts()} />
-            <button
-              onClick={() => exportKuyateCSV(filteredKuyate)}
-              className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium"
-            >
-              Export CSV
             </button>
-          </div>
+          ))}
+        </div>
 
-          {filteredKuyate.length === 0 ? (
-            <p className="text-gray-500 text-sm py-12 text-center">No applications found.</p>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {paginatedKuyate.map(app => (
-                  <KuyateCard
-                    key={app.id}
-                    app={app}
-                    onOpen={() => {
-                      setSelectedAppId(app.id)
-                      setSelectedAppType('kuyate')
-                    }}
-                  />
-                ))}
-              </div>
-              {filteredKuyate.length > ITEMS_PER_PAGE && (
-                <PaginationBar
-                  page={kuyatePage}
-                  total={filteredKuyate.length}
-                  onPrev={() => setKuyatePage(p => p - 1)}
-                  onNext={() => setKuyatePage(p => p + 1)}
-                />
-              )}
-            </>
-          )}
-        </section>
-      )}
-
-      {/* Application detail modal */}
-      <ApplicationDetailModal
-        application={currentModalApp}
-        type={selectedAppType}
-        onClose={() => setSelectedAppId(null)}
-        onStatusChange={(id, s) => {
-          if (selectedAppType === 'kuyate') {
-            if (s === 'accepted' || s === 'rejected') {
-              const app = kuyateApps.find(a => a.id === id)
-              if (app) {
-                setPendingStatus({ applicationId: id, applicantFirstName: app.members.first_name, status: s })
-              }
-            } else {
-              updateKuyateStatus(id, s)
-            }
-          } else {
-            updateAdingStatus(id, s)
-          }
-        }}
-        onPamilyaChange={(id, pamilya) => updatePamilya(id, pamilya)}
-        pamilyaSaving={selectedAppId ? (pamilyaSaving[selectedAppId] ?? null) : null}
-      />
-
-      {/* Kuyate confirmation modal — z-50 so it layers above the detail modal */}
-      {pendingStatus && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-2xl">
-            <h2 className="text-base font-bold text-gray-900 mb-2">
-              {pendingStatus.status === 'accepted' ? 'Confirm Acceptance' : 'Confirm Rejection'}
-            </h2>
-            <p className="text-sm text-gray-600 mb-5">
-              {pendingStatus.status === 'accepted'
-                ? `This will send an acceptance email to ${pendingStatus.applicantFirstName}. This email cannot be unsent. Are you sure?`
-                : `This will send a rejection email to ${pendingStatus.applicantFirstName}. This email cannot be unsent. Are you sure?`}
-            </p>
-            <div className="flex gap-3">
+        {/* ading tab */}
+        {tab === 'ading' && (
+          <section>
+            <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
+              <FilterBar active={adingFilter} onChange={handleAdingFilterChange} counts={adingCounts()} />
               <button
-                type="button"
-                onClick={() => setPendingStatus(null)}
-                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                onClick={() => exportAdingCSV(filteredAding)}
+                className="flex items-center gap-2 text-[13px] font-semibold px-4 py-2 rounded-[10px] border border-white/16 bg-transparent text-[#8c8c8c] hover:border-white/30 hover:text-[#cfcfcf] transition-colors"
               >
-                Go Back
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  updateKuyateStatus(pendingStatus.applicationId, pendingStatus.status)
-                  setPendingStatus(null)
-                }}
-                className={`flex-1 px-4 py-2 text-sm font-semibold text-white rounded-lg ${
-                  pendingStatus.status === 'accepted'
-                    ? 'bg-green-600 hover:bg-green-700'
-                    : 'bg-red-600 hover:bg-red-700'
-                }`}
-              >
-                {pendingStatus.status === 'accepted' ? 'Yes, Accept' : 'Yes, Reject'}
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Export CSV
               </button>
             </div>
+
+            {filteredAding.length === 0 ? (
+              <p className="text-[#5e5e5e] text-sm py-14 text-center">No applications found.</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {paginatedAding.map(app => (
+                    <AdingCard
+                      key={app.id}
+                      app={app}
+                      onOpen={() => {
+                        setSelectedAppId(app.id)
+                        setSelectedAppType('ading')
+                      }}
+                    />
+                  ))}
+                </div>
+                {filteredAding.length > ITEMS_PER_PAGE && (
+                  <PaginationBar
+                    page={adingPage}
+                    total={filteredAding.length}
+                    onPrev={() => setAdingPage(p => p - 1)}
+                    onNext={() => setAdingPage(p => p + 1)}
+                  />
+                )}
+              </>
+            )}
+          </section>
+        )}
+
+        {/* kuyate tab */}
+        {tab === 'kuyate' && (
+          <section>
+            <div className="flex items-center justify-between gap-4 mb-5 flex-wrap">
+              <FilterBar active={kuyateFilter} onChange={handleKuyateFilterChange} counts={kuyateCounts()} />
+              <button
+                onClick={() => exportKuyateCSV(filteredKuyate)}
+                className="flex items-center gap-2 text-[13px] font-semibold px-4 py-2 rounded-[10px] border border-white/16 bg-transparent text-[#8c8c8c] hover:border-white/30 hover:text-[#cfcfcf] transition-colors"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Export CSV
+              </button>
+            </div>
+
+            {filteredKuyate.length === 0 ? (
+              <p className="text-[#5e5e5e] text-sm py-14 text-center">No applications found.</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {paginatedKuyate.map(app => (
+                    <KuyateCard
+                      key={app.id}
+                      app={app}
+                      onOpen={() => {
+                        setSelectedAppId(app.id)
+                        setSelectedAppType('kuyate')
+                      }}
+                    />
+                  ))}
+                </div>
+                {filteredKuyate.length > ITEMS_PER_PAGE && (
+                  <PaginationBar
+                    page={kuyatePage}
+                    total={filteredKuyate.length}
+                    onPrev={() => setKuyatePage(p => p - 1)}
+                    onNext={() => setKuyatePage(p => p + 1)}
+                  />
+                )}
+              </>
+            )}
+          </section>
+        )}
+
+        {/* Application detail modal */}
+        <ApplicationDetailModal
+          application={currentModalApp}
+          type={selectedAppType}
+          onClose={() => setSelectedAppId(null)}
+          onStatusChange={(id, s) => {
+            if (selectedAppType === 'kuyate') {
+              if (s === 'accepted' || s === 'rejected') {
+                const app = kuyateApps.find(a => a.id === id)
+                if (app) {
+                  setPendingStatus({ applicationId: id, applicantFirstName: app.members.first_name, status: s })
+                }
+              } else {
+                updateKuyateStatus(id, s)
+              }
+            } else {
+              updateAdingStatus(id, s)
+            }
+          }}
+          onPamilyaChange={(id, pamilya) => updatePamilya(id, pamilya)}
+          pamilyaSaving={selectedAppId ? (pamilyaSaving[selectedAppId] ?? null) : null}
+        />
+
+        {/* Kuyate confirmation modal — z-50 so it layers above the detail modal */}
+        {pendingStatus && (
+          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+            <div
+              className="bg-[#141414] border border-white/10 rounded-[18px] max-w-sm w-full p-7 shadow-[0_32px_72px_-16px_rgba(0,0,0,0.85)]"
+              style={{ animation: 'modalIn 0.18s ease-out' }}
+            >
+              <h2 className="text-[16px] font-bold text-white mb-2">
+                {pendingStatus.status === 'accepted' ? 'Confirm Acceptance' : 'Confirm Rejection'}
+              </h2>
+              <p className="text-[13.5px] text-[#8c8c8c] font-medium mb-6 leading-relaxed">
+                {pendingStatus.status === 'accepted'
+                  ? `This will send an acceptance email to ${pendingStatus.applicantFirstName}. This email cannot be unsent. Are you sure?`
+                  : `This will send a rejection email to ${pendingStatus.applicantFirstName}. This email cannot be unsent. Are you sure?`}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPendingStatus(null)}
+                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-[#cfcfcf] border border-white/16 bg-transparent rounded-xl hover:border-white/30 hover:text-white transition-colors"
+                >
+                  Go Back
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateKuyateStatus(pendingStatus.applicationId, pendingStatus.status)
+                    setPendingStatus(null)
+                  }}
+                  className={`flex-1 px-4 py-2.5 text-sm font-bold text-white rounded-xl border-none transition-colors ${
+                    pendingStatus.status === 'accepted'
+                      ? 'bg-[#3a9d63] hover:bg-[#44b572]'
+                      : 'bg-[#cf4d4d] hover:bg-[#e05555]'
+                  }`}
+                >
+                  {pendingStatus.status === 'accepted' ? 'Yes, Accept' : 'Yes, Reject'}
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </main>
   )
 }
