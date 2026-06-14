@@ -51,6 +51,8 @@ const nextConfig: NextConfig = {
               "font-src 'self'",
               // allow Supabase and Stripe connections
               `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL} https://api.stripe.com`,
+              // allow YouTube privacy-enhanced embeds on the Modern dance team page
+              "frame-src https://www.youtube-nocookie.com",
             ].join('; '),
           },
         ],
