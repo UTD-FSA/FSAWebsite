@@ -14,26 +14,25 @@ const slides = [
 type PosConfig = {
   scale: number
   translateX: string
-  rotate: string
   zIndex: number
   opacity: number
 }
 
 // Five fan positions: index 0 = far-left (-2), index 2 = active center, index 4 = far-right (+2)
 const DESKTOP: PosConfig[] = [
-  { scale: 0.70, translateX: '-90%', rotate: '-10deg', zIndex: 30, opacity: 0.50 },
-  { scale: 0.85, translateX: '-55%', rotate: '-5deg',  zIndex: 40, opacity: 0.75 },
-  { scale: 1.00, translateX: '0%',   rotate: '0deg',   zIndex: 50, opacity: 1.00 },
-  { scale: 0.85, translateX: '55%',  rotate: '5deg',   zIndex: 40, opacity: 0.75 },
-  { scale: 0.70, translateX: '90%',  rotate: '10deg',  zIndex: 30, opacity: 0.50 },
+  { scale: 0.70, translateX: '-90%', zIndex: 30, opacity: 0.50 },
+  { scale: 0.85, translateX: '-55%', zIndex: 40, opacity: 0.75 },
+  { scale: 1.00, translateX: '0%',   zIndex: 50, opacity: 1.00 },
+  { scale: 0.85, translateX: '55%',  zIndex: 40, opacity: 0.75 },
+  { scale: 0.70, translateX: '90%',  zIndex: 30, opacity: 0.50 },
 ]
 
 const MOBILE: PosConfig[] = [
-  { scale: 0.65, translateX: '-85%', rotate: '-10deg', zIndex: 30, opacity: 0.50 },
-  { scale: 0.82, translateX: '-50%', rotate: '-5deg',  zIndex: 40, opacity: 0.75 },
-  { scale: 1.00, translateX: '0%',   rotate: '0deg',   zIndex: 50, opacity: 1.00 },
-  { scale: 0.82, translateX: '50%',  rotate: '5deg',   zIndex: 40, opacity: 0.75 },
-  { scale: 0.65, translateX: '85%',  rotate: '10deg',  zIndex: 30, opacity: 0.50 },
+  { scale: 0.65, translateX: '-85%', zIndex: 30, opacity: 0.50 },
+  { scale: 0.82, translateX: '-50%', zIndex: 40, opacity: 0.75 },
+  { scale: 1.00, translateX: '0%',   zIndex: 50, opacity: 1.00 },
+  { scale: 0.82, translateX: '50%',  zIndex: 40, opacity: 0.75 },
+  { scale: 0.65, translateX: '85%',  zIndex: 30, opacity: 0.50 },
 ]
 
 export default function PhotoCarousel() {
@@ -63,14 +62,15 @@ export default function PhotoCarousel() {
   const next = () => { setCurrent(i => (i + 1) % total); resetTimer() }
 
   const positions = isMobile ? MOBILE : DESKTOP
-  const cardW = isMobile ? 240 : 280
-  const cardH = isMobile ? 360 : 420
+  // 4:3 landscape dimensions
+  const cardW = isMobile ? 384 : 480
+  const cardH = isMobile ? 288 : 360
 
   return (
     <div className="flex flex-col gap-6 w-full">
 
       {/* Stage — all 5 cards always in the DOM; only styles change per transition */}
-      <div className="relative h-[400px] md:h-[520px] overflow-hidden">
+      <div className="relative h-[330px] md:h-[440px] overflow-hidden">
         {slides.map((slide, slideIdx) => {
           // Wrap offset into [-2, +2] range
           let offset = (slideIdx - current + total) % total
@@ -87,7 +87,7 @@ export default function PhotoCarousel() {
                 width: `${cardW}px`,
                 height: `${cardH}px`,
                 // Center on anchor, apply fan offset, then scale + rotate in place
-                transform: `translateX(-50%) translateY(-50%) translateX(${pos.translateX}) scale(${pos.scale}) rotate(${pos.rotate})`,
+                transform: `translateX(-50%) translateY(-50%) translateX(${pos.translateX}) scale(${pos.scale})`,
                 zIndex: pos.zIndex,
                 opacity: pos.opacity,
                 transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',

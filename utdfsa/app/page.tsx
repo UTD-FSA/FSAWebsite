@@ -78,7 +78,7 @@ export default function Home() {
           <div className="hidden lg:block w-px bg-white/20 mx-12 self-stretch shrink-0" />
 
           {/* Right: photo carousel */}
-          <div className="flex-1 flex items-center justify-center mt-8 lg:mt-0">
+          <div className="flex-1 flex items-center justify-center mt-8 lg:mt-0 ml-0 md:ml-[200px]">
             <PhotoCarousel />
           </div>
 
