@@ -127,7 +127,7 @@ function ChevronDown({ className }: { className?: string }) {
 const SOCIALS = [
   {
     label: 'Instagram',
-    href: 'https://www.instagram.com/utdfsa',
+    href: 'https://instagram.com/fsautd',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7">
         <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
@@ -138,7 +138,7 @@ const SOCIALS = [
   },
   {
     label: 'YouTube',
-    href: 'https://www.youtube.com/@utdfsa',
+    href: 'https://youtube.com/@fsautd',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-7 h-7">
         <rect x="2" y="5" width="20" height="14" rx="4" />
@@ -166,7 +166,7 @@ const SOCIALS = [
   },
   {
     label: 'Google',
-    href: '#',
+    href: 'mailto:fsautd@gmail.com',
     icon: (
       <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7">
         <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.8" />
@@ -268,7 +268,7 @@ export default function AboutClient() {
             are happy to help with anything from membership questions to event details.
           </p>
           <a
-            href="https://www.instagram.com/utdfsa"
+            href="https://instagram.com/fsautd"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2.5 px-7 py-3 border border-white/30 rounded-full text-white font-sans font-semibold text-sm tracking-wide hover:border-white/60 hover:bg-white/5 transition-all duration-200"
