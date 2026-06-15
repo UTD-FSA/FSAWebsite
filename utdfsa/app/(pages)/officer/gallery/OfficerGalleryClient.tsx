@@ -163,7 +163,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
           </div>
           <button
             onClick={() => setModalOpen(true)}
-            className="flex-shrink-0 flex items-center gap-2 px-5 py-3 border-none rounded-[13px] bg-[#9747FF] hover:bg-[#a85eff] text-white text-sm font-bold cursor-pointer transition-colors hover:shadow-[0_14px_34px_-12px_rgba(151,71,255,0.75)]"
+            className="sm:flex-shrink-0 flex items-center gap-2 px-5 py-3 min-h-[44px] border-none rounded-[13px] bg-[#9747FF] hover:bg-[#a85eff] text-white text-sm font-bold cursor-pointer transition-colors hover:shadow-[0_14px_34px_-12px_rgba(151,71,255,0.75)]"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
               <path d="M12 5v14M5 12h14"/>
@@ -181,7 +181,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
             {galleries.map((gallery) => (
               <div
                 key={gallery.id}
-                className="flex items-center gap-5 bg-[#121212] border border-white/8 rounded-2xl p-4 hover:border-white/16 transition-colors group"
+                className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5 bg-[#121212] border border-white/8 rounded-2xl p-4 hover:border-white/16 transition-colors group"
               >
                 {/* cover thumbnail */}
                 <div className="w-[72px] h-[72px] rounded-[13px] overflow-hidden flex-shrink-0 bg-[#0d0d0d] border border-white/8">
@@ -208,7 +208,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                 </div>
 
                 {/* actions */}
-                <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex items-center gap-3 sm:flex-shrink-0">
                   {/* only renders when the gallery has a linked album URL — do not remove this condition */}
                   {gallery.google_photos_url && (
                     // route: gallery.google_photos_url — opens the Google Photos album in a new tab — do not change this path
@@ -216,7 +216,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                       href={gallery.google_photos_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-[13px] text-[#5fa8e8] font-semibold hover:text-[#8ec5f5] transition-colors"
+                      className="flex items-center gap-1 text-[13px] text-[#5fa8e8] font-semibold hover:text-[#8ec5f5] transition-colors min-h-[44px]"
                     >
                       View Album
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
@@ -227,7 +227,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                   <button
                     onClick={() => handleDelete(gallery.id, gallery.title)}
                     disabled={deletingId === gallery.id}
-                    className="text-[13px] font-semibold text-[#6e6e6e] hover:text-[#ef6f6f] disabled:opacity-50 transition-colors"
+                    className="min-h-[44px] flex items-center text-[13px] font-semibold text-[#6e6e6e] hover:text-[#ef6f6f] disabled:opacity-50 transition-colors"
                   >
                     {/* only shows "Deleting…" while this specific gallery's delete call is in flight — do not remove this condition */}
                     {deletingId === gallery.id ? 'Deleting…' : 'Delete'}
@@ -246,7 +246,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
             className="bg-[#141414] border border-white/10 rounded-[20px] shadow-[0_32px_72px_-16px_rgba(0,0,0,0.8)] w-full"
             style={{ animation: 'modalIn 0.18s ease-out' }}
           >
-            <div className="px-7 pt-7 pb-0">
+            <div className="px-4 sm:px-7 pt-4 sm:pt-7 pb-0">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2.5">
                   <span className="w-[7px] h-[7px] rounded-full bg-[#9747FF]" />
@@ -271,7 +271,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
               )}
             </div>
 
-            <form onSubmit={handleSubmit} className="px-7 pb-7 flex flex-col gap-5">
+            <form onSubmit={handleSubmit} className="px-4 sm:px-7 pb-4 sm:pb-7 flex flex-col gap-5">
               <div>
                 <label className={labelCls}>Archive Name <span className="text-[#ef6f6f]">*</span></label>
                 <input
@@ -349,7 +349,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className={labelCls}>Semester</label>
                   <select
@@ -388,18 +388,18 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                 />
               </div>
 
-              <div className="flex gap-3 pt-1">
+              <div className="flex flex-col-reverse sm:flex-row gap-3 pt-1">
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="flex-1 border border-white/16 bg-transparent text-[#cfcfcf] rounded-xl px-4 py-2.5 text-sm font-semibold hover:border-white/32 hover:text-white transition-colors"
+                  className="w-full sm:w-auto min-h-[44px] border border-white/16 bg-transparent text-[#cfcfcf] rounded-xl px-4 py-2.5 text-sm font-semibold hover:border-white/32 hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="flex-1 bg-[#9747FF] hover:bg-[#a85eff] disabled:opacity-50 text-white rounded-xl px-4 py-2.5 text-sm font-bold border-none cursor-pointer transition-colors"
+                  className="w-full sm:w-auto min-h-[44px] bg-[#9747FF] hover:bg-[#a85eff] disabled:opacity-50 text-white rounded-xl px-4 py-2.5 text-sm font-bold border-none cursor-pointer transition-colors"
                 >
                   {/* only shows "Saving…" while the upload+insert API call is in flight — do not remove this condition */}
                   {submitting ? 'Saving…' : 'Create Archive'}

@@ -263,7 +263,7 @@ function EventForm({
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
       {/* ── General info (all types) ────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="col-span-2">
           <label className={labelCls}>Event Name <span className="text-[#ef6f6f]">*</span></label>
           <input required value={form.name} onChange={e => set('name', e.target.value)}
@@ -329,7 +329,7 @@ function EventForm({
                 Members are limited to one ticket. Non-members can buy multiple.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelCls}>Member Price ($ / ticket) <span className="text-[#ef6f6f]">*</span></label>
                 <input required type="number" min="0" step="0.01"
@@ -362,7 +362,7 @@ function EventForm({
             </p>
 
             {form.eb_enabled && (
-              <div className="grid grid-cols-2 gap-4 mt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                 <div>
                   <label className={labelCls}>EB Member Price ($ / ticket)</label>
                   <input type="number" min="0" step="0.01"
@@ -460,15 +460,15 @@ function EventForm({
 
       {beforeButtons}
 
-      <div className="flex items-center justify-between pt-5 border-t border-white/7">
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between pt-5 border-t border-white/7 gap-3">
         <div>{leftButtons}</div>
-        <div className="flex gap-2.5">
+        <div className="flex gap-2.5 w-full sm:w-auto">
           <button type="button" onClick={onCancel}
-            className="px-5 py-2.5 rounded-xl bg-transparent border border-white/16 text-[#cfcfcf] text-sm font-semibold hover:border-white/32 hover:text-white transition-colors">
+            className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-xl bg-transparent border border-white/16 text-[#cfcfcf] text-sm font-semibold hover:border-white/32 hover:text-white transition-colors">
             Cancel
           </button>
           <button type="submit" disabled={saving}
-            className="px-6 py-2.5 rounded-xl border-none bg-[#9747FF] hover:bg-[#a85eff] disabled:opacity-50 text-white font-bold text-sm transition-colors">
+            className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 rounded-xl border-none bg-[#9747FF] hover:bg-[#a85eff] disabled:opacity-50 text-white font-bold text-sm transition-colors">
             {saving ? 'Saving…' : submitLabel}
           </button>
         </div>
@@ -882,7 +882,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
   }, [])
 
   return (
-    <main className="min-h-screen bg-[#070707] px-6 md:px-10 py-10">
+    <main className="min-h-screen bg-[#070707] px-4 sm:px-6 md:px-10 py-10">
       <div className="max-w-4xl mx-auto">
         {/* page header */}
         <div className="flex items-start justify-between gap-6 mb-7">
@@ -897,7 +897,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
           {!creating && (
             <button
               onClick={() => { setCreating(true); setEditingId(null) }}
-              className="flex-shrink-0 flex items-center gap-2 px-5 py-3 border-none rounded-[13px] bg-[#9747FF] hover:bg-[#a85eff] text-white text-sm font-bold cursor-pointer transition-colors hover:shadow-[0_14px_34px_-12px_rgba(151,71,255,0.75)]"
+              className="sm:flex-shrink-0 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 min-h-[44px] border-none rounded-[13px] bg-[#9747FF] hover:bg-[#a85eff] text-white text-sm font-bold cursor-pointer transition-colors hover:shadow-[0_14px_34px_-12px_rgba(151,71,255,0.75)]"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
                 <path d="M12 5v14M5 12h14"/>
@@ -909,7 +909,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
 
         {/* create form */}
         {creating && (
-          <div className="bg-[#141414] border border-[rgba(151,71,255,0.28)] rounded-[18px] p-7 mb-6 shadow-[0_0_0_1px_rgba(151,71,255,0.08),0_24px_60px_-36px_rgba(151,71,255,0.5)]">
+          <div className="bg-[#141414] border border-[rgba(151,71,255,0.28)] rounded-[18px] p-4 sm:p-7 mb-6 shadow-[0_0_0_1px_rgba(151,71,255,0.08),0_24px_60px_-36px_rgba(151,71,255,0.5)]">
             <div className="flex items-center gap-2.5 mb-6">
               <span className="w-[7px] h-[7px] rounded-full bg-[#9747FF]" />
               <h2 className="font-display font-bold text-[17px] text-white tracking-[-0.01em]">Create New Event</h2>
@@ -952,7 +952,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
                 >
                   {/* summary row */}
                   <div className="p-5 pb-[18px]">
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2.5 flex-wrap mb-2">
                           <h3 className="font-bold text-[17px] text-white tracking-[-0.01em]">{event.name}</h3>
@@ -980,7 +980,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
                         </p>
                       </div>
 
-                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                      <div className="flex sm:flex-col items-start sm:items-end gap-2 sm:flex-shrink-0">
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11.5px] font-bold ${
                           event.is_visible
                             ? 'bg-[rgba(95,207,143,0.12)] border border-[rgba(95,207,143,0.28)] text-[#5fcf8f]'
@@ -998,7 +998,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
 
                         <button
                           onClick={() => setEditingId(isEditing ? null : event.id)}
-                          className="bg-transparent border-none text-[#5fa8e8] text-[13.5px] font-bold cursor-pointer hover:text-[#8ec5f5] transition-colors p-0">
+                          className="bg-transparent border-none text-[#5fa8e8] text-[13.5px] font-bold cursor-pointer hover:text-[#8ec5f5] transition-colors p-2 -m-2 min-h-[44px] flex items-center">
                           {isEditing ? 'Close' : 'Edit'}
                         </button>
                       </div>
@@ -1023,7 +1023,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
                           <button
                             type="button"
                             onClick={() => setDeleteTarget({ id: event.id, name: event.name })}
-                            className="px-4 py-2.5 rounded-[11px] bg-transparent border border-[rgba(239,111,111,0.4)] text-[#ef6f6f] text-sm font-bold cursor-pointer hover:bg-[rgba(239,111,111,0.1)] transition-colors">
+                            className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-[11px] bg-transparent border border-[rgba(239,111,111,0.4)] text-[#ef6f6f] text-sm font-bold cursor-pointer hover:bg-[rgba(239,111,111,0.1)] transition-colors">
                             Delete Event
                           </button>
                         }

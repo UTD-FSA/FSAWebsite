@@ -344,42 +344,44 @@ function ApplicationDetailModal({
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <button
-                onClick={onClose}
-                className="text-sm text-[#6e6e6e] hover:text-[#cfcfcf] font-medium transition-colors"
-              >
-                Close
-              </button>
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col gap-3">
+              {/* Row 1: Close far-left, status buttons far-right */}
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  onClick={onClose}
+                  className="text-sm text-[#6e6e6e] hover:text-[#cfcfcf] font-medium transition-colors"
+                >
+                  Close
+                </button>
                 <StatusButtons
                   current={application.status}
                   onSelect={s => onStatusChange(application.id, s)}
                 />
-                <div className="flex items-center gap-2">
-                  <label className="text-[11.5px] text-[#7e7e7e] font-semibold shrink-0">Assign Pamilya</label>
-                  <select
-                    value={(application as AdingApplication).members.pamilya ?? ''}
-                    onChange={e => onPamilyaChange?.(application.id, e.target.value || null)}
-                    className="text-[12px] border border-white/12 rounded-[9px] px-2.5 py-1.5 text-[#d4d4d4] bg-[#0d0d0d] focus:outline-none focus:border-[#9747FF] officer-select appearance-none pr-8 font-[inherit]"
-                  >
-                    <option value="">Not yet assigned</option>
-                    {PAMILYA_OPTIONS.map(p => (
-                      <option key={p} value={p}>{p}</option>
-                    ))}
-                  </select>
-                  {pamilyaSaving === 'saving' && (
-                    <span className="text-[11.5px] text-[#6e6e6e] font-medium">Saving…</span>
-                  )}
-                  {pamilyaSaving === 'saved' && (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5fcf8f" strokeWidth={2.4}>
-                      <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
-                  {pamilyaSaving === 'error' && (
-                    <span className="text-[11.5px] text-[#ef6f6f] font-medium">Failed</span>
-                  )}
-                </div>
+              </div>
+              {/* Row 2: Assign Pamilya dropdown */}
+              <div className="flex items-center gap-2">
+                <label className="text-[11.5px] text-[#7e7e7e] font-semibold shrink-0">Assign Pamilya</label>
+                <select
+                  value={(application as AdingApplication).members.pamilya ?? ''}
+                  onChange={e => onPamilyaChange?.(application.id, e.target.value || null)}
+                  className="text-[12px] border border-white/12 rounded-[9px] px-2.5 py-1.5 text-[#d4d4d4] bg-[#0d0d0d] focus:outline-none focus:border-[#9747FF] officer-select appearance-none pr-8 font-[inherit]"
+                >
+                  <option value="">Not yet assigned</option>
+                  {PAMILYA_OPTIONS.map(p => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+                {pamilyaSaving === 'saving' && (
+                  <span className="text-[11.5px] text-[#6e6e6e] font-medium">Saving…</span>
+                )}
+                {pamilyaSaving === 'saved' && (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5fcf8f" strokeWidth={2.4}>
+                    <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
+                {pamilyaSaving === 'error' && (
+                  <span className="text-[11.5px] text-[#ef6f6f] font-medium">Failed</span>
+                )}
               </div>
             </div>
           )}
