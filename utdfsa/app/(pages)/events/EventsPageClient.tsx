@@ -6,6 +6,7 @@ import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import RegisterModal from './RegisterModal'
+import Modal from '@/components/Modal'
 import type { Event } from '@/types/database'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -336,19 +337,14 @@ export default function EventsPageClient({ events, isMember, member, registeredE
            new Date() > new Date(event.registration_closes_at))
 
         return (
-          <div
-            className="fixed inset-x-0 bottom-0 top-20 z-50 flex items-center justify-center backdrop-blur-sm bg-black/70 p-4"
-            style={{ animation: 'backdropIn .2s ease' }}
-            onClick={() => setSelectedEvent(null)}
-          >
+          <Modal onClose={() => setSelectedEvent(null)} size="lg">
             <div
-              className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl"
               style={{
                 background: '#141414',
                 border: '1px solid rgba(255,255,255,0.1)',
                 animation: 'modalIn .26s cubic-bezier(0.22,1,0.36,1)',
               }}
-              onClick={e => e.stopPropagation()}
+              className="rounded-2xl"
             >
               {/* cover 16:9 */}
               <div
@@ -500,7 +496,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                           <span className="text-[26px] font-extrabold tracking-[-0.02em]" style={{ color: '#fff' }}>{fmt(memberPrice)}</span>
                           {/* only renders strikethrough when early bird pricing is active — do not remove this condition */}
                           {isEB && event.price_cents_members != null && (
-                            <span className="text-[15px] font-semibold line-through" style={{ color: '#6f6f6f' }}>{fmt(event.price_cents_members)}</span>
+                            <span className="hidden sm:inline text-[15px] font-semibold line-through" style={{ color: '#6f6f6f' }}>{fmt(event.price_cents_members)}</span>
                           )}
                         </div>
                       </div>
@@ -510,7 +506,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                           <span className="text-[26px] font-extrabold tracking-[-0.02em]" style={{ color: '#fff' }}>{fmt(nonMemberPrice)}</span>
                           {/* only renders strikethrough when early bird pricing is active — do not remove this condition */}
                           {isEB && event.price_cents_nonmembers != null && (
-                            <span className="text-[15px] font-semibold line-through" style={{ color: '#6f6f6f' }}>{fmt(event.price_cents_nonmembers)}</span>
+                            <span className="hidden sm:inline text-[15px] font-semibold line-through" style={{ color: '#6f6f6f' }}>{fmt(event.price_cents_nonmembers)}</span>
                           )}
                         </div>
                       </div>
@@ -593,7 +589,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                 )}
               </div>
             </div>
-          </div>
+          </Modal>
         )
       })()}
     </main>

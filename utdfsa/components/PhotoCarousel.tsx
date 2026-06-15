@@ -20,19 +20,19 @@ type PosConfig = {
 
 // Five fan positions: index 0 = far-left (-2), index 2 = active center, index 4 = far-right (+2)
 const DESKTOP: PosConfig[] = [
-  { scale: 0.70, translateX: '-90%', zIndex: 30, opacity: 0.50 },
-  { scale: 0.85, translateX: '-55%', zIndex: 40, opacity: 0.75 },
-  { scale: 1.00, translateX: '0%',   zIndex: 50, opacity: 1.00 },
-  { scale: 0.85, translateX: '55%',  zIndex: 40, opacity: 0.75 },
-  { scale: 0.70, translateX: '90%',  zIndex: 30, opacity: 0.50 },
+  { scale: 0.70, translateX: '-90%', zIndex: 5,  opacity: 0.50 },
+  { scale: 0.85, translateX: '-55%', zIndex: 10, opacity: 0.75 },
+  { scale: 1.00, translateX: '0%',   zIndex: 20, opacity: 1.00 },
+  { scale: 0.85, translateX: '55%',  zIndex: 10, opacity: 0.75 },
+  { scale: 0.70, translateX: '90%',  zIndex: 5,  opacity: 0.50 },
 ]
 
 const MOBILE: PosConfig[] = [
-  { scale: 0.65, translateX: '-85%', zIndex: 30, opacity: 0.50 },
-  { scale: 0.82, translateX: '-50%', zIndex: 40, opacity: 0.75 },
-  { scale: 1.00, translateX: '0%',   zIndex: 50, opacity: 1.00 },
-  { scale: 0.82, translateX: '50%',  zIndex: 40, opacity: 0.75 },
-  { scale: 0.65, translateX: '85%',  zIndex: 30, opacity: 0.50 },
+  { scale: 0.65, translateX: '-85%', zIndex: 5,  opacity: 0.50 },
+  { scale: 0.82, translateX: '-50%', zIndex: 10, opacity: 0.75 },
+  { scale: 1.00, translateX: '0%',   zIndex: 20, opacity: 1.00 },
+  { scale: 0.82, translateX: '50%',  zIndex: 10, opacity: 0.75 },
+  { scale: 0.65, translateX: '85%',  zIndex: 5,  opacity: 0.50 },
 ]
 
 export default function PhotoCarousel() {

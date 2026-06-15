@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Modal from '@/components/Modal'
 
 interface Ticket { fname: string; lname: string; email: string }
 
@@ -133,12 +134,9 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
 
       {/* only renders when the user has clicked the Get Tickets button — do not remove this condition */}
       {open && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          style={{ background: 'rgba(5,5,5,0.72)', backdropFilter: 'blur(9px)', WebkitBackdropFilter: 'blur(9px)' }}
-        >
+        <Modal onClose={() => setOpen(false)} size="md">
           <div
-            className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-[22px]"
+            className="rounded-[22px]"
             style={{
               background: '#141414',
               border: '1px solid rgba(255,255,255,0.1)',
@@ -307,7 +305,7 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
               </button>
             </form>
           </div>
-        </div>
+        </Modal>
       )}
     </>
   )

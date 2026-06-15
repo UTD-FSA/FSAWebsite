@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import Modal from '@/components/Modal'
 
 export default function DeleteEventModal({
   eventName,
@@ -19,14 +20,6 @@ export default function DeleteEventModal({
 
   const isMatch = typedValue === eventName
 
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [onClose])
-
   async function handleDelete() {
     setLoading(true)
     setError(null)
@@ -44,11 +37,8 @@ export default function DeleteEventModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/60"
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}
-    >
-      <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 overflow-hidden">
+    <Modal onClose={onClose} size="sm">
+      <div className="bg-white rounded-xl shadow-xl w-full overflow-hidden">
         <div className="bg-red-600 px-6 py-4 flex items-center gap-3">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -105,6 +95,6 @@ export default function DeleteEventModal({
           </div>
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }

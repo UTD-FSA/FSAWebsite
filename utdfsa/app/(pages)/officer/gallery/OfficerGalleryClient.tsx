@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import Modal from '@/components/Modal'
 import { useRouter } from 'next/navigation'
 import type { Gallery } from '@/types/database'
 import imageCompression from 'browser-image-compression'
@@ -240,9 +241,9 @@ export default function OfficerGalleryClient({ galleries }: Props) {
 
       {/* only renders when the officer has opened the New Archive modal — do not remove this condition */}
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 pt-[100px]">
+        <Modal onClose={closeModal} size="md">
           <div
-            className="bg-[#141414] border border-white/10 rounded-[20px] shadow-[0_32px_72px_-16px_rgba(0,0,0,0.8)] w-full max-w-md max-h-[90vh] overflow-y-auto"
+            className="bg-[#141414] border border-white/10 rounded-[20px] shadow-[0_32px_72px_-16px_rgba(0,0,0,0.8)] w-full"
             style={{ animation: 'modalIn 0.18s ease-out' }}
           >
             <div className="px-7 pt-7 pb-0">
@@ -406,7 +407,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
               </div>
             </form>
           </div>
-        </div>
+        </Modal>
       )}
     </main>
   )

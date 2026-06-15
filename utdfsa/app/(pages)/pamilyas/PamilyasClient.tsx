@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Modal from '@/components/Modal'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -220,15 +221,6 @@ export default function PamilyasClient({
   // FIX 5: popup state replaces the submitted badge
   const [popup, setPopup] = useState<{ title: string; message: string } | null>(null)
 
-  // FIX 5: Escape key closes the modal
-  useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setPopup(null)
-    }
-    document.addEventListener('keydown', handleKey)
-    return () => document.removeEventListener('keydown', handleKey)
-  }, [])
-
   // ── Card prop helpers ────────────────────────────────────────────────────────
 
   function kuyateCardProps(): { href?: string; onClick?: () => void } {
@@ -303,14 +295,8 @@ export default function PamilyasClient({
 
       {/* FIX 5: popup modal — renders when popup is not null */}
       {popup && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/60"
-          onClick={() => setPopup(null)}
-        >
-          <div
-            className="max-w-sm w-full mx-4 bg-[#262626] rounded-2xl p-6 text-center shadow-2xl"
-            onClick={e => e.stopPropagation()}
-          >
+        <Modal onClose={() => setPopup(null)} size="sm">
+          <div className="bg-[#262626] rounded-2xl p-6 text-center shadow-2xl">
             <h3 className="font-display font-black text-white text-lg uppercase mb-3">
               {popup.title}
             </h3>
@@ -324,7 +310,7 @@ export default function PamilyasClient({
               Got it
             </button>
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* ── SECTION 1 — HERO ──────────────────────────────────────── */}

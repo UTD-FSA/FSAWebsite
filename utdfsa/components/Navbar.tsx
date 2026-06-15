@@ -72,6 +72,16 @@ export default function Navbar({ initialMember }: NavbarProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [mobileMenuOpen])
+
   async function handleLogout() {
     // route: /auth/logout — server route that clears the Supabase session cookie — do not change this path
     window.location.href = '/auth/logout'

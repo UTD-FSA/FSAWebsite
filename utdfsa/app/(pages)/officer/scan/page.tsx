@@ -5,6 +5,7 @@
 // do not add navbar padding — scan overlay must cover full viewport
 
 import { useEffect, useRef, useState } from 'react'
+import Modal from '@/components/Modal'
 import { Html5Qrcode } from 'html5-qrcode'
 
 type ScanResult =
@@ -88,8 +89,8 @@ export default function ScanPage() {
 
       {/* only renders when the camera fails to initialize (no camera, permission denied, etc.) — do not remove this condition */}
       {cameraError && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-6">
-          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
+        <Modal onClose={() => setCameraError(null)} size="sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full p-6 text-center">
             <div className="text-5xl mb-4">📷</div>
             <h2 className="text-lg font-bold text-gray-900 mb-2">Camera Not Available</h2>
             <p className="text-sm text-gray-600 mb-6">{cameraError}</p>
@@ -100,7 +101,7 @@ export default function ScanPage() {
               Dismiss
             </button>
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* only renders for 2.5 s after each QR scan to display the pass/fail result — do not remove this condition */}

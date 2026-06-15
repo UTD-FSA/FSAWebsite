@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import Modal from '@/components/Modal'
 
 // ============================================================
 // DATA — types and constants
@@ -236,15 +237,6 @@ function ApplicationDetailModal({
   onPamilyaChange?: (id: string, pamilya: string | null) => void
   pamilyaSaving?: 'saving' | 'saved' | 'error' | null
 }) {
-  useEffect(() => {
-    if (!application) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [application, onClose])
-
   if (!application) return null
 
   const m = application.members
@@ -252,15 +244,10 @@ function ApplicationDetailModal({
   const questionLabels = type === 'ading' ? ADING_QUESTION_LABELS : KUYATE_QUESTION_LABELS
 
   return (
-    <div
-      className="fixed inset-0 z-50 backdrop-blur-sm bg-black/70 flex items-center justify-center p-4"
-      style={{ animation: 'backdropIn 0.15s ease-out' }}
-      onClick={onClose}
-    >
+    <Modal onClose={onClose} size="lg">
       <div
-        className={`bg-[#141414] border border-white/10 rounded-2xl shadow-[0_32px_80px_-20px_rgba(0,0,0,0.85)] max-w-2xl w-full max-h-[calc(100vh-6rem)] flex flex-col${type === 'ading' ? ' mt-[80px]' : ''}`}
+        className="bg-[#141414] border border-white/10 rounded-2xl shadow-[0_32px_80px_-20px_rgba(0,0,0,0.85)] w-full flex flex-col"
         style={{ animation: 'modalIn 0.18s ease-out' }}
-        onClick={e => e.stopPropagation()}
       >
         {/* Header — sticky */}
         <div className="px-6 pt-6 pb-0 shrink-0">
@@ -398,7 +385,7 @@ function ApplicationDetailModal({
           )}
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -848,9 +835,9 @@ export default function ApplicationsClient({
 
         {/* Kuyate confirmation modal — z-50 so it layers above the detail modal */}
         {pendingStatus && (
-          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <Modal onClose={() => setPendingStatus(null)} size="sm">
             <div
-              className="bg-[#141414] border border-white/10 rounded-[18px] max-w-sm w-full p-7 shadow-[0_32px_72px_-16px_rgba(0,0,0,0.85)]"
+              className="bg-[#141414] border border-white/10 rounded-[18px] w-full p-7 shadow-[0_32px_72px_-16px_rgba(0,0,0,0.85)]"
               style={{ animation: 'modalIn 0.18s ease-out' }}
             >
               <h2 className="text-[16px] font-bold text-white mb-2">
@@ -885,7 +872,7 @@ export default function ApplicationsClient({
                 </button>
               </div>
             </div>
-          </div>
+          </Modal>
         )}
       </div>
     </main>

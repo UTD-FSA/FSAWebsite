@@ -82,13 +82,13 @@ export default function MembershipClient({
                   <p className="font-display font-black text-2xl text-accent-green">
                     {formatPrice(displayPrice)}
                   </p>
-                  <p className="font-sans text-sm text-white/30 line-through">
+                  <p className="hidden sm:block font-sans text-sm text-white/30 line-through">
                     {formatPrice(regularPrice)}
                   </p>
                   <p className="font-display font-bold text-xs text-accent-green uppercase tracking-wide mt-0.5">
                     Early Bird
                   </p>
-                  <p className="font-sans text-xs text-white/40 mt-1">
+                  <p className="hidden sm:block font-sans text-xs text-white/40 mt-1">
                     ends {new Date(earlyBirdDeadline).toLocaleDateString('en-US', {
                       month: 'long',
                       day: 'numeric',
