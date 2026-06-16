@@ -150,7 +150,7 @@ export default function SpiritPage() {
         <div className="max-w-[956px] mx-auto">
           <div
             className="bg-white rounded-[70px] px-10 py-8 text-center mx-auto max-w-2xl"
-            style={{ boxShadow: '0px 0px 40px 20px rgba(255,255,255,0.12)' }}
+            style={{ boxShadow: '0px 0px 8px 2px rgba(255,255,255,0.05)' }}
           >
             <h2 className="font-display font-black text-[#0e0e0e] mb-4" style={{ fontSize: 'clamp(20px, 2vw, 30px)' }}>
               INTERESTED IN JOINING SPIRIT?

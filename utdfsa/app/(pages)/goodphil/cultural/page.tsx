@@ -161,7 +161,7 @@ export default function CulturalPage() {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center w-full py-5 px-8 bg-white rounded-[70px] text-center transition-opacity hover:opacity-90"
-            style={{ boxShadow: '0px 0px 40px 20px rgba(227,174,61,0.39)' }}
+            style={{ boxShadow: '0px 0px 8px 2px rgba(227,174,61,0.05)' }}
           >
             <p
               className="font-sans text-[#0e0e0e] text-center"

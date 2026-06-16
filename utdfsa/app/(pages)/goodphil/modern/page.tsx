@@ -16,54 +16,17 @@ export default function ModernPage() {
       {/* ── SECTION 1 — HERO ──────────────────────────────────────── */}
       <section className="relative w-full h-[40vh] md:h-[600px] overflow-hidden">
 
-        {/* Background layer: modern-hero-bg.png fills entire hero */}
-        <div
-          className="absolute inset-0 z-0"
-          style={{ transform: 'translateX(0px) scale(1.0)', transformOrigin: 'center center' }}
-        >
+        {/* full-bleed hero photo */}
+        <div className="absolute inset-0 z-10">
           <Image
-            src="/modern-hero-bg.png"
-            alt=""
+            src="/modern-hero.jpg"
+            alt="UTD Maharlika modern dance team"
             fill
             className="object-cover object-center"
             priority
             quality={90}
             sizes="100vw"
           />
-        </div>
-
-        {/* Middle layer: modern-hero.png — flex-centered wrapper eliminates translate offsets */}
-        <div
-          className="absolute inset-0 flex items-center justify-center"
-          style={{ zIndex: 1 }}
-        >
-
-          {/* mobile: full-bleed cover */}
-          <div className="absolute inset-0 md:hidden">
-            <Image
-              src="/modern-hero.jpg"
-              alt="UTD Maharlika modern dance team"
-              fill
-              className="object-cover object-center"
-              priority
-              quality={90}
-              sizes="100vw"
-            />
-          </div>
-
-          {/* desktop: centered contained image, unchanged */}
-          <div className="relative hidden md:block w-[65%]" style={{ height: '85%' }}>
-            <Image
-              src="/modern-hero.jpg"
-              alt="UTD Maharlika modern dance team"
-              fill
-              className="object-contain"
-              priority
-              quality={90}
-              sizes="65vw"
-            />
-          </div>
-
         </div>
 
         {/* dark overlay — mobile only, keeps title readable */}
@@ -198,7 +161,7 @@ export default function ModernPage() {
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center w-full py-5 px-8 bg-white rounded-[70px] text-center transition-opacity hover:opacity-90"
-            style={{ boxShadow: '0px 0px 40px 20px rgba(73,112,71,0.85)' }}
+            style={{ boxShadow: '0px 0px 8px 2px rgba(73,112,71,0.05)' }}
           >
             <p
               className="font-sans text-[#0e0e0e] text-center"

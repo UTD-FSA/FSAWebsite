@@ -9,6 +9,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 
 // ── officer data ──────────────────────────────────────────────
 // update position/name entries each year; add new year block to PAST_OFFICERS
@@ -197,24 +198,50 @@ export default function AboutClient() {
     <main className="bg-brand-bg text-white overflow-x-hidden">
 
       {/* ── SECTION 1 — WHO WE ARE ──────────────────────────────────── */}
-      <section className="py-20 px-6">
-        <div className="max-w-3xl mx-auto text-center">
-          <h1
-            className="font-display font-black text-white mb-8"
-            style={{ fontSize: 'clamp(36px, 5.5vw, 80px)', letterSpacing: '-0.02em' }}
-          >
-            ABOUT US
-          </h1>
-          <p
-            className="font-sans text-white/60 leading-relaxed max-w-2xl mx-auto"
-            style={{ fontSize: 'clamp(15px, 1.5vw, 18px)' }}
-          >
-            UTD FSA is a student-led social organization at the University of Texas at Dallas,
-            created to unite students who are interested in promoting Filipino-American culture.
-            Through dance, sports, social events, and community outreach, UTD FSA aims to celebrate
-            and foster community through Filipino traditions and heritage.
-          </p>
+      {/* hero height: compact on mobile, taller on desktop */}
+      <section className="relative w-full overflow-hidden"
+        style={{ minHeight: 'clamp(320px, 50vh, 620px)' }}>
+
+        {/* background photo — object-center keeps composition */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/about-us-hero.jpg"
+            alt="UTD FSA"
+            fill
+            className="object-cover object-center"
+            priority
+            quality={90}
+            sizes="100vw"
+          />
         </div>
+
+        {/* dark overlay — ensures text stays readable over any photo */}
+        <div className="absolute inset-0 z-10 bg-black/55" />
+
+        {/* text content — centered, sits above overlay */}
+        <div className="relative z-20 flex flex-col items-center justify-center text-center px-6 py-20 min-h-[inherit]"
+          style={{ minHeight: 'clamp(320px, 50vh, 620px)' }}>
+          <div className="max-w-3xl mx-auto">
+
+            <h1
+              className="font-display font-black text-white mb-8"
+              style={{ fontSize: 'clamp(36px, 5.5vw, 80px)', letterSpacing: '-0.02em' }}
+            >
+              ABOUT US
+            </h1>
+            <p
+              className="font-sans text-white/60 leading-relaxed max-w-2xl mx-auto"
+              style={{ fontSize: 'clamp(15px, 1.5vw, 18px)' }}
+            >
+              UTD FSA is a student-led social organization at the University of Texas at Dallas,
+              created to unite students who are interested in promoting Filipino-American culture.
+              Through dance, sports, social events, and community outreach, UTD FSA aims to celebrate
+              and foster community through Filipino traditions and heritage.
+            </p>
+
+          </div>
+        </div>
+
       </section>
 
       {/* ── SECTION 2 — OFFICER BOARD ───────────────────────────────── */}

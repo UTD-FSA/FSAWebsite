@@ -237,11 +237,13 @@ export default function SportsPage() {
         </div>
       </section>
 
-      {/* ── SECTION 4 — CAPTAIN INTEREST FORM CTA ───────────────── */}
-      <section className="bg-section-bg pt-4 pb-8 px-6 md:px-8">
-        <div className="max-w-3xl mx-auto">
+      {/* ── SECTIONS 4 & 5 — CAPTAIN CTAS (side-by-side on xl) ──── */}
+      <section className="bg-section-bg px-6 md:px-8 pt-4 pb-20">
+        <div className="max-w-5xl mx-auto flex flex-col xl:flex-row gap-6 items-stretch">
+
+          {/* primary cta — captain interest form */}
           <div
-            className="relative border border-white/20 rounded-[26px] px-10 md:px-14 py-16 text-center overflow-hidden"
+            className="flex-1 relative border border-white/20 rounded-[26px] px-10 md:px-14 py-16 text-center overflow-hidden"
             style={{ background: 'linear-gradient(180deg, #191919 0%, #111111 100%)' }}
           >
             <span
@@ -273,34 +275,42 @@ export default function SportsPage() {
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </a>
           </div>
-        </div>
-      </section>
 
-      {/* ── SECTION 5 — CAPTAIN MEETING BOOKING CTA ─────────────── */}
-      <section className="bg-section-bg pb-20 px-6 md:px-8">
-        <div className="max-w-3xl mx-auto border-t border-white/[0.08] pt-14 text-center">
-          <h3
-            className="font-display font-bold text-white mb-4"
-            style={{ fontSize: 'clamp(20px, 2.5vw, 27px)', letterSpacing: '-0.01em' }}
+          {/* secondary cta — book a captain meeting */}
+          <div
+            className="flex-1 border border-white/20 rounded-[26px] px-10 md:px-14 py-16 text-center flex flex-col items-center justify-center"
+            style={{ background: 'linear-gradient(180deg, #191919 0%, #111111 100%)' }}
           >
-            BOOK A CAPTAIN MEETING
-          </h3>
-          <p
-            className="font-sans text-[#8a8a8a] mx-auto mb-8"
-            style={{ maxWidth: '560px', fontSize: 'clamp(14px, 1.4vw, 15.5px)', lineHeight: 1.6, fontWeight: 500 }}
-          >
-            Already a captain or interested in becoming one? Book a meeting with the Sports Coordinator to discuss your team, scheduling, and Goodphil prep.
-          </p>
-          <a
-            href="https://calendar.app.google/DeGvXnzB5Ux2DEQa8"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-8 py-4 border border-white/40 text-white/80 rounded-[13px] font-sans font-bold transition-all duration-200 hover:border-white/60 hover:text-white"
-            style={{ fontSize: '14.5px', letterSpacing: '0.01em' }}
-          >
-            Book a Meeting
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-          </a>
+            <span
+              className="font-display font-bold text-white/50 block mb-4"
+              style={{ fontSize: '11px', letterSpacing: '0.22em', textTransform: 'uppercase' }}
+            >
+              Leadership
+            </span>
+            <h3
+              className="font-display font-black text-white mb-4"
+              style={{ fontSize: 'clamp(24px, 3vw, 38px)', letterSpacing: '-0.02em', lineHeight: 1.06 }}
+            >
+              BOOK A CAPTAIN MEETING
+            </h3>
+            <p
+              className="font-sans text-[#8a8a8a] mx-auto mb-8"
+              style={{ maxWidth: '560px', fontSize: 'clamp(15px, 1.5vw, 16.5px)', lineHeight: 1.6, fontWeight: 500 }}
+            >
+              Already a captain or interested in becoming one? Book a meeting with the Sports Coordinator to discuss your team, scheduling, and Goodphil prep.
+            </p>
+            <a
+              href="https://calendar.app.google/DeGvXnzB5Ux2DEQa8"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-8 py-4 border border-white/40 text-white/80 rounded-[13px] font-sans font-bold transition-all duration-200 hover:border-white/60 hover:text-white"
+              style={{ fontSize: '14.5px', letterSpacing: '0.01em' }}
+            >
+              Book a Meeting
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            </a>
+          </div>
+
         </div>
       </section>
 
