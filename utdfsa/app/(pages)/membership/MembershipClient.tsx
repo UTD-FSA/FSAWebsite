@@ -70,7 +70,7 @@ export default function MembershipClient({
   }
 
   return (
-    <main className="bg-section-bg min-h-screen text-white">
+    <main className="bg-brand-bg min-h-screen text-white">
       <div className="max-w-lg mx-auto px-6 py-12">
 
         <h1 className="font-display font-black text-[clamp(36px,5vw,64px)] text-white uppercase leading-none tracking-tight mb-2">
@@ -80,7 +80,7 @@ export default function MembershipClient({
           Join UTD FSA and get access to all events, pamilya placement, and more!
         </p>
 
-        <div className="border-2 border-white/20 rounded-[27px] p-8 mb-6 bg-brand-bg">
+        <div className="border border-white/[7%] rounded-2xl p-8 mb-6 bg-[#1a1a1a]">
           <div className="flex justify-between items-start mb-6">
             <div>
               <h2 className="font-display font-black text-base text-white uppercase tracking-wide">UTD FSA Membership</h2>
@@ -149,7 +149,7 @@ export default function MembershipClient({
           </button>
         </div>
 
-        <p className="font-sans text-xs text-white/30 text-center">
+        <p className="font-sans text-xs text-white/50 text-center">
           Secure payment powered by Stripe. Have an officer code? You can enter it on the next page.
         </p>
 

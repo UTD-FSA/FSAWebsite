@@ -84,11 +84,12 @@ export default function BasicInfoClient({ initial }: Props) {
   const labelCls = 'block font-display font-bold text-xs uppercase tracking-widest text-white/60 mb-1.5'
 
   return (
-    <main className="bg-section-bg min-h-screen text-white">
+    <main className="bg-brand-bg min-h-screen text-white">
       <div className="max-w-lg mx-auto px-6 py-12">
         <h1 className="font-display font-black text-[clamp(28px,4vw,48px)] text-white uppercase leading-none mb-6">
           Tell Us About Yourself
         </h1>
+        <div className="border border-white/[7%] rounded-2xl bg-[#1a1a1a] p-6">
         <p className="font-sans text-sm text-white/50 mb-6">
           This information helps us get to know you better.
         </p>
@@ -176,6 +177,7 @@ export default function BasicInfoClient({ initial }: Props) {
             {/* only shows "saving..." while the API call is in flight — do not remove this condition */}
             {loading ? 'Saving…' : 'Save & Continue'}
           </button>
+        </div>
         </div>
       </div>
     </main>

@@ -69,7 +69,7 @@ export default function Home() {
 
       {/* ── WHO ARE WE? ───────────────────────────────────────────── */}
       <section className="bg-section-bg">
-        <div className="max-w-[1512px] mx-auto flex flex-col lg:flex-row px-4 sm:px-8 lg:px-16 py-12 lg:py-20 gap-0">
+        <div className="max-w-[1512px] mx-auto flex flex-col lg:flex-row px-4 sm:px-8 lg:px-16 py-12 lg:py-20 gap-8 lg:gap-16">
 
           {/* Left: text */}
           <div className="w-full lg:w-[420px] lg:shrink-0 flex flex-col justify-start">
@@ -88,7 +88,7 @@ export default function Home() {
           <div className="hidden lg:block w-px bg-white/20 mx-12 self-stretch shrink-0" />
 
           {/* Right: photo carousel */}
-          <div className="flex-1 flex items-center justify-center mt-8 lg:mt-0 ml-0 md:ml-[200px]">
+          <div className="flex-1 flex items-center justify-center mt-8 lg:mt-0">
             <PhotoCarousel />
           </div>
 

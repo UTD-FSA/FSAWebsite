@@ -117,14 +117,14 @@ export default function LoginPage() {
 
           {/* Heading */}
           <h1
-            className="font-display font-black text-white leading-[1.05] tracking-[-0.02em] mb-[14px] text-center md:text-left"
+            className="font-display font-black text-white leading-[1.05] tracking-[-0.02em] mb-[14px] text-center"
             style={{ fontSize: 'clamp(30px, 3vw, 34px)' }}
           >
             Welcome Back
           </h1>
 
           {/* Subtext */}
-          <p className="text-[15px] font-medium leading-[1.55] mb-8 text-center md:text-left" style={{ color: '#8c8c8c' }}>
+          <p className="text-[15px] font-medium leading-[1.55] mb-8 text-center" style={{ color: '#8c8c8c' }}>
             Sign in to access your FSA membership, events, and more.
           </p>
 

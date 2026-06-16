@@ -275,7 +275,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
   // do not reorder steps or change the step transition logic
   if (step === 'pick') {
     return (
-      <main className="bg-section-bg min-h-screen text-white">
+      <main className="bg-brand-bg min-h-screen text-white">
         <div className="max-w-2xl mx-auto px-6 py-12">
           <h1 className="font-display font-black text-[clamp(32px,5vw,56px)] text-white uppercase leading-none mb-2">
             Welcome,<br />{firstName}!
@@ -378,12 +378,14 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
   // do not reorder steps or change the step transition logic
   if (step === 'profile') {
     return (
-      <main className="bg-section-bg min-h-screen text-white">
+      <main className="bg-brand-bg min-h-screen text-white">
         <div className="max-w-lg mx-auto px-6 py-12">
           <h1 className="font-display font-black text-[clamp(28px,4vw,48px)] text-white uppercase leading-none mb-6">
             Tell Us About Yourself
           </h1>
           <StepIndicator step={step} memberType={memberType} />
+
+          <div className="border border-white/[7%] rounded-2xl bg-[#1a1a1a] p-6">
           <p className="font-sans text-sm text-white/50 mb-6">
             This information will appear on your member profile.
           </p>
@@ -497,6 +499,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
               ← Go Back
             </button>
           </form>
+          </div>
         </div>
       </main>
     )
@@ -524,12 +527,14 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
     const birthdayAge = calcAge(adingForm.birthday)
 
     return (
-      <main className="bg-section-bg min-h-screen text-white">
+      <main className="bg-brand-bg min-h-screen text-white">
         <div className="max-w-lg mx-auto px-6 py-12">
           <h1 className="font-display font-black text-[clamp(28px,4vw,48px)] text-white uppercase leading-none mb-6">
             Ading Application
           </h1>
           <StepIndicator step={step} memberType={memberType} />
+
+          <div className="border border-white/[7%] rounded-2xl bg-[#1a1a1a] p-6">
           <p className="font-sans text-sm text-white/50 mb-6">
             Help us place you in the right pamilya.
           </p>
@@ -911,6 +916,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
               ← Go Back
             </button>
           </form>
+          </div>
         </div>
       </main>
     )
@@ -936,12 +942,14 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
   // do not reorder steps or change the step transition logic
   if (step === 'kuyate') {
     return (
-      <main className="bg-section-bg min-h-screen text-white">
+      <main className="bg-brand-bg min-h-screen text-white">
         <div className="max-w-lg mx-auto px-6 py-12">
           <h1 className="font-display font-black text-[clamp(28px,4vw,48px)] text-white uppercase leading-none mb-6">
             Kuya / Ate Application
           </h1>
           <StepIndicator step={step} memberType={memberType} />
+
+          <div className="border border-white/[7%] rounded-2xl bg-[#1a1a1a] p-6">
           <p className="font-sans text-sm text-white/50 mb-6">
             Tell us about your interest in being a pamilya leader.
           </p>
@@ -1118,6 +1126,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
               ← Go Back
             </button>
           </form>
+          </div>
         </div>
       </main>
     )
