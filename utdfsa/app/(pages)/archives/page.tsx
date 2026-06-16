@@ -1,15 +1,20 @@
+// ── page.tsx ─────────────────────────────────────────────────
+// archives server component — fetches published galleries and passes to client
+//
+// data:  galleries table — published only, sorted year desc then created_at desc
+// deps:  supabase admin client (bypass rls to read published galleries publicly)
+// notes: admin client used here because gallery reads are public but RLS would
+//        block unauthenticated access; only is_published = true rows are shown
+// ─────────────────────────────────────────────────────────────
 import { createAdminClient } from '@/utils/supabase/server'
 import ArchivesClient from './ArchivesClient'
 import type { Gallery } from '@/types/database'
 
 export default async function ArchivesPage() {
-  // ============================================================
-  // DATA — do not modify this section
-  // all database queries and auth checks live here
-  // changing these will break functionality
-  // ============================================================
+  // bypass rls — officer action, user client would be blocked for unauthenticated visitors
   const admin = createAdminClient()
 
+  // galleries table — fetch only published rows, newest year first
   const { data: galleries } = await admin
     .from('galleries')
     .select('*')

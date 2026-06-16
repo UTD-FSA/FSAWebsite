@@ -1,3 +1,12 @@
+// ── EventsPageClient.tsx ─────────────────────────────────────
+// client component — events page with card grid, this-week strip, calendar, and detail modal
+//
+// data:  events prop (Event[]) from events/page.tsx server component
+//        member and registeredEventIds props for pricing and registration state
+// deps:  @fullcalendar/react (dayGrid + interaction plugins) for the calendar view
+// notes: early-bird and grace-period logic determines CTA state in the detail modal;
+//        modal is rendered inline via an IIFE to keep event variable in scope
+// ─────────────────────────────────────────────────────────────
 'use client'
 
 import { useState } from 'react'
@@ -10,8 +19,10 @@ import Modal from '@/components/Modal'
 import type { Event } from '@/types/database'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
+// converts cents integer to dollar string (e.g. 1500 → "$15.00")
 function fmt(cents: number) { return `$${(cents / 100).toFixed(2)}` }
 
+// all date/time helpers pin to America/Chicago so displays match Dallas event times
 function fmtCardDate(iso: string) {
   const day = new Date(iso).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'America/Chicago' })
   const time = new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Chicago' })
@@ -39,6 +50,8 @@ function fmtRegDeadline(iso: string) {
   return `${datePart} at ${timePart}`
 }
 
+// event type classification — determines pricing, QR attendance, and points eligibility
+// 'other' is a hybrid type: it has ticket pricing AND awards goodphil points on QR check-in
 function isTicketed(type: string) { return ['party', 'other'].includes(type.toLowerCase()) }
 function isHybrid(type: string) { return type.toLowerCase() === 'other' }
 function hasAttendanceQR(type: string) { return ['general meeting', 'risk management', 'gp event', 'other'].includes(type.toLowerCase()) }
@@ -107,8 +120,11 @@ interface Props {
 }
 
 export default function EventsPageClient({ events, isMember, member, registeredEventIds, success }: Props) {
+  // tracks which event card was clicked to open the detail modal; null = closed
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
 
+  // ── this-week filter ──────────────────────────────────────
+  // compute a 7-day window from now; dates compared in JS local time
   const now = new Date()
   const weekEnd = new Date(now)
   weekEnd.setDate(weekEnd.getDate() + 7)
@@ -318,19 +334,24 @@ export default function EventsPageClient({ events, isMember, member, registeredE
         const ticketed = isTicketed(event.event_type)
         const hybrid = isHybrid(event.event_type)
         const nowTs = new Date()
+        // early bird is active when: event is ticketed, deadline not passed, and eb prices are set
         const isEB =
           ticketed &&
           event.eb_deadline != null &&
           event.eb_price_members != null &&
           event.eb_price_nonmembers != null &&
           nowTs < new Date(event.eb_deadline)
+        // resolve the correct price to display based on early bird state
         const memberPrice = isEB ? event.eb_price_members! : event.price_cents_members
         const nonMemberPrice = isEB ? event.eb_price_nonmembers! : event.price_cents_nonmembers
         const alreadyRegistered = ticketed && registeredEventIds.includes(event.id)
+        // 24-hour grace period: registration remains open until 24h after the event starts
         const gracePeriodMs = 24 * 60 * 60 * 1000
         const pastGracePeriod =
           nowTs.getTime() - new Date(event.event_date).getTime() > gracePeriodMs
+        // event is effectively inactive if manually deactivated or grace period has passed
         const effectivelyInactive = !event.is_active || pastGracePeriod
+        // registration is closed when event is inactive OR registration_closes_at has passed
         const registrationClosed =
           effectivelyInactive ||
           (event.registration_closes_at != null &&

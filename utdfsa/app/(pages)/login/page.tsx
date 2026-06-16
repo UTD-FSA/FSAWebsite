@@ -1,8 +1,16 @@
+// ── page.tsx ─────────────────────────────────────────────────
+// login page — triggers google oauth and redirects to /auth/callback
+//
+// data:  no supabase reads; oauth flow only
+// deps:  supabase auth (google oauth provider)
+// notes: ?next= query param is forwarded through the oauth redirect
+//        so users land on their intended page after sign-in
 'use client'
 
 import Image from 'next/image'
 import { createClient } from '@/utils/supabase/client'
 
+// ── auth ──────────────────────────────────────────────────────
 // ============================================================
 // UI — safe to restyle everything below this line
 // no external data — this page only triggers Google OAuth
@@ -13,7 +21,9 @@ import { createClient } from '@/utils/supabase/client'
 export default function LoginPage() {
   const supabase = createClient()
 
+  // ── handleGoogleLogin ────────────────────────────────────────
   async function handleGoogleLogin() {
+    // read ?next= from the url so we can restore the intended destination post-login
     const next = new URLSearchParams(window.location.search).get('next')
     await supabase.auth.signInWithOAuth({
       provider: 'google',

@@ -1,3 +1,11 @@
+// ── page.tsx ─────────────────────────────────────────────────
+// server component — member profile view with goodphil eligibility summary
+//
+// data:  members (all fields), events (id by type), attendance (meeting + risk management counts)
+// deps:  supabase (respects rls — user client), getSettings (kuyateApplicationsOpen flag)
+// notes: meeting and risk management counts use a two-step subquery pattern because
+//        supabase count filters on joined tables are not supported;
+//        __none__ sentinel prevents an empty .in() call which would return all rows
 import { createUserClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { getSettings } from '@/lib/settings'
@@ -9,21 +17,27 @@ export default async function ProfilePage() {
   // and reads kuyateApplicationsOpen from settings to conditionally
   // render the re-apply section for not_interested members.
   // ============================================================
+  // respects rls — only returns rows the caller owns
   const supabase = await createUserClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // redirect to /login if no session found
   if (!user) redirect('/login')
 
+  // members table — fetch the full member row for display on the profile page
   const { data: member } = await supabase
     .from('members')
     .select('*')
     .eq('email', user.email!)
     .maybeSingle()
 
+  // redirect to /login if member row doesn't exist
   if (!member) redirect('/login')
 
+  // settings table — fetch kuyateApplicationsOpen to conditionally show the re-apply section
   const { kuyateApplicationsOpen } = await getSettings()
 
+  // events table — get ids for general meeting and risk management types (step 1 of subquery)
   const { data: generalAndRiskEvents } = await supabase
     .from('events')
     .select('id')
@@ -31,12 +45,14 @@ export default async function ProfilePage() {
 
   const generalAndRiskEventIds = generalAndRiskEvents?.map((e: { id: string }) => e.id) ?? []
 
+  // attendance table — count meetings attended; '__none__' sentinel avoids empty .in() returning all rows
   const { count: meetingCount } = await supabase
     .from('attendance')
     .select('id', { count: 'exact', head: true })
     .eq('member_id', member.id)
     .in('event_id', generalAndRiskEventIds.length > 0 ? generalAndRiskEventIds : ['__none__'])
 
+  // events table — get risk management event ids specifically (step 1 of subquery)
   const { data: riskMgmtEvents } = await supabase
     .from('events')
     .select('id')
@@ -44,6 +60,7 @@ export default async function ProfilePage() {
 
   const riskMgmtEventIds = riskMgmtEvents?.map((e: { id: string }) => e.id) ?? []
 
+  // attendance table — count risk management sessions attended specifically
   const { count: riskMgmtCount } = await supabase
     .from('attendance')
     .select('id', { count: 'exact', head: true })
@@ -61,9 +78,12 @@ export default async function ProfilePage() {
   // change classnames, layout, colors, and typography freely
   // do not remove or rename the variables being rendered
   // ============================================================
+  // ── goodphil eligibility ──────────────────────────────────────
+  // true when the member has attended at least one risk management session
   const riskMgmtAttended = (riskMgmtCount ?? 0) > 0
   const goodphilPoints = member.points ?? 0
   const goodphilMeetings = meetingCount ?? 0
+  // eligible when: 6+ points, 3+ meetings attended, and risk management attended at least once
   const isGoodphilEligible = goodphilPoints >= 6 && goodphilMeetings >= 3 && riskMgmtAttended
 
   return (

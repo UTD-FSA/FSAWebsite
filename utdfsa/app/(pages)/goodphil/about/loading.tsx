@@ -1,3 +1,10 @@
+// ── loading.tsx ───────────────────────────────────────────
+// skeleton screen for the goodphil about page
+//
+// notes: mirrors the section structure of about/page.tsx —
+//        hero, what is, participate, and team grid skeletons
+// ──────────────────────────────────────────────────────────
+
 export default function GoodphilAboutLoading() {
   return (
     <div className="bg-section-bg text-white overflow-x-hidden">

@@ -1,3 +1,19 @@
+// ── route.ts (stripe-webhook) ─────────────────────────────────────────────────
+// receives stripe webhook events and fulfills orders (membership or event tickets).
+//
+// data:  members, event_registrations, registration_tickets, events
+// deps:  stripe (signature verification + event parsing), resend (confirmation emails),
+//        qrcode (png buffer generation for ticket attachments)
+// notes: CRITICAL — stripe calls this directly; do NOT add auth middleware here.
+//        stripe.webhooks.constructEvent() is the security layer (STRIPE_WEBHOOK_SECRET).
+//        two event types are handled:
+//          checkout.session.completed → fulfill membership or ticket order + send email
+//          checkout.session.expired  → mark event registration as failed
+//        email failures are caught and logged — they never fail the webhook response
+//        because payment is already recorded before the email attempt.
+//        idempotency: stripe may replay events; downstream db updates use .eq('id', …)
+//        so they are naturally idempotent (re-applying the same update is safe).
+
 // CRITICAL: this route handles all payment confirmations
 // stripe sends events here after payment completes
 // do not add auth middleware to this route — stripe calls it directly
@@ -17,6 +33,9 @@ import { NextResponse } from 'next/server'
 // Do NOT add bodyParser: false here (that's Pages Router only and is ignored in App Router).
 
 export async function POST(req: Request) {
+  // ── signature verification ────────────────────────────────────────────────
+
+  // raw text required — stripe signature is computed over the exact request body bytes
   // ============================================================
   // DATA — do not modify this section
   // all database queries and auth checks live here
@@ -32,6 +51,7 @@ export async function POST(req: Request) {
   let event
 
   try {
+    // uses STRIPE_WEBHOOK_SECRET env var to verify the event came from stripe
     event = stripe.webhooks.constructEvent(
       body,
       signature,
@@ -42,10 +62,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
+  // bypass rls — webhook has no user session; all writes are trusted server-side
   const supabase = createAdminClient()
 
+  // ── event dispatch ────────────────────────────────────────────────────────
+
+  // checkout.session.completed: payment succeeded — fulfill the order
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object
+    // type and member_id are set in stripe checkout session metadata at creation time
     const { type, member_id } = session.metadata ?? {}
 
     // ── membership payment ─────────────────────────────────────────────────────
@@ -53,6 +78,7 @@ export async function POST(req: Request) {
       const settings = await getSettings()
 
       // updates membership_status to active — this is what unlocks member access
+      // membership_expires_at is pulled from settings so all members share the same expiry date
       await supabase
         .from('members')
         .update({
@@ -85,11 +111,14 @@ export async function POST(req: Request) {
             .maybeSingle()
 
           if (memberData) {
+            // prefer contact_email (member's preferred address) over the utd sso email
             const to = memberData.contact_email ?? memberData.email
+            // format expiry date for display in the email body
             const expiryDate = settings.membershipExpiry.toLocaleDateString('en-US', {
               month: 'long', day: 'numeric', year: 'numeric',
             })
 
+            // send membership confirmation email via resend to the member's preferred address
             const { error: sendError } = await resend.emails.send({
               from: process.env.RESEND_FROM_EMAIL!,
               to,
@@ -114,6 +143,7 @@ export async function POST(req: Request) {
     }
 
     // ── event ticket payment ───────────────────────────────────────────────────
+    // ── event ticket fulfillment ──────────────────────────────────────────────
     if (type === 'event_ticket') {
       const { registration_id } = session.metadata ?? {}
 
@@ -197,6 +227,7 @@ export async function POST(req: Request) {
                     [ticket.attendee_fname, ticket.attendee_lname].filter(Boolean).join(' ') ||
                     'Attendee'
 
+                  // prefer contact_email (member's preferred address) over ticket attendee_email
                   // For members, prefer their stored contact_email over the attendee email on the ticket
                   const recipientEmail = memberContactEmail ?? ticket.attendee_email!
 
@@ -235,11 +266,14 @@ export async function POST(req: Request) {
     }
   }
 
+  // checkout.session.expired: user abandoned checkout — mark registration as failed
+  // so the seat is not held indefinitely and the member can retry
   if (event.type === 'checkout.session.expired') {
     const session = event.data.object
     const { type, registration_id } = session.metadata ?? {}
 
     if (type === 'event_ticket' && registration_id) {
+      // update event_registrations to reflect abandoned payment
       await supabase
         .from('event_registrations')
         .update({ payment_status: 'failed' })

@@ -1,3 +1,11 @@
+// ── loading.tsx ───────────────────────────────────────────
+// skeleton screen for the /goodphil route
+//
+// notes: /goodphil immediately redirects to /goodphil/about,
+//        so this skeleton is shown only during that redirect;
+//        structure intentionally mirrors the about page layout
+// ──────────────────────────────────────────────────────────
+
 export default function GoodphilLoading() {
   return (
     <div className="bg-section-bg text-white overflow-x-hidden">

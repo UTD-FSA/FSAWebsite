@@ -1,3 +1,10 @@
+// ── loading.tsx ───────────────────────────────────────────
+// skeleton screen for the goodphil modern (maharlika) page
+//
+// notes: green bg on past-performances skeleton matches the
+//        #497047 accent used in modern/page.tsx
+// ──────────────────────────────────────────────────────────
+
 export default function ModernLoading() {
   return (
     <div className="bg-section-bg text-white overflow-x-hidden animate-pulse">

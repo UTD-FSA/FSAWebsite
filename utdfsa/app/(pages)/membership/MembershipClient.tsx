@@ -1,3 +1,10 @@
+// ── MembershipClient.tsx ─────────────────────────────────────
+// client component — membership purchase page with stripe checkout
+//
+// data:  props from MembershipPage (prices in cents, early-bird flag and deadline, membership year)
+// deps:  POST /api/membership/checkout (creates a stripe checkout session)
+// notes: all prices are stored and passed in cents; formatPrice converts to display dollars;
+//        early-bird pricing is determined server-side by comparing now vs. earlyBirdDeadline
 'use client'
 
 import { useState } from 'react'
@@ -28,6 +35,7 @@ function formatPrice(cents: number): string {
 // change classnames, layout, colors, and typography freely
 // do not remove or rename the variables being rendered
 // ============================================================
+// ── component ─────────────────────────────────────────────────
 export default function MembershipClient({
   displayPrice,
   regularPrice,
@@ -35,9 +43,13 @@ export default function MembershipClient({
   earlyBirdDeadline,
   membershipYear,
 }: Props) {
+  // true while the POST /api/membership/checkout request is in flight
   const [loading, setLoading] = useState(false)
+  // holds the error message from the checkout api or null when no error
   const [error, setError] = useState<string | null>(null)
 
+  // ── handlePayment ────────────────────────────────────────────
+  // opens the stripe checkout page; on success stripe redirects back with ?success=true
   async function handlePayment() {
     setLoading(true)
     setError(null)
@@ -76,6 +88,7 @@ export default function MembershipClient({
             </div>
 
             <div className="text-right">
+              {/* show early bird pricing block when deadline hasn't passed, else show regular price */}
               {isEarlyBird ? (
                 <>
                   {/* show discounted price prominently, crossed out regular price */}
@@ -89,6 +102,7 @@ export default function MembershipClient({
                     Early Bird
                   </p>
                   <p className="hidden sm:block font-sans text-xs text-white/40 mt-1">
+                    {/* format iso deadline to "Month Day" for the "ends ..." label */}
                     ends {new Date(earlyBirdDeadline).toLocaleDateString('en-US', {
                       month: 'long',
                       day: 'numeric',

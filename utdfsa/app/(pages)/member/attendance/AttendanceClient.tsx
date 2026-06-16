@@ -1,3 +1,9 @@
+// ── AttendanceClient.tsx ─────────────────────────────────────
+// client component — renders the attendance history page
+//
+// data:  props from AttendancePage server component (attendance records, points, meeting/risk counts)
+// notes: goodphil eligibility requires 6+ points, 3+ meetings, and at least one risk management session;
+//        events may be returned as an object or single-element array due to supabase join behavior
 'use client'
 
 type EventInfo = {
@@ -11,7 +17,7 @@ type EventInfo = {
 type AttendanceRecord = {
   id: string
   created_at: string
-  // Supabase may return joined rows as an object or single-element array
+  // supabase may return joined rows as an object or single-element array depending on the relation cardinality
   events: EventInfo | EventInfo[] | null
 }
 
@@ -22,6 +28,9 @@ type Props = {
   riskMgmtCount: number
 }
 
+// ── helpers ───────────────────────────────────────────────────
+
+// format iso date string to "Jan 1, 2025" in central time
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
@@ -29,6 +38,7 @@ function fmtDate(iso: string) {
   })
 }
 
+// returns a color hex for the colored dot beside each attendance row
 function getEventTypeColor(type: string): string {
   switch (type?.toLowerCase()) {
     case 'general meeting': return '#5a96ff'
@@ -40,17 +50,21 @@ function getEventTypeColor(type: string): string {
   }
 }
 
+// normalizes the supabase join result — the events field may be an array or a plain object
 function resolveEvent(raw: EventInfo | EventInfo[] | null): EventInfo | null {
   if (!raw) return null
   return Array.isArray(raw) ? (raw[0] ?? null) : raw
 }
 
+// ── component ─────────────────────────────────────────────────
 export default function AttendanceClient({ member, attendanceRecords, meetingCount, riskMgmtCount }: Props) {
   const points = member.points ?? 0
 
+  // clamp progress to 100% so bars don't overflow when requirements are exceeded
   const pointsProgress  = Math.min((points / 6) * 100, 100)
   const meetingsProgress = Math.min((meetingCount / 3) * 100, 100)
 
+  // goodphil eligibility: 6+ points, 3+ meetings, and risk management attended at least once
   const isEligible = points >= 6 && meetingCount >= 3 && riskMgmtCount > 0
 
   return (

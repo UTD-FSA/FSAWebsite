@@ -1,3 +1,10 @@
+// ── page.tsx ──────────────────────────────────────────────
+// server component — officer gallery management page.
+//
+// data:  galleries table (all columns, all rows including unpublished)
+//        members table (role check only)
+// notes: uses admin client for both the role check and gallery fetch;
+//        officers see all galleries regardless of is_published status.
 import { redirect } from 'next/navigation'
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import OfficerGalleryClient from './OfficerGalleryClient'

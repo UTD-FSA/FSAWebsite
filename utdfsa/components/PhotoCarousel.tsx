@@ -1,3 +1,10 @@
+// ── PhotoCarousel.tsx ─────────────────────────────────────
+// 5-card fan carousel with auto-advance and manual navigation
+//
+// data:  no props — slide images are hardcoded static assets in /public
+// notes: all 5 cards are always in the DOM; position/scale/opacity animate via inline styles.
+//        timerKey resets the auto-advance interval on manual navigation to avoid immediate skip.
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -36,11 +43,14 @@ const MOBILE: PosConfig[] = [
 ]
 
 export default function PhotoCarousel() {
+  // index of the currently centered slide (0–4)
   const [current, setCurrent] = useState(0)
+  // switches between MOBILE and DESKTOP position configs at 768px
   const [isMobile, setIsMobile] = useState(false)
+  // incrementing this key restarts the auto-advance useEffect (manual-nav debounce)
   const [timerKey, setTimerKey] = useState(0)
 
-  // Responsive breakpoint detection
+  // responsive breakpoint detection: sets isMobile on mount and on every window resize
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
@@ -48,7 +58,7 @@ export default function PhotoCarousel() {
     return () => window.removeEventListener('resize', check)
   }, [])
 
-  // Auto-advance every 4 seconds; resets whenever timerKey changes (manual navigation)
+  // auto-advance every 4 s; timerKey in dep array lets manual nav reset the interval
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrent(i => (i + 1) % slides.length)
@@ -62,7 +72,7 @@ export default function PhotoCarousel() {
   const next = () => { setCurrent(i => (i + 1) % total); resetTimer() }
 
   const positions = isMobile ? MOBILE : DESKTOP
-  // 4:3 landscape dimensions
+  // 4:3 landscape card dimensions; smaller on mobile to fit the narrower stage
   const cardW = isMobile ? 384 : 480
   const cardH = isMobile ? 288 : 360
 
@@ -72,7 +82,7 @@ export default function PhotoCarousel() {
       {/* Stage — all 5 cards always in the DOM; only styles change per transition */}
       <div className="relative h-[330px] md:h-[440px] overflow-hidden">
         {slides.map((slide, slideIdx) => {
-          // Wrap offset into [-2, +2] range
+          // wrap offset into [-2, +2] range so the two flanking cards always exist
           let offset = (slideIdx - current + total) % total
           if (offset > Math.floor(total / 2)) offset -= total
           const pos = positions[offset + 2] // -2→[0], -1→[1], 0→[2], +1→[3], +2→[4]

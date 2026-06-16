@@ -1,9 +1,11 @@
-// ============================================================
-// UI — this page is fully static, safe to restyle everything
-// photos are in public/ — modern-hero.png, modern-hero-bg.png,
-// modern-logo.png
-// youtube video IDs are hardcoded below
-// ============================================================
+// ── page.tsx ──────────────────────────────────────────────
+// goodphil modern page — utd maharlika dance team profile
+//
+// notes: fully static; photos: modern-hero-bg.png,
+//        modern-hero.png, modern-logo.png (all in /public);
+//        youtube video ids hardcoded in the past-performances
+//        section; cta links to @utdmaharlika on instagram
+// ──────────────────────────────────────────────────────────
 
 import Image from 'next/image'
 

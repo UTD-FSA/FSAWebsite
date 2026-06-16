@@ -1,3 +1,10 @@
+// ── OrdersClient.tsx ─────────────────────────────────────────
+// client component — renders order history cards with expandable qr tickets
+//
+// data:  props from OrdersPage (registrations, eventsData lookup map, contactEmail, success flag)
+// deps:  qrcode (npm) — generates qr data urls client-side from ticket codes
+// notes: qr images are generated on the client to avoid storing pre-rendered images;
+//        the success banner only appears when stripe redirects back with ?success=true
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -39,6 +46,9 @@ type Props = {
   success: string | undefined
 }
 
+// ── helpers ───────────────────────────────────────────────────
+
+// format iso date to "Mon, Jan 1, 2025" in central time
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', {
     weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
@@ -46,9 +56,13 @@ function fmtDate(iso: string) {
   })
 }
 
+// ── TicketQRImage ─────────────────────────────────────────────
+// inline sub-component — renders a qr code image for a single ticket code
 function TicketQRImage({ code }: { code: string }) {
+  // holds the generated qr data url; empty string means still loading
   const [dataUrl, setDataUrl] = useState('')
 
+  // generate the qr code data url whenever the ticket code changes
   useEffect(() => {
     if (code) {
       QRCode.toDataURL(code, { width: 240, margin: 2 })
@@ -78,9 +92,12 @@ function TicketQRImage({ code }: { code: string }) {
   )
 }
 
+// ── component ─────────────────────────────────────────────────
 export default function OrdersClient({ registrations, eventsData, contactEmail, success }: Props) {
+  // tracks which registration cards have their qr ticket panel open; keyed by registration id
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({})
 
+  // toggles the qr ticket panel open/closed for a given registration card
   const toggle = (id: string) =>
     setExpandedCards(prev => ({ ...prev, [id]: !prev[id] }))
 
@@ -118,11 +135,14 @@ export default function OrdersClient({ registrations, eventsData, contactEmail, 
       ) : (
         <div className="flex flex-col gap-3">
           {registrations.map(reg => {
+            // look up event details from the pre-fetched map by event_id
             const event = reg.event_id ? eventsData[reg.event_id] ?? null : null
             const tickets = (reg.registration_tickets ?? []) as Ticket[]
+            // derive display flags from payment_status string
             const isPaid = reg.payment_status === 'paid'
             const isPending = reg.payment_status === 'pending'
             const isFailed = reg.payment_status === 'failed'
+            // whether this card's qr ticket panel is currently open
             const isExpanded = expandedCards[reg.id] ?? false
 
             return (

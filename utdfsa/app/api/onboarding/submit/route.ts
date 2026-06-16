@@ -1,3 +1,13 @@
+// ── route.ts (onboarding/submit) ──────────────────────────────────────────────
+// saves profile fields and inserts the pamilya application (ading or kuyate).
+//
+// data:  members, ading_applications, kuyate_applications
+// notes: two-phase write — profile fields go to members first, then the application
+//        row is inserted. onboarding_complete is only flipped after the application
+//        insert succeeds, so a partial failure leaves the member in a retryable state.
+//        applicationForm is validated by the member-type-specific schema after the
+//        outer schema parse, because zod can't know which sub-schema to use upfront.
+
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import { adingApplicationSchema, kuyateApplicationSchema, phoneField } from '@/lib/schemas'
 import { formatPhone } from '@/lib/format'
@@ -24,7 +34,10 @@ const schema = z.object({
   applicationForm: z.record(z.string(), z.unknown()),
 })
 
+// ── POST /api/onboarding/submit ───────────────────────────────────────────────
+
 export async function POST(req: Request) {
+  // respects rls — confirms caller is authenticated; returns 401 on failure
   const supabase = await createUserClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -33,6 +46,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json()
+  // outer schema validates shape — applicationForm is z.record and re-validated below
   const parsed = schema.safeParse(body)
 
   if (!parsed.success) {
@@ -56,6 +70,9 @@ export async function POST(req: Request) {
     )
   }
 
+  // ── auth / membership checks ──────────────────────────────────────────────
+
+  // respects rls — fetch the caller's own member row to verify eligibility
   const { data: member } = await supabase
     .from('members')
     .select('id, membership_status, onboarding_complete')
@@ -66,15 +83,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'member not found' }, { status: 404 })
   }
 
+  // guard: only active (paid) members can submit an application
   if (member.membership_status !== 'active') {
     return NextResponse.json({ error: 'membership not active' }, { status: 400 })
   }
 
+  // dedup guard: prevent double-submission if the member refreshes after completing
   if (member.onboarding_complete) {
     return NextResponse.json({ error: 'onboarding already completed' }, { status: 400 })
   }
 
+  // bypass rls — user client cannot write to application tables or update role fields
   const admin = createAdminClient()
+
+  // ── phase 1: write profile fields ────────────────────────────────────────
 
   // update profile fields — onboarding_complete is NOT set here;
   // it is only flipped to true after the application insert succeeds below
@@ -94,10 +116,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'failed to update profile' }, { status: 500 })
   }
 
+  // ── phase 2: insert application and mark onboarding complete ─────────────
+
   // insert into the correct application table, then mark onboarding complete
   if (memberType === 'ading') {
     const d = appParsed.data as z.infer<typeof adingApplicationSchema>
 
+    // insert ading application row with status 'pending' for officer review
     const { error: adingError } = await admin
       .from('ading_applications')
       .insert({
@@ -141,6 +166,7 @@ export async function POST(req: Request) {
   } else {
     const d = appParsed.data as z.infer<typeof kuyateApplicationSchema>
 
+    // insert kuyate application row with status 'pending' for officer review
     const { error: kuyateError } = await admin
       .from('kuyate_applications')
       .insert({

@@ -1,3 +1,14 @@
+// ── route.ts (auth/callback) ──────────────────────────────────────────────────
+// supabase oauth callback — exchanges code for session and routes the user.
+//
+// data:  members (insert on first sign-in, read on subsequent sign-ins)
+// notes: public endpoint — called by supabase redirect after google oauth completes.
+//        provisions a members row on first sign-in using oauth metadata.
+//        routing priority: officer/admin → ?next or /member/profile;
+//          unpaid → /membership; onboarding pending → /onboarding;
+//          fully set up → ?next or /member/profile.
+//        ?next param is honored only for paid/officer users (safe internal paths only).
+
 // route: GET /auth/callback
 // purpose: exchanges the oauth code for a session, provisions a member row on first sign-in, then routes to the right destination based on membership and onboarding status
 // auth: public — called by supabase oauth redirect, no session exists yet
@@ -6,24 +17,34 @@
 import { NextResponse } from 'next/server'
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 
+// ── GET /auth/callback ────────────────────────────────────────────────────────
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
+  // code is the pkce auth code supabase appended to the redirect url
   const code = searchParams.get('code')
+  // next is an optional deep-link destination passed through the oauth flow
   const next = searchParams.get('next')
 
+  // missing code means oauth failed or user denied access — redirect to login with error
   if (!code) {
     return NextResponse.redirect(`${origin}/login?error=auth_failed`)
   }
 
+  // exchange the pkce code for a supabase session (sets auth cookies)
   const supabase = await createUserClient()
   const { error, data } = await supabase.auth.exchangeCodeForSession(code)
 
+  // failed exchange — redirect to login with error
   if (error || !data.user) {
     return NextResponse.redirect(`${origin}/login?error=auth_failed`)
   }
 
   const user = data.user
+  // bypass rls — need to insert/read members regardless of their current row state
   const admin = createAdminClient()
+
+  // ── member provisioning ───────────────────────────────────────────────────
 
   // check if a member row exists already
   const { data: existingMember } = await admin
@@ -34,7 +55,7 @@ export async function GET(request: Request) {
 
   let member = existingMember
 
-  // first time signing in — create the member row
+  // first time signing in — create the member row from oauth metadata
   if (!member) {
     const firstName = user.user_metadata?.given_name
       ?? user.user_metadata?.full_name?.split(' ')[0]
@@ -60,11 +81,14 @@ export async function GET(request: Request) {
     member = newMember
   }
 
+  // ── routing ───────────────────────────────────────────────────────────────
+
   // if a ?next param was passed and it's a safe internal path, honor it
   // but only for paid members — unpaid members always go to /membership first
+  // validate ?next is a relative path to prevent open redirect attacks
   const isSafeNext = next && next.startsWith('/')
 
-  // officers skip payment entirely
+  // officers skip payment entirely — they always have access
   if (member?.role === 'officer' || member?.role === 'admin') {
     return NextResponse.redirect(`${origin}${isSafeNext ? next : '/member/profile'}`)
   }

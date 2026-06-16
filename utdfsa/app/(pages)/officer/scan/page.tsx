@@ -1,3 +1,10 @@
+// ── page.tsx ──────────────────────────────────────────────
+// officer qr ticket scanner — fullscreen camera page for event check-in.
+//
+// deps:  POST /api/scan-ticket, html5-qrcode (npm)
+// notes: mobile-first — designed for phone use at events.
+//        do not add a max-width container — full screen is intentional.
+//        do not add navbar padding — scan overlay must cover full viewport.
 'use client'
 
 // mobile-first page — designed for phone use at events
@@ -25,10 +32,15 @@ type ScanResult =
 // do not remove or rename the variables being rendered
 // ============================================================
 export default function ScanPage() {
+  // result of the most recent scan — null between scans, set for 2.5 s after each
   const [result, setResult] = useState<ScanResult>(null)
+  // set when the camera fails to start (permission denied, no camera, etc.)
   const [cameraError, setCameraError] = useState<string | null>(null)
+  // prevents the scanner callback from firing again while the result overlay is visible
   const processingRef = useRef(false)
+  // holds the Html5Qrcode instance so the cleanup function can stop it
   const scannerRef = useRef<Html5Qrcode | null>(null)
+  // tracks whether start() resolved successfully — stop() must not be called if start() never resolved
   const startedRef = useRef(false)
 
   // effect: starts the camera scanner on mount, runs continuously, cleans up on unmount — do not remove or reorder
@@ -59,6 +71,7 @@ export default function ScanPage() {
         setResult(scanResult)
 
         // clear overlay and re-arm for next scan after 2.5 seconds
+        // 2.5 s gives the officer enough time to read the result before the camera resumes
         setTimeout(() => {
           setResult(null)
           processingRef.current = false

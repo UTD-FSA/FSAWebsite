@@ -1,23 +1,40 @@
+// ── lib/schemas.ts ────────────────────────────────────────
+// zod validation schemas for all api route inputs and form submissions
+//
+// notes: dollarsToCents and nullIfEmpty are shared transforms reused across schemas;
+//        phoneField is a reusable preprocessor for all phone inputs
+
 import { z } from 'zod'
 
+// ── ticket scanning ───────────────────────────────────────
+
+// validates the qr code value from the scanner — must be a uuid
 export const scanTicketSchema = z.object({
   qr_code: z.string().uuid('Invalid QR code format'),
 })
 
+// ── event registration ────────────────────────────────────
+
+// shape of a single attendee on a ticket purchase
 export const attendeeSchema = z.object({
   fname: z.string().min(1).max(50).trim(),
   lname: z.string().min(1).max(50).trim(),
   email: z.string().email(),
 })
 
+// payload sent when registering for an event; supports multi-ticket orders (up to 20)
 export const eventRegisterSchema = z.object({
   event_id: z.string().uuid(),
   tickets: z.array(attendeeSchema).min(1).max(20),
 })
 
+// ── member profile update ─────────────────────────────────
+
+// used by PATCH /api/member/profile
 export const updateProfileSchema = z.object({
   first_name: z.string().min(1).max(50).trim(),
   last_name: z.string().min(1).max(50).trim(),
+  // phone is optional; accepts formatted or raw input
   phone: z.string()
     .regex(/^\+?[\d\s\-\(\)]{7,15}$/, 'Invalid phone number')
     .optional()
@@ -26,15 +43,25 @@ export const updateProfileSchema = z.object({
   major: z.string().max(100).trim().optional().nullable(),
 })
 
+// ── attendance token ──────────────────────────────────────
+
+// validates the short token from the event QR code used to record attendance
 export const attendTokenSchema = z.object({
   token: z.string().min(1).max(100),
 })
 
+// ── shared transforms ─────────────────────────────────────
+
+// dollarsToCents: takes a dollar float from the form and converts to integer cents for stripe/db
+// e.g. 12.50 → 1250; Math.round avoids floating-point rounding errors
 const dollarsToCents = z
   .number()
   .min(0)
   .transform(v => Math.round(v * 100))
 
+// ── event management ──────────────────────────────────────
+
+// used by POST /api/officer/events — all price fields go through dollarsToCents
 export const createEventSchema = z.object({
   name: z.string().min(1).max(200).trim(),
   description: z.string().max(2000).trim().optional().nullable(),
@@ -42,6 +69,7 @@ export const createEventSchema = z.object({
   event_date: z.string().min(1),          // ISO string from datetime-local
   location: z.string().min(1, 'Location is required').trim().max(200),
   points: z.number().int().min(0).optional().nullable(),
+  // price inputs arrive as dollar floats; stored in db as integer cents
   price_dollars_members: dollarsToCents,
   price_dollars_nonmembers: dollarsToCents,
   eb_price_dollars_members: dollarsToCents.optional().nullable(),
@@ -49,13 +77,17 @@ export const createEventSchema = z.object({
   eb_deadline: z.string().optional().nullable(),
   is_active: z.boolean().default(true),
   is_visible: z.boolean().default(true),
+  // requires a timezone-offset ISO string so the server can interpret the correct moment
   registration_closes_at: z.string().datetime({ offset: true }).optional().nullable(),
 })
 
 // all fields optional for PATCH
 export const updateEventSchema = createEventSchema.partial()
 
-// turns empty string / null / undefined into null before further validation
+// ── shared preprocessors ──────────────────────────────────
+
+// nullIfEmpty preprocessor: turns empty string / null / undefined into null before further validation
+// used on optional text fields so unsubmitted form inputs don't fail string validators
 function nullIfEmpty(v: unknown) {
   return v === '' || v === null || v === undefined ? null : v
 }
@@ -64,12 +96,17 @@ function nullIfEmpty(v: unknown) {
 export const phoneField = z.preprocess(
   nullIfEmpty,
   z.string()
+    // strip all non-digit characters before length check (handles formatted input like (214) 555-1234)
     .transform(v => v.replace(/\D/g, ''))
     .refine(v => v.length === 10, 'must be a valid 10-digit phone number')
     .nullable()
 )
 
+// ── ading application ─────────────────────────────────────
+
+// form schema for the ading (new member) application
 export const adingApplicationSchema = z.object({
+  // strip leading @ so both "@handle" and "handle" are stored the same way
   instagram: z.preprocess(
     nullIfEmpty,
     z.string().max(50).transform(v => v.replace(/^@/, '')).nullable()
@@ -77,6 +114,7 @@ export const adingApplicationSchema = z.object({
 
   phone: phoneField.optional(),
 
+  // birthday: validates the date is parseable and the applicant is at least 13
   birthday: z.preprocess(
     nullIfEmpty,
     z.string()
@@ -84,6 +122,7 @@ export const adingApplicationSchema = z.object({
         const d = new Date(v)
         if (isNaN(d.getTime())) return false
         const today = new Date()
+        // compute age accounting for whether the birthday has passed this year
         const age = today.getFullYear() - d.getFullYear()
         const m = today.getMonth() - d.getMonth()
         const adj = (m < 0 || (m === 0 && today.getDate() < d.getDate())) ? age - 1 : age
@@ -96,6 +135,7 @@ export const adingApplicationSchema = z.object({
     'He/Him', 'She/Her', 'They/Them', 'He/They', 'She/They', 'Any', 'Prefer not to say',
   ]).optional().nullable(),
 
+  // 1–10 self-reported activity scale
   activity_level: z.number().int().min(1).max(10).optional().nullable(),
 
   hobbies: z.preprocess(nullIfEmpty, z.string().max(300).nullable()).optional(),
@@ -108,6 +148,7 @@ export const adingApplicationSchema = z.object({
 
   pam_vibe: z.preprocess(nullIfEmpty, z.string().max(500).nullable()).optional(),
 
+  // 1–10 preference for small vs. large group hangouts
   hangout_size_preference: z.number().int().min(1).max(10).optional().nullable(),
 
   fave_tv_show_movie: z.preprocess(nullIfEmpty, z.string().max(200).nullable()).optional(),
@@ -132,6 +173,7 @@ export const adingApplicationSchema = z.object({
     nullIfEmpty,
     z.string()
       .regex(/^[EI][NS][TF][JP]$/i, 'must be a valid MBTI type (e.g. INFP)')
+      // normalize to uppercase before storing (form may submit mixed case)
       .transform(v => v.toUpperCase())
       .nullable()
   ).optional(),
@@ -139,9 +181,13 @@ export const adingApplicationSchema = z.object({
   additional_notes: z.preprocess(nullIfEmpty, z.string().max(1000).nullable()).optional(),
 })
 
+// ── kuyate application ────────────────────────────────────
+
+// form schema for the kuya/ate (mentor) application
 export const kuyateApplicationSchema = z.object({
   additional_notes: z.preprocess(nullIfEmpty, z.string().max(1000).nullable()).optional(),
 
+  // strip leading @ so both "@handle" and "handle" are stored the same way
   instagram: z.preprocess(
     nullIfEmpty,
     z.string().max(50).transform(v => v.replace(/^@/, '')).nullable()
@@ -157,10 +203,12 @@ export const kuyateApplicationSchema = z.object({
 
   pam_head_phone: phoneField.optional(),
 
+  // applicant must explicitly check a box confirming they understand the responsibilities
   acknowledges_responsibilities: z.literal(true),
 
   why_kuyate: z.string().min(50, 'please share at least 50 characters').max(1000),
 }).superRefine((data, ctx) => {
+  // cross-field validation: pam head applicants must provide a phone number
   if (data.wants_to_be_pam_head && !data.pam_head_phone) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,

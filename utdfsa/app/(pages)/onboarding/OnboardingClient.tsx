@@ -1,3 +1,10 @@
+// ── OnboardingClient.tsx ─────────────────────────────────────────────────────
+// multi-step client form driving the full pamilya onboarding flow (pick → profile → ading/kuyate application).
+//
+// data:  props — memberId, firstName, isKuyateOpen, initialType, existingProfile (from onboarding/page.tsx)
+// deps:  POST /api/onboarding/submit
+// notes: step order (pick → profile → ading|kuyate) must be preserved — see the IMPORTANT block near line 58
+
 'use client'
 
 import { useState } from 'react'

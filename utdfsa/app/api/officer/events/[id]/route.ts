@@ -1,3 +1,13 @@
+// ── route.ts (officer/events/[id]) ───────────────────────────────────────────
+// delete or patch a single event by id; also handles qr attendance controls.
+//
+// data:  events, event_registrations, registration_tickets
+// deps:  none (supabase only)
+// notes: all mutations use the admin client — rls would block officer writes.
+//        delete cascades manually in fk-safe order (tickets → regs → event).
+//        qr fields (attend_qr_open, attend_qr_expires_at) are split out before
+//        schema validation because they are not part of updateEventSchema.
+
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import { updateEventSchema } from '@/lib/schemas'
 import { z } from 'zod'
@@ -10,30 +20,39 @@ const qrControlSchema = z.object({
 
 type RouteContext = { params: Promise<{ id: string }> }
 
+// ── auth guard ───────────────────────────────────────────────────────────────
+
 async function requireOfficer() {
+  // respects rls — only confirms the caller is authenticated
   const supabase = await createUserClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
+  // bypass rls — officer action, user client would be blocked
   const admin = createAdminClient()
+  // query members table to verify the caller holds officer or admin role
   const { data: member } = await admin
     .from('members')
     .select('id, role')
     .eq('email', user.email!)
     .maybeSingle()
 
+  // returns null on failure — callers respond with 403
   if (!member || (member.role !== 'officer' && member.role !== 'admin')) return null
   return { admin }
 }
 
-// DELETE /api/officer/events/[id] — delete event and all associated registrations/tickets
+// ── DELETE /api/officer/events/[id] ──────────────────────────────────────────
+// delete event and all associated registrations/tickets
 export async function DELETE(_req: Request, { params }: RouteContext) {
+  // returns 403 if caller is not an officer or admin
   const ctx = await requireOfficer()
   if (!ctx) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const { id } = await params
 
   // Delete in FK-safe order: tickets → registrations → event
+  // fetch registration ids first so we can cascade-delete their tickets
   const { data: regs } = await ctx.admin
     .from('event_registrations')
     .select('id')
@@ -56,12 +75,13 @@ export async function DELETE(_req: Request, { params }: RouteContext) {
   return NextResponse.json({ success: true })
 }
 
-// PATCH /api/officer/events/[id] — update any event fields
-// Also handles QR attendance controls:
-//   { attend_qr_open: true }           → open QR for scanning
-//   { attend_qr_open: false }          → close QR
+// ── PATCH /api/officer/events/[id] ───────────────────────────────────────────
+// update any event fields; also handles qr attendance controls:
+//   { attend_qr_open: true }           → open qr for scanning
+//   { attend_qr_open: false }          → close qr
 //   { attend_qr_expires_at: "..." }    → set auto-expiry
 export async function PATCH(req: Request, { params }: RouteContext) {
+  // returns 403 if caller is not an officer or admin
   const ctx = await requireOfficer()
   if (!ctx) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
@@ -76,6 +96,8 @@ export async function PATCH(req: Request, { params }: RouteContext) {
   } = body ?? {}
 
   const updates: Record<string, unknown> = {}
+
+  // ── validation ───────────────────────────────────────────────────────────
 
   // validate and merge event fields if any were sent
   if (Object.keys(eventFields).length > 0) {
@@ -115,6 +137,9 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'No fields to update.' }, { status: 400 })
   }
 
+  // ── write ─────────────────────────────────────────────────────────────────
+
+  // bypass rls — officer action; update event row and return the updated record
   const { data: event, error } = await ctx.admin
     .from('events')
     .update(updates)

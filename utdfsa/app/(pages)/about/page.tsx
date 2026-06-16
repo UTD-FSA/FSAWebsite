@@ -1,11 +1,11 @@
-// ============================================================
-// UI — this page is fully static, safe to restyle everything
-// officer photos: not yet available — placeholder silhouettes used
-// when photos are ready, replace each officer card's placeholder
-// div with a Next.js Image component using the same card dimensions
-// social links: update hrefs in the Connect With Us section
-// past officer data: hardcoded below — update each semester
-// ============================================================
+// ── page.tsx ─────────────────────────────────────────────────
+// about page server component — thin shell that mounts AboutClient
+//
+// data:  none — no database queries; all data is static in AboutClient
+// notes: officer photos not yet available — placeholder silhouettes used;
+//        replace placeholder divs with Next.js Image when photos are ready;
+//        update social link hrefs and past officer data in AboutClient each semester
+// ─────────────────────────────────────────────────────────────
 
 import AboutClient from './AboutClient'
 

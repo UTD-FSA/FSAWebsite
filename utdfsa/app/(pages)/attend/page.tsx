@@ -1,3 +1,11 @@
+// ── page.tsx ─────────────────────────────────────────────────
+// attend page — QR code check-in handler; records attendance and awards points
+//
+// data:  events (by attend_qr_token), attendance (duplicate guard), members (points)
+// notes: all guard checks must remain in order — token → auth → event validity →
+//        qr open → expiry → member lookup → duplicate → then write;
+//        points are written with user client (RLS permits member to update own row)
+// ─────────────────────────────────────────────────────────────
 import { createUserClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -16,22 +24,26 @@ export default async function AttendPage({ searchParams }: Props) {
   // ============================================================
   const { token } = await searchParams
 
+  // token missing — qr was scanned without a token param; bail to home
   if (!token) redirect('/')
 
   const supabase = await createUserClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // redirect to login, preserving the full attend url so the user returns after auth
   if (!user) {
     redirect(`/login?next=${encodeURIComponent(`/attend?token=${token}`)}`)
   }
 
   // run event and member queries in parallel — both are independent of each other
   const [{ data: event }, { data: member }] = await Promise.all([
+    // events table — look up the event associated with the scanned QR token
     supabase
       .from('events')
       .select('id, name, event_date, points, is_active, attend_qr_open, attend_qr_expires_at')
       .eq('attend_qr_token', token)
       .maybeSingle(),
+    // members table — need id for attendance insert and points for increment
     supabase
       .from('members')
       .select('id, points')
@@ -68,7 +80,7 @@ export default async function AttendPage({ searchParams }: Props) {
     )
   }
 
-  // check expiry
+  // compare expiry timestamp against current time; null means no expiry set
   if (event.attend_qr_expires_at && new Date(event.attend_qr_expires_at) < new Date()) {
     return (
       <main className="flex flex-col items-center justify-center min-h-screen">
@@ -78,9 +90,10 @@ export default async function AttendPage({ searchParams }: Props) {
     )
   }
 
+  // member not found — user is authenticated but hasn't completed onboarding; redirect to profile
   if (!member) redirect('/member/profile')
 
-  // check if already attended
+  // attendance table — check for an existing row to prevent double check-in
   const { data: existing } = await supabase
     .from('attendance')
     .select('id')
@@ -105,7 +118,7 @@ export default async function AttendPage({ searchParams }: Props) {
     event_id: event.id,
   })
 
-  // increment points
+  // increment points — member.points may be null on first ever check-in, default to 0
   if (event.points) {
     await supabase
       .from('members')

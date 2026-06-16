@@ -1,10 +1,12 @@
-// ============================================================
-// UI — this page is fully static, safe to restyle everything
-// hero photo: /sports-hero.jpg
-// sport card photos listed per card below
-// captain form and booking links are hardcoded
-// NO purple highlights, glows, or focus rings anywhere
-// ============================================================
+// ── page.tsx ──────────────────────────────────────────────
+// goodphil sports page — 9-sport grid, captain interest form,
+// and captain meeting booking cta
+//
+// notes: fully static; hero: sports-hero.jpg (/public);
+//        individual sport card photos listed inline per card;
+//        captain form and booking links are hardcoded google
+//        forms/calendar urls; no purple highlights anywhere
+// ──────────────────────────────────────────────────────────
 
 import Image from 'next/image'
 

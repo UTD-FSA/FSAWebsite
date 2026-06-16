@@ -1,3 +1,12 @@
+// ── ArchivesClient.tsx ───────────────────────────────────────
+// client component — photo archive gallery grid with semester filter pills
+//
+// data:  galleries prop (Gallery[]) — passed from server component (archives/page.tsx)
+//        fields used: id, title, cover_photo_url, google_photos_url, semester, year
+// notes: filter options are derived from the galleries array at render time;
+//        clicking a gallery card opens the google_photos_url in a new tab;
+//        cards without a google_photos_url render as non-interactive divs
+// ─────────────────────────────────────────────────────────────
 'use client'
 
 import { useState, useMemo } from 'react'
@@ -9,17 +18,13 @@ interface Props {
   galleries: Gallery[]
 }
 
-// ============================================================
-// UI — safe to restyle everything below this line
-// available data:
-//   galleries (Gallery[]) — each has: id, title, cover_photo_url,
-//     google_photos_url, semester, year, description
-// change classnames, layout, colors, and typography freely
-// do not remove or rename the variables being rendered
-// ============================================================
 export default function ArchivesClient({ galleries }: Props) {
+  // tracks the active semester filter; 'All' shows every gallery
   const [activeFilter, setActiveFilter] = useState('All')
 
+  // ── filter options ────────────────────────────────────────
+  // build unique "Semester Year" labels from galleries array in arrival order;
+  // re-derived only when the galleries prop changes
   const filterOptions = useMemo(() => {
     const seen = new Set<string>()
     const options = ['All']
@@ -35,6 +40,7 @@ export default function ArchivesClient({ galleries }: Props) {
     return options
   }, [galleries])
 
+  // re-filters the gallery list whenever activeFilter or galleries prop changes
   const filtered = useMemo(() => {
     if (activeFilter === 'All') return galleries
     return galleries.filter(g => `${g.semester} ${g.year}` === activeFilter)

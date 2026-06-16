@@ -1,3 +1,13 @@
+// ── OfficerGalleryClient.tsx ──────────────────────────────
+// officer client component for creating and deleting gallery archives.
+//
+// data:  galleries table (id, title, cover_photo_url, google_photos_url, semester, year,
+//          description, is_published)
+// deps:  POST /api/galleries, DELETE /api/galleries/[id], browser-image-compression (npm)
+// notes: cover preview uses FileReader (data: url) instead of URL.createObjectURL
+//        because the CSP blocks blob: urls in img-src. images over 1 mb are compressed
+//        client-side before upload. after create or delete, router.refresh() re-fetches
+//        the gallery list from the server without a full navigation.
 'use client'
 
 import { useState, useRef } from 'react'
@@ -43,13 +53,19 @@ const labelCls = 'block text-[11px] font-bold tracking-[0.07em] uppercase text-[
 
 export default function OfficerGalleryClient({ galleries }: Props) {
   const router = useRouter()
+  // controls the "new archive" modal visibility
   const [modalOpen, setModalOpen] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  // validation or api error shown inside the modal
   const [error, setError] = useState<string | null>(null)
   const [form, setForm] = useState(EMPTY_FORM)
+  // the selected (and possibly compressed) file to upload as the cover
   const [coverFile, setCoverFile] = useState<File | null>(null)
+  // data: url preview for the cover — shown immediately after file selection
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
+  // id of the gallery currently being deleted — used to show "Deleting…" on that row only
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  // ref used to programmatically trigger the hidden file input from the drop zone div
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function closeModal() {
@@ -99,6 +115,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
     setSubmitting(true)
     setError(null)
 
+    // compress images over 1 mb to keep s3 storage costs low and uploads fast
     let fileToUpload: File = coverFile
     if (coverFile.size > 1 * 1024 * 1024) {
       try {

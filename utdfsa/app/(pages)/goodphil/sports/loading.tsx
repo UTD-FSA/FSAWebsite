@@ -1,3 +1,11 @@
+// ── loading.tsx ───────────────────────────────────────────
+// skeleton screen for the goodphil sports page
+//
+// notes: sport grid skeleton renders 9 cards (3×3) matching
+//        the layout in sports/page.tsx; includes captain form
+//        and booking section skeletons at the bottom
+// ──────────────────────────────────────────────────────────
+
 export default function SportsLoading() {
   return (
     <div className="bg-section-bg text-white overflow-x-hidden animate-pulse">

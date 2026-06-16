@@ -1,9 +1,11 @@
-// ============================================================
-// UI — this page is fully static, safe to restyle everything
-// photos are in public/ — spirit-hero.png (no background png,
-// no logo png — spirit has neither)
-// youtube video IDs are hardcoded below
-// ============================================================
+// ── page.tsx ──────────────────────────────────────────────
+// goodphil spirit page — utd fsa spirit performance category
+//
+// notes: fully static; hero uses spirit-hero.jpg (/public)
+//        with a dark radial gradient fallback — no bg png or
+//        logo png for spirit; youtube video ids hardcoded in
+//        the past-performances section
+// ──────────────────────────────────────────────────────────
 
 import Image from 'next/image'
 

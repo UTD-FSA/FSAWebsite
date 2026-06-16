@@ -1,3 +1,14 @@
+// ── lib/email/kuyate-status.ts ────────────────────────────
+// html email template for kuya/ate application status notifications
+//
+// notes: sent by officers via the /officer/applications review UI;
+//        two branches — accepted (with optional pamilya name) and rejected;
+//        inline styles are required for email client compatibility
+
+// ── template function ─────────────────────────────────────
+
+// returns { subject, html } for the appropriate status branch;
+// triggered when an officer approves or rejects a kuyate application
 export function kuyateStatusEmailHtml({
   firstName,
   status,
@@ -5,11 +16,13 @@ export function kuyateStatusEmailHtml({
 }: {
   firstName: string
   status: 'accepted' | 'rejected'
+  // pamilyaName is optional — omitted when the pamilya assignment hasn't been finalized yet
   pamilyaName?: string
 }): { subject: string; html: string } {
   if (status === 'accepted') {
     const subject = 'Congratulations — You have been accepted as a Kuya/Ate!'
 
+    // render a different paragraph depending on whether the pamilya has been assigned
     const pamilyaLine = pamilyaName
       ? `<p style="margin:0 0 16px;color:#374151;font-size:15px;">
            You have been matched with <strong>${pamilyaName}</strong>. Your pam chair will be in touch

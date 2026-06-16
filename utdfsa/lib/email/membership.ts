@@ -1,3 +1,11 @@
+// ── membership.ts ─────────────────────────────────────────────────────────────
+// generates the html body for the membership confirmation email.
+//
+// notes: table-based layout for broad email client compatibility (gmail, outlook,
+//        apple mail). no external css or images — fully inline styles.
+//        called by the stripe-webhook route after a membership payment succeeds.
+//        stripe sends its own receipt separately — this email is the fsa welcome.
+
 export function membershipEmailHtml({
   firstName,
   membershipYear,

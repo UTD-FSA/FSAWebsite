@@ -1,3 +1,10 @@
+// ── loading.tsx ───────────────────────────────────────────
+// skeleton loading UI for the officer goodphil eligibility page.
+//
+// notes: shown by next.js while the server component queries the goodphil_eligibility
+//        view and merges phone numbers from the members table.
+//        column widths roughly match GoodphilClient's actual table layout.
+
 const HEADER_WIDTHS = ['w-32', 'w-48', 'w-16', 'w-24', 'w-24', 'w-28']
 const ROW_WIDTHS    = ['w-28', 'w-40', 'w-12', 'w-20', 'w-20', 'w-24']
 

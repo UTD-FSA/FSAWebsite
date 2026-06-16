@@ -1,17 +1,29 @@
+// ── route.ts ─────────────────────────────────────────────
+// POST /api/officer/events/[id]/cover — upload or replace an event cover photo
+//
+// data:  events (cover_photo_url field)
+// deps:  s3 (cover photo upload)
+// notes: key is deterministic per event id (overwriting on re-upload);
+//        officer/admin only
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import { uploadToS3 } from '@/utils/s3'
 import { NextResponse } from 'next/server'
 
+// accepted mime types for event cover photos
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MAX_SIZE_BYTES = 20 * 1024 * 1024 // 20 MB
 
 type RouteContext = { params: Promise<{ id: string }> }
 
+// ── auth guard ───────────────────────────────────────────
+// returns null if unauthenticated or caller is not officer/admin
 async function requireOfficer() {
+  // respects rls — user client; only returns a user if a valid session exists
   const supabase = await createUserClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
+  // bypass rls — admin client needed to read role from members table
   const admin = createAdminClient()
   const { data: member } = await admin
     .from('members')

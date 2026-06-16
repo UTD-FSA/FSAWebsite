@@ -1,3 +1,10 @@
+// ── GoodphilClient.tsx ────────────────────────────────────
+// officer client component displaying goodphil eligibility for all active members.
+//
+// data:  goodphil_eligibility (db view), members.phone (merged server-side)
+// notes: all filtering, pagination, and csv export are purely client-side.
+//        eligibility thresholds (3 meetings, risk mgmt attended, 6 points) come
+//        from the db view — they are not hardcoded here.
 'use client'
 
 import { useState, useMemo, useEffect } from 'react'
@@ -29,7 +36,9 @@ function PassFail({ pass, label }: { pass: boolean; label?: string }) {
 // ── main component ────────────────────────────────────────────────────────────
 
 export default function GoodphilClient({ members }: { members: GoodphilEligibility[] }) {
+  // search string — filters by first or last name (case-insensitive)
   const [query, setQuery] = useState('')
+  // 0-indexed current page
   const [page, setPage] = useState(0)
 
   // ============================================================
@@ -60,9 +69,12 @@ export default function GoodphilClient({ members }: { members: GoodphilEligibili
   useEffect(() => { setPage(0) }, [query])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  // clamp page index so a narrowing search can't leave us past the last page
   const safePage = Math.min(page, totalPages - 1)
-  const start = safePage * PAGE_SIZE                       // 0-indexed
-  const end = Math.min(start + PAGE_SIZE, filtered.length) // exclusive
+  // 0-indexed start position for the current page
+  const start = safePage * PAGE_SIZE
+  // exclusive end — capped to filtered.length to avoid showing empty rows
+  const end = Math.min(start + PAGE_SIZE, filtered.length)
   const paginated = filtered.slice(start, end)
 
   function exportCSV() {

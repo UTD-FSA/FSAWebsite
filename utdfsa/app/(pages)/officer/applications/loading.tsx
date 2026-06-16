@@ -1,3 +1,9 @@
+// ── loading.tsx ───────────────────────────────────────────
+// skeleton loading UI for the officer applications page.
+//
+// notes: shown by next.js while the server component fetches application data.
+//        matches the card-grid layout of ApplicationsClient.
+
 export default function ApplicationsLoading() {
   return (
     <main className="min-h-screen bg-[#070707] px-6 md:px-10 py-10">

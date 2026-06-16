@@ -1,3 +1,9 @@
+// ── loading.tsx (events) ──────────────────────────────────
+// next.js streaming loading skeleton for the /events page
+//
+// notes: rendered automatically by next.js while events/page.tsx suspends.
+//        mirrors the real page's section order so layout doesn't shift on hydration.
+
 export default function EventsLoading() {
   return (
     <main className="min-h-screen" style={{ background: '#0f0f0f' }}>

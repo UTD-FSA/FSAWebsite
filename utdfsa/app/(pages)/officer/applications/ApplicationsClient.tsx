@@ -1,11 +1,16 @@
+// ── ApplicationsClient.tsx ────────────────────────────────
+// officer client component for reviewing ading and kuyate applications.
+//
+// data:  ading_applications, kuyate_applications, members (joined)
+// deps:  /api/officer/applications/ading/[id], /api/officer/applications/kuyate/[id]
+// notes: status changes for kuyate trigger a confirmation modal because they fire emails;
+//        ading status changes are optimistic and silent. pamilya assignment is ading-only.
 'use client'
 
 import { useState } from 'react'
 import Modal from '@/components/Modal'
 
-// ============================================================
-// DATA — types and constants
-// ============================================================
+// ── types and constants ───────────────────────────────────
 
 type Status = 'pending' | 'accepted' | 'rejected'
 type Filter = 'all' | Status
@@ -580,16 +585,24 @@ export default function ApplicationsClient({
   adingApps: AdingApplication[]
   kuyateApps: KuyateApplication[]
 }) {
+  // active tab — 'ading' or 'kuyate'
   const [tab, setTab] = useState<'ading' | 'kuyate'>('ading')
+  // local copy of ading apps — optimistically updated on status/pamilya change
   const [adingApps, setAdingApps] = useState<AdingApplication[]>(initialAdingApps)
+  // local copy of kuyate apps — optimistically updated on status change
   const [kuyateApps, setKuyateApps] = useState<KuyateApplication[]>(initialKuyateApps)
+  // filter defaults to 'pending' so officers see actionable items first
   const [adingFilter, setAdingFilter] = useState<Filter>('pending')
   const [kuyateFilter, setKuyateFilter] = useState<Filter>('pending')
+  // separate page counters per tab so pagination resets independently
   const [adingPage, setAdingPage] = useState(1)
   const [kuyatePage, setKuyatePage] = useState(1)
+  // id of the application whose detail modal is open; null means closed
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null)
   const [selectedAppType, setSelectedAppType] = useState<'ading' | 'kuyate'>('ading')
+  // per-application pamilya save state keyed by application id
   const [pamilyaSaving, setPamilyaSaving] = useState<Record<string, 'saving' | 'saved' | 'error' | null>>({})
+  // kuyate accept/reject requires a confirmation step because it fires an email
   const [pendingStatus, setPendingStatus] = useState<{
     applicationId: string
     applicantFirstName: string

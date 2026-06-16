@@ -1,6 +1,12 @@
+// ── lib/constants.ts ──────────────────────────────────────
 // shared constants used across the codebase
-// COVER_PHOTO_ASPECT_RATIO controls the crop ratio enforced on all cover photo uploads
-// update this value if card layout changes — the cropper will enforce the new ratio
+//
+// notes: update COVER_PHOTO_ASPECT_RATIO if card layout changes —
+//        the cropper will enforce the new ratio on all future uploads
+
+// ── cover photo constraints ───────────────────────────────
+
+// controls the crop ratio enforced on all cover photo uploads
 export const COVER_PHOTO_ASPECT_RATIO = 16 / 9
 
 // minimum output dimensions in pixels for acceptable quality

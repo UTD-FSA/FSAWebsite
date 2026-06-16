@@ -1,3 +1,10 @@
+// ── ProfileEditClient.tsx ────────────────────────────────────
+// client component — form for editing member profile fields
+//
+// data:  props from ProfileEditPage (member fields, loginEmail)
+// deps:  POST /api/member/update-profile (saves changes to members table)
+// notes: loginEmail (google oauth email) is displayed read-only;
+//        contact_email is a separate field the user can override for notifications
 'use client'
 
 import { useState } from 'react'
@@ -35,12 +42,17 @@ interface Props {
 // change classnames, layout, colors, and typography freely
 // do not remove or rename the variables being rendered
 // ============================================================
+// ── component ─────────────────────────────────────────────────
 export default function ProfileEditClient({ member, loginEmail }: Props) {
   const router = useRouter()
+  // true while the POST /api/member/update-profile request is in flight
   const [loading, setLoading] = useState(false)
+  // holds the error message from the api or null when no error
   const [error, setError] = useState<string | null>(null)
+  // true for ~1.2 s after a successful save, before the router redirect fires
   const [success, setSuccess] = useState(false)
 
+  // live form state — initialized from the server-fetched member fields
   const [form, setForm] = useState({
     first_name: member.first_name ?? '',
     last_name: member.last_name ?? '',
@@ -50,10 +62,12 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
     contact_email: member.contact_email ?? '',
   })
 
+  // generic field updater — merges a single field into form state
   function set(field: keyof typeof form, value: string) {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
+  // ── handleSubmit ──────────────────────────────────────────────
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)

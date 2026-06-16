@@ -1,3 +1,11 @@
+// ── layout.tsx ───────────────────────────────────────────────
+// root layout — wraps every page with Navbar, Footer, and fonts
+//
+// data:  members (id, first_name, last_name, avatar_url, role) — looked up by auth email
+// deps:  supabase user client, @vercel/analytics, @vercel/speed-insights
+// notes: member is fetched server-side so Navbar receives data before hydration;
+//        the three google fonts are registered as CSS custom properties via @theme
+// ─────────────────────────────────────────────────────────────
 import type { Metadata } from "next"
 import { Geist, Geist_Mono, Unbounded } from "next/font/google"
 import "./globals.css"
@@ -26,13 +34,16 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // ── auth + member prefetch ────────────────────────────────
   // fetch member server-side so Navbar has data immediately on hydration
   const supabase = await createUserClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   let initialMember = null
 
+  // only query members table when a supabase session exists
   if (user?.email) {
+    // members table — fetch minimal fields needed by Navbar avatar + role badge
     const { data } = await supabase
       .from('members')
       .select('id, first_name, last_name, avatar_url, role')

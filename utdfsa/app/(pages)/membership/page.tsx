@@ -1,3 +1,10 @@
+// ── page.tsx ─────────────────────────────────────────────────
+// server component — computes pricing and early-bird status, passes to MembershipClient
+//
+// data:  settings table (via getSettings): membershipPriceCents, earlyBirdPriceCents,
+//        earlyBirdDeadline, membershipYear
+// notes: early-bird check compares server-side now vs. earlyBirdDeadline (a Date object);
+//        all prices in cents to avoid floating-point issues
 import { getSettings } from '@/lib/settings'
 import MembershipClient from './MembershipClient'
 
@@ -13,9 +20,11 @@ export default async function MembershipPage() {
   // fetch prices from the settings table
   const settings = await getSettings()
 
+  // compare current server time to the deadline; true = show early-bird price
   const now = new Date()
   const isEarlyBird = now < settings.earlyBirdDeadline
 
+  // displayPrice is the price the member actually pays; regularPrice is shown crossed out during early bird
   const displayPrice = isEarlyBird
     ? settings.earlyBirdPriceCents
     : settings.membershipPriceCents

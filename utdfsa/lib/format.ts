@@ -1,3 +1,8 @@
+// ── lib/format.ts ─────────────────────────────────────────
+// string formatting utilities used across forms and display components
+
+// ── text case helpers ─────────────────────────────────────
+
 // capitalizes first letter of each word — "john doe" → "John Doe"
 export function toTitleCase(value: string): string {
   return value
@@ -15,11 +20,15 @@ export function toSentenceCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1)
 }
 
+// ── phone formatter ───────────────────────────────────────
+
 // formats a raw phone input to (xxx) xxx-xxxx
 // strips all non-digits first, then applies the mask
 export function formatPhone(value: string): string {
+  // cap at 10 digits — us phone numbers only
   const digits = value.replace(/\D/g, '').slice(0, 10)
 
+  // return partial masks as the user types
   if (digits.length < 4) return digits
   if (digits.length < 7) {
     return `(${digits.slice(0, 3)}) ${digits.slice(3)}`

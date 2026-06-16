@@ -1,3 +1,8 @@
+// ── loading.tsx ───────────────────────────────────────────────
+// skeleton screen shown by next.js while AttendancePage fetches data
+//
+// notes: mirrors the layout of AttendanceClient — update both if the
+//        page structure changes
 export default function AttendanceLoading() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 animate-pulse">

@@ -1,3 +1,9 @@
+// ── route.ts ─────────────────────────────────────────────
+// POST /api/member/update-profile — update the authenticated member's display profile
+//
+// data:  members
+// notes: only updates name/phone/year/major/contact_email; does not affect
+//        membership_status or role; contact_email empty string is coerced to null
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import { phoneField } from '@/lib/schemas'
 import { formatPhone } from '@/lib/format'
@@ -14,6 +20,8 @@ const schema = z.object({
 })
 
 export async function POST(req: Request) {
+  // ── auth check ───────────────────────────────────────────
+  // returns 401 if no valid session
   const supabase = await createUserClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -21,6 +29,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // ── request validation ────────────────────────────────────
   const body = await req.json()
   const parsed = schema.safeParse(body)
 
@@ -33,13 +42,16 @@ export async function POST(req: Request) {
 
   const { first_name, last_name, phone, year, major, contact_email } = parsed.data
 
+  // bypass rls — admin client needed so the update succeeds regardless of rls policy
   const admin = createAdminClient()
 
+  // update the members table row for this user, matched by their login email
   const { error } = await admin
     .from('members')
     .update({
       first_name,
       last_name,
+      // normalise phone to e.164-style before storing
       phone: phone ? formatPhone(phone) : null,
       year: year || null,
       major: major || null,

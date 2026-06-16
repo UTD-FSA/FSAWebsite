@@ -1,15 +1,27 @@
+// ── route.ts ─────────────────────────────────────────────
+// GET  /api/galleries — list published galleries (public)
+// POST /api/galleries — create a gallery with a cover photo (officer/admin only)
+//
+// data:  galleries, members (role check)
+// deps:  s3 (cover photo upload)
+// notes: cover image is uploaded to S3 before the db row is written;
+//        google photos url is validated against an allowlist of trusted hosts
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import { uploadToS3 } from '@/utils/s3'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+// accepted mime types for the cover photo upload
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+// only official google photos domains are accepted to prevent open-redirect abuse
 const ALLOWED_GOOGLE_PHOTOS_HOSTS = ['photos.google.com', 'photos.app.goo.gl']
 
+// ── GET ───────────────────────────────────────────────────
 // public endpoint — use user client so RLS policies apply
 export async function GET() {
   const supabase = await createUserClient()
 
+  // respects rls — only returns published galleries visible to everyone
   const { data: galleries, error } = await supabase
     .from('galleries')
     .select('*')
@@ -25,7 +37,10 @@ export async function GET() {
   return NextResponse.json(galleries ?? [])
 }
 
+// ── POST ──────────────────────────────────────────────────
 export async function POST(request: NextRequest) {
+  // ── auth check ───────────────────────────────────────────
+  // returns 401 if no valid session
   const supabase = await createUserClient()
 
   const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -33,8 +48,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // bypass rls — admin client needed to read member role
   const admin = createAdminClient()
 
+  // fetch the caller's id and role from the members table; used for role check and created_by
   const { data: member, error: memberError } = await admin
     .from('members')
     .select('id, role')
@@ -45,6 +62,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Member not found' }, { status: 404 })
   }
 
+  // only officers and admins may create galleries
   const isOfficer = member.role === 'officer' || member.role === 'admin'
   if (!isOfficer) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -118,9 +136,11 @@ export async function POST(request: NextRequest) {
   }
 
   const ext = coverFile.name.split('.').pop() ?? 'jpg'
+  // timestamp + random suffix prevents key collisions across concurrent uploads
   const key = `covers/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
   const buffer = Buffer.from(await coverFile.arrayBuffer())
 
+  // upload cover image to s3; returns the public cdn url
   let publicUrl: string
   try {
     publicUrl = await uploadToS3(key, buffer, coverFile.type)
@@ -129,6 +149,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Upload failed. Please try again.' }, { status: 500 })
   }
 
+  // ── db insert ────────────────────────────────────────────
+  // bypass rls — officer action; inserts into galleries
   const { data: gallery, error: insertError } = await admin
     .from('galleries')
     .insert({

@@ -1,3 +1,11 @@
+// ── loading.tsx ───────────────────────────────────────────
+// skeleton screen for the goodphil spirit page
+//
+// notes: navy bg on past-performances skeleton matches the
+//        #1a3461 accent used in spirit/page.tsx;
+//        spirit has no logo, so cta skeleton is a text card
+// ──────────────────────────────────────────────────────────
+
 export default function SpiritLoading() {
   return (
     <div className="bg-section-bg text-white overflow-x-hidden animate-pulse">

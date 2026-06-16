@@ -1,7 +1,14 @@
+// ── page.tsx ──────────────────────────────────────────────
+// server component — officer applications page.
+//
+// data:  ading_applications, kuyate_applications, members (joined via !inner)
+// notes: uses admin client to bypass rls; auth + role check done first with user client.
+//        rows are sorted pending → accepted → rejected, then by submitted_at ascending.
 import { createAdminClient, createUserClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import ApplicationsClient from './ApplicationsClient'
 
+// sort order used to group pending apps at the top so officers see actionable items first
 const STATUS_ORDER: Record<string, number> = { pending: 0, accepted: 1, rejected: 2 }
 
 function sortByStatusThenDate<T extends { status: string; submitted_at: string }>(rows: T[]): T[] {
@@ -19,11 +26,14 @@ export default async function OfficerApplicationsPage() {
   // auth check and all database queries live here
   // ============================================================
 
+  // redirect to /login if no session found
   const supabase = await createUserClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
 
+  // table: members — fetch role to enforce officer-only access
+  // redirects to member profile with error flag if role check fails
   const { data: roleRow } = await supabase
     .from('members')
     .select('role')
@@ -34,8 +44,10 @@ export default async function OfficerApplicationsPage() {
     redirect('/member/profile?error=unauthorized')
   }
 
+  // bypass rls — officer action, user client would be blocked on ading/kuyate_applications
   const admin = createAdminClient()
 
+  // fetch both application tables in parallel to reduce server response time
   const [{ data: rawAding }, { data: rawKuyate }] = await Promise.all([
     admin
       .from('ading_applications')

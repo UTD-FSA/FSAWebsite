@@ -1,3 +1,9 @@
+// ── loading.tsx ──────────────────────────────────────────────
+// about page skeleton — mirrors the section layout of AboutClient
+//
+// notes: 18 officer card skeletons match the OFFICERS_2025_2026 array length;
+//        shown by Next.js automatically while the page component streams in
+// ─────────────────────────────────────────────────────────────
 export default function AboutLoading() {
   return (
     <main className="bg-brand-bg text-white overflow-x-hidden">

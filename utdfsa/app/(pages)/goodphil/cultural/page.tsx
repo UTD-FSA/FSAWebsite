@@ -1,9 +1,11 @@
-// ============================================================
-// UI — this page is fully static, safe to restyle everything
-// photos are in public/ — cultural-hero.jpg, cultural-logo.png
-// no background png for this page — use dark gradient instead
-// youtube video IDs are hardcoded below
-// ============================================================
+// ── page.tsx ──────────────────────────────────────────────
+// goodphil cultural page — utd pamana dance team profile
+//
+// notes: fully static; photos: cultural-hero-bg.png,
+//        cultural-hero.jpg, cultural-logo.png (all in /public);
+//        youtube video ids hardcoded in the past-performances
+//        section; cta links to @utdpamana on instagram
+// ──────────────────────────────────────────────────────────
 
 import Image from 'next/image'
 

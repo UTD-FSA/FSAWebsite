@@ -1,3 +1,9 @@
+// ── DeleteEventModal.tsx ──────────────────────────────────
+// confirmation modal requiring the officer to type the event name before deletion.
+//
+// deps:  DELETE /api/officer/events/[id]
+// notes: destructive — deletes all tickets and attendance records for the event.
+//        the type-to-confirm pattern prevents accidental deletion.
 'use client'
 
 import { useState } from 'react'
@@ -14,10 +20,12 @@ export default function DeleteEventModal({
   onClose: () => void
   onDeleted: () => void
 }) {
+  // tracks what the officer has typed into the confirmation input
   const [typedValue, setTypedValue] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // delete button is only enabled when the typed text exactly matches the event name
   const isMatch = typedValue === eventName
 
   async function handleDelete() {

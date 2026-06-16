@@ -1,13 +1,19 @@
-// ============================================================
-// DATA — do not modify this section
-// checks auth and application status to determine
-// which state to pass to PamilyasClient
-// ============================================================
+// ── page.tsx ──────────────────────────────────────────────
+// pamilyas page — server component that resolves member state
+// and application status, then delegates all rendering to
+// PamilyasClient
+//
+// data:  members, ading_applications, kuyate_applications,
+//        settings (kuyate_applications_open flag)
+// deps:  supabase (user client + admin client)
+// ──────────────────────────────────────────────────────────
 
+// ── data fetching ─────────────────────────────────────────
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import PamilyasClient, { type MemberState } from './PamilyasClient'
 
 export default async function PamilyasPage() {
+  // user client for session-scoped reads (auth + settings)
   const supabase = await createUserClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -24,6 +30,7 @@ export default async function PamilyasPage() {
     memberState.isLoggedIn = true
     const admin = createAdminClient()
 
+    // query members table by email to get membership status and type
     const { data: member } = await admin
       .from('members')
       .select('id, membership_status, onboarding_complete, member_type')
@@ -36,6 +43,7 @@ export default async function PamilyasPage() {
       memberState.onboardingComplete = member.onboarding_complete ?? false
 
       if (memberState.isMember) {
+        // check both application tables in parallel to avoid waterfall
         const [adingRes, kuyateRes] = await Promise.all([
           admin.from('ading_applications').select('id').eq('member_id', member.id).maybeSingle(),
           admin.from('kuyate_applications').select('id').eq('member_id', member.id).maybeSingle(),
@@ -46,6 +54,7 @@ export default async function PamilyasPage() {
     }
   }
 
+  // read settings table for the kuyate application open/closed flag
   const { data: kuyateOpenSetting } = await supabase
     .from('settings')
     .select('value')
@@ -53,8 +62,7 @@ export default async function PamilyasPage() {
     .maybeSingle()
   const isKuyateOpen = kuyateOpenSetting?.value === 'true'
 
-  // ============================================================
-  // UI — passes data to PamilyasClient, no rendering here
-  // ============================================================
+  // ── render ────────────────────────────────────────────────
+  // pass resolved state to client component; no markup here
   return <PamilyasClient memberState={memberState} isKuyateOpen={isKuyateOpen} />
 }

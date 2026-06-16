@@ -1,3 +1,12 @@
+// ── OfficerEventsClient.tsx ───────────────────────────────
+// officer client component for creating, editing, and deleting events.
+//
+// data:  events table (all fields including qr token/state)
+// deps:  POST/PATCH/DELETE /api/officer/events/[id], POST /api/officer/events/[id]/cover
+//        qrcode (npm), browser-image-compression (npm)
+// notes: event type controls which sections render (ticketed vs qr attendance vs hybrid).
+//        cover photo is compressed client-side before upload if over 1 mb.
+//        attendance qr open/close is optimistic with a revert on error.
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -75,6 +84,7 @@ function toDatetimeLocal(iso: string | null | undefined) {
   const date = new Date(iso)
   // datetime-local inputs use the browser's LOCAL time, but toISOString() returns UTC.
   // Subtract the timezone offset so the value shown matches the local wall-clock time.
+  // without this, events created in CDT would display one hour off in the form.
   const offsetMs = date.getTimezoneOffset() * 60 * 1000
   return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16)
 }
@@ -233,6 +243,7 @@ function EventForm({
   beforeButtons?: React.ReactNode
   leftButtons?: React.ReactNode
 }) {
+  // local form state — initialized from props; changes are not reflected upward until submit
   const [form, setForm] = useState<EventFormData>(initial)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -243,6 +254,7 @@ function EventForm({
 
   const ticketed = isTicketed(form.event_type)
 
+  // true when the early bird deadline has already passed — used to show a warning banner
   const ebExpired =
     form.eb_enabled && form.eb_deadline && new Date(form.eb_deadline) < new Date()
 
@@ -480,14 +492,17 @@ function EventForm({
 // ── Attendance QR panel ───────────────────────────────────────────────────────
 
 function AttendanceQR({ event, onUpdate }: { event: Event; onUpdate: (e: Event) => void }) {
+  // data url for the rendered qr code image — generated client-side via qrcode library
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   // optimistic local open state — updates immediately on button click, syncs from prop on server response
   const [isOpen, setIsOpen] = useState(event.attend_qr_open)
 
+  // keep isOpen in sync if the parent updates the event prop (e.g. after a patch response)
   useEffect(() => { setIsOpen(event.attend_qr_open) }, [event.attend_qr_open])
 
   // auto-close the badge locally once the expiry timestamp is reached
+  // calculates ms until expiry and sets a one-shot timeout; clears on unmount or expiry change
   useEffect(() => {
     if (!event.attend_qr_expires_at) return
     const ms = new Date(event.attend_qr_expires_at).getTime() - Date.now()
@@ -500,6 +515,7 @@ function AttendanceQR({ event, onUpdate }: { event: Event; onUpdate: (e: Event) 
   const attendUrl = event.attend_qr_token
     ? `${siteUrl}/attend?token=${event.attend_qr_token}` : null
 
+  // regenerate the qr image whenever the attendance url changes (e.g. new token issued)
   useEffect(() => {
     if (!attendUrl) return
     QRCode.toDataURL(attendUrl, { width: 240, margin: 2 })
@@ -603,8 +619,10 @@ function AttendanceQR({ event, onUpdate }: { event: Event; onUpdate: (e: Event) 
 
 function CoverPhotoUpload({ event, onUpdate }: { event: Event; onUpdate: (e: Event) => void }) {
   const [uploading, setUploading] = useState(false)
+  // preview url — starts as the existing cover, updates after a successful upload
   const [preview, setPreview] = useState<string | null>(event.cover_photo_url ?? null)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  // ref used to programmatically trigger the hidden file input
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // keep preview in sync if the parent event prop changes (e.g. after a save)
@@ -621,6 +639,7 @@ function CoverPhotoUpload({ event, onUpdate }: { event: Event; onUpdate: (e: Eve
       setUploadError('Please upload a JPEG, PNG, or WEBP image.')
       return
     }
+    // hard cap — s3 upload and supabase row both have size limits
     if (file.size > 20 * 1024 * 1024) {
       setUploadError('Image must be under 20MB.')
       return
@@ -628,6 +647,7 @@ function CoverPhotoUpload({ event, onUpdate }: { event: Event; onUpdate: (e: Eve
 
     setUploading(true)
 
+    // compress images over 1 mb to keep uploads fast and storage costs low
     let fileToUpload: File = file
     if (file.size > 1 * 1024 * 1024) {
       try {
@@ -830,11 +850,18 @@ function PendingCoverPhotoUpload({ onChange }: { onChange: (file: File | null) =
 
 // ── main component ────────────────────────────────────────────────────────────
 
+// ── main component ────────────────────────────────────────
+
 export default function OfficerEventsClient({ initialEvents }: { initialEvents: Event[] }) {
+  // local events list — updated optimistically after create/update/delete
   const [events, setEvents] = useState<Event[]>(initialEvents)
+  // true when the create-event form panel is expanded
   const [creating, setCreating] = useState(false)
+  // id of the event whose inline edit form is expanded; null means none open
   const [editingId, setEditingId] = useState<string | null>(null)
+  // set when the delete button is clicked — opens the DeleteEventModal
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
+  // cover file staged during the create flow — uploaded immediately after event row is created
   const [pendingCoverFile, setPendingCoverFile] = useState<File | null>(null)
 
   function upsert(updated: Event) {

@@ -1,3 +1,10 @@
+// ── page.tsx (onboarding/basic-info) ─────────────────────
+// server component: auth guard + membership check before rendering the basic-info form
+//
+// data:  supabase — members table (select: first_name, last_name, phone, year, major, membership_status)
+// notes: only active members may access this page; non-members redirect to /membership.
+//        user client is used (not admin) so rls applies to the member's own row.
+
 import { createUserClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import BasicInfoClient from './BasicInfoClient'
@@ -10,18 +17,23 @@ export default async function BasicInfoPage() {
   // this page is the landing point after choosing "not interested"
   // in the onboarding flow, but is also accessible standalone.
   // ============================================================
+  // user client ensures the auth session is valid; unauthenticated users redirect to login
   const supabase = await createUserClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // auth check: no session → send to login
   if (!user) redirect('/login')
 
+  // supabase: members table — fetch existing profile fields for pre-filling the form
   const { data: member } = await supabase
     .from('members')
     .select('first_name, last_name, phone, year, major, membership_status')
     .eq('email', user.email!)
     .maybeSingle()
 
+  // auth check: member row missing → account not fully set up, send to login
   if (!member) redirect('/login')
+  // membership gate: only active members may access this page
   if (member.membership_status !== 'active') redirect('/membership')
 
   // ============================================================

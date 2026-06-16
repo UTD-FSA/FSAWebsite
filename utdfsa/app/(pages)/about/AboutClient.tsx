@@ -1,7 +1,17 @@
+// ── AboutClient.tsx ──────────────────────────────────────────
+// client component — about page UI with officer board and past officers accordion
+//
+// data:  none — all officer data is hardcoded in constants below
+// notes: officer photos not yet available; placeholder silhouettes used.
+//        update OFFICERS_2025_2026 and PAST_OFFICERS each semester.
+//        accordion uses a single openYear string so only one year shows at a time.
+// ─────────────────────────────────────────────────────────────
 'use client'
 
 import { useState } from 'react'
 
+// ── officer data ──────────────────────────────────────────────
+// update position/name entries each year; add new year block to PAST_OFFICERS
 const OFFICERS_2025_2026 = [
   { position: 'President',           name: 'Genna Ibarra' },
   { position: 'Vice President',      name: 'Simon Choi' },
@@ -178,8 +188,11 @@ const SOCIALS = [
 ]
 
 export default function AboutClient() {
+  // tracks which past-officer accordion row is expanded; empty string = all collapsed
   const [openYear, setOpenYear] = useState<string>('2025-2026')
 
+  // ── accordion toggle ──────────────────────────────────────
+  // clicking the same open year collapses it; clicking a different year opens it
   function toggleYear(year: string) {
     setOpenYear(prev => prev === year ? '' : year)
   }
@@ -317,6 +330,7 @@ export default function AboutClient() {
           <div className="flex flex-col gap-3">
             {PAST_OFFICERS.map(({ year, officers }) => {
               const isOpen = openYear === year
+              // format "2024-2025" → "2024 – 2025" for display
               const displayYear = year.replace('-', ' – ')
               return (
                 <div key={year}>

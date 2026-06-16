@@ -1,3 +1,7 @@
+// ── loading.tsx ───────────────────────────────────────────────
+// skeleton screen shown by next.js while OrdersPage fetches data
+//
+// notes: mirrors the card layout of OrdersClient — update both if structure changes
 export default function OrdersLoading() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 animate-pulse">

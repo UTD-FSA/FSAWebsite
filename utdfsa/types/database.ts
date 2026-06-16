@@ -1,8 +1,26 @@
+// ── types/database.ts ─────────────────────────────────────
+// typescript types mirroring the supabase database schema;
+// used across server components, api routes, and client hooks.
+//
+// data:  members, events, event_registrations, registration_tickets,
+//        attendance, photos, galleries, settings
+// notes: keep in sync with supabase migrations; nullable fields
+//        reflect columns that allow null in the db
+
+// ── union types ───────────────────────────────────────────
+
+// membership lifecycle: pending → active → expired
 export type MembershipStatus = 'pending' | 'active' | 'expired'
+// access tiers: member (base), officer (club staff), admin (full access)
 export type UserRole = 'member' | 'officer' | 'admin'
+// stripe/manual payment lifecycle
 export type PaymentStatus = 'pending' | 'paid' | 'failed'
+// all accepted payment methods — stripe is processed automatically; others are manual
 export type PaymentProvider = 'stripe' | 'paypal' | 'venmo' | 'zelle' | 'cash'
 
+// ── member ────────────────────────────────────────────────
+
+// a registered UTD FSA member; one row per google account that has signed up
 export interface Member {
   id: string
   created_at: string
@@ -31,6 +49,9 @@ export interface Member {
   member_type: 'ading' | 'kuyate' | 'not_interested' | null
 }
 
+// ── event ─────────────────────────────────────────────────
+
+// an org event that members can register for or attend in person
 export interface Event {
   id: string
   created_at: string
@@ -39,21 +60,30 @@ export interface Event {
   event_type: string
   event_date: string
   location: string | null
+  // points awarded to members who attend this event
   points: number | null
+  // short token embedded in the in-person attendance QR code
   attend_qr_token?: string | null
   attend_qr_open: boolean | null
   attend_qr_expires_at: string | null
+  // all prices stored in cents to avoid floating-point issues
   price_cents_members: number
   price_cents_nonmembers: number
+  // early-bird pricing; null means no early-bird tier
   eb_price_members: number | null
   eb_price_nonmembers: number | null
   eb_deadline: string | null
+  // is_active controls whether the event accepts new registrations
   is_active: boolean
+  // is_visible controls whether the event appears on the public events page
   is_visible: boolean
   cover_photo_url: string | null
   registration_closes_at: string | null
 }
 
+// ── event registration ────────────────────────────────────
+
+// a ticket purchase; one registration can contain multiple tickets (num_tickets)
 export interface EventRegistration {
   id: string
   member_id: string | null
@@ -75,25 +105,35 @@ export interface EventRegistration {
   cover_photo_url: string | null
 }
 
+// ── registration ticket ───────────────────────────────────
+
+// a single ticket within a registration; each ticket has its own unique qr code
 export interface RegistrationTicket {
   id: string
   registration_id: string
   created_at: string
+  // uuid used as the QR code value; scanned at the door to check in
   qr_code: string
   attendee_fname: string | null
   attendee_lname: string | null
   attendee_email: string | null
   checked_in: boolean
   checked_in_at: string | null
+  // member id of the officer who scanned this ticket
   checked_in_by: string | null
 }
 
+// ── attendance ────────────────────────────────────────────
+
+// records in-person attendance for a member at a specific event (separate from ticket check-in)
 export interface Attendance {
   id: string
   member_id: string | null
   event_id: string | null
   created_at: string
 }
+
+// ── photos ────────────────────────────────────────────────
 
 // static decoration/website photos — managed directly, not officer-created
 export interface Photo {
@@ -105,6 +145,8 @@ export interface Photo {
   sort_order: number | null
   uploaded_at: string
 }
+
+// ── gallery ───────────────────────────────────────────────
 
 // officer-created archive galleries shown on /archives
 export interface Gallery {
@@ -120,6 +162,8 @@ export interface Gallery {
   created_by: string
   is_published: boolean
 }
+
+// ── settings ──────────────────────────────────────────────
 
 // represents a single row in the settings table
 export interface Setting {
@@ -137,6 +181,9 @@ export interface AppSettings {
   membershipYear: string
 }
 
+// ── goodphil eligibility ──────────────────────────────────
+
+// computed eligibility view used on the officer goodphil dashboard
 export interface GoodphilEligibility {
   id: string
   first_name: string

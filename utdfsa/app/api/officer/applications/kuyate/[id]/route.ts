@@ -1,3 +1,10 @@
+// ── route.ts ─────────────────────────────────────────────
+// PATCH /api/officer/applications/kuyate/[id] — update kuyate application status and send notification email
+//
+// data:  kuyate_applications, members
+// deps:  resend (kuyate status email)
+// notes: email is sent only when transitioning to a final status (accepted/rejected) and
+//        only once per application — status_email_sent_at guards against duplicate sends
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import { kuyateStatusEmailHtml } from '@/lib/email/kuyate-status'
 import { resend } from '@/lib/resend'
@@ -10,11 +17,16 @@ const patchSchema = z.object({
 
 type RouteContext = { params: Promise<{ id: string }> }
 
+// ── auth guard ───────────────────────────────────────────
+// returns null if unauthenticated or if role is not officer/admin;
+// callers must check for null and return 403 before proceeding
 async function requireOfficer() {
+  // respects rls — user client; only returns a user if a valid session exists
   const supabase = await createUserClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
+  // bypass rls — admin client needed to read role from members table
   const admin = createAdminClient()
   const { data: member } = await admin
     .from('members')
@@ -40,7 +52,9 @@ export async function PATCH(req: Request, { params }: RouteContext) {
 
   const { status } = parsed.data
 
+  // ── fetch application ─────────────────────────────────────
   // fetch application first — need member_id, pamilya_name, and status_email_sent_at for email dedup
+  // bypass rls — officer action; reads kuyate_applications to get data needed for the email
   const { data: appRow, error: fetchError } = await ctx.admin
     .from('kuyate_applications')
     .select('id, member_id, pamilya_name, status_email_sent_at')
@@ -52,6 +66,8 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'Application not found.' }, { status: 404 })
   }
 
+  // ── status update ─────────────────────────────────────────
+  // bypass rls — officer action; updates kuyate_applications.status
   const { error: updateError } = await ctx.admin
     .from('kuyate_applications')
     .update({ status })
@@ -62,17 +78,21 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'Failed to update application status.' }, { status: 500 })
   }
 
+  // ── status notification email ─────────────────────────────
   // send status notification email when transitioning to a final status,
   // but only if no email has been sent yet for this application
   if ((status === 'accepted' || status === 'rejected') && !appRow.status_email_sent_at) {
     try {
+      // bypass rls — fetch the applicant's name and contact email to address the notification
       const { data: memberRow } = await ctx.admin
         .from('members')
         .select('first_name, email, contact_email')
         .eq('id', appRow.member_id)
         .maybeSingle()
 
+      // RESEND_FROM_EMAIL must be set in env for emails to send — skip silently if absent
       if (memberRow && process.env.RESEND_FROM_EMAIL) {
+        // prefer contact_email over login email so member gets mail at their preferred address
         const to = memberRow.contact_email ?? memberRow.email
         const { subject, html } = kuyateStatusEmailHtml({
           firstName: memberRow.first_name,
@@ -80,6 +100,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
           pamilyaName: appRow.pamilya_name ?? undefined,
         })
 
+        // sends a kuyate application status email (accepted or rejected) to the applicant
         const { error: emailError } = await resend.emails.send({
           from: process.env.RESEND_FROM_EMAIL!,
           to,
@@ -90,6 +111,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
         if (emailError) {
           console.error('[kuyate/[id]] resend error for application', id, emailError)
         } else {
+          // stamp the send time so future status changes don't re-send the email
           await ctx.admin
             .from('kuyate_applications')
             .update({ status_email_sent_at: new Date().toISOString() })

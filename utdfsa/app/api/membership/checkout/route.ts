@@ -1,3 +1,10 @@
+// ── route.ts ─────────────────────────────────────────────
+// POST /api/membership/checkout — create a Stripe checkout session for membership purchase
+//
+// data:  members, settings (earlyBirdDeadline, membershipPriceCents, membershipYear)
+// deps:  stripe (checkout session)
+// notes: early-bird pricing is applied when current time is before settings.earlyBirdDeadline;
+//        price and expiry are read from the db at request time — never hardcoded
 import { createUserClient } from '@/utils/supabase/server'
 import { stripe } from '@/lib/stripe'
 import { getSettings } from '@/lib/settings'
@@ -9,6 +16,9 @@ export async function POST() {
   // all database queries and auth checks live here
   // changing these will break functionality
   // ============================================================
+
+  // ── auth check ───────────────────────────────────────────
+  // returns 401 if no valid session — must be logged in to purchase
   const supabase = await createUserClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -16,6 +26,8 @@ export async function POST() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // ── member lookup ─────────────────────────────────────────
+  // respects rls — user client; verifies membership_status before proceeding
   const { data: member } = await supabase
     .from('members')
     .select('id, membership_status, email, first_name, last_name')
@@ -26,15 +38,19 @@ export async function POST() {
     return NextResponse.json({ error: 'Member not found' }, { status: 404 })
   }
 
+  // block duplicate purchases — membership is already active for this account
   if (member.membership_status === 'active') {
     return NextResponse.json({ error: 'Already a member' }, { status: 400 })
   }
 
+  // ── pricing ─────────────────────────────────────────────
   // fetch prices dynamically from the database
   const settings = await getSettings()
+  // compare current server time against the early-bird deadline stored in settings
   const now = new Date()
   const isEarlyBird = now < settings.earlyBirdDeadline
 
+  // select the correct price in cents based on early-bird eligibility
   const price = isEarlyBird
     ? settings.earlyBirdPriceCents
     : settings.membershipPriceCents
@@ -43,6 +59,8 @@ export async function POST() {
     ? `UTD FSA Membership ${settings.membershipYear} — Early Bird`
     : `UTD FSA Membership ${settings.membershipYear}`
 
+  // ── stripe checkout ───────────────────────────────────────
+  // creates a hosted checkout session; returns url to redirect the browser to
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
     customer_email: user.email!,
@@ -62,9 +80,11 @@ export async function POST() {
     }],
     mode: 'payment',
     allow_promotion_codes: true,
+    // NEXT_PUBLIC_SITE_URL is the canonical origin (e.g. https://utdfsa.com)
     success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/membership`,
     metadata: {
+      // stripe-webhook uses type + member_id to route the completed payment and update membership_status
       member_id: member.id,
       type: 'membership',
       is_early_bird: isEarlyBird.toString(),

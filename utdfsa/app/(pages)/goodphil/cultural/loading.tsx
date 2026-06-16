@@ -1,3 +1,10 @@
+// ── loading.tsx ───────────────────────────────────────────
+// skeleton screen for the goodphil cultural (pamana) page
+//
+// notes: golden bg on the past-performances skeleton matches
+//        the #e3ae3d accent used in cultural/page.tsx
+// ──────────────────────────────────────────────────────────
+
 export default function CulturalLoading() {
   return (
     <div className="bg-section-bg text-white overflow-x-hidden animate-pulse">

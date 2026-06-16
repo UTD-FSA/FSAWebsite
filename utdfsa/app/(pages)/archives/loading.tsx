@@ -1,3 +1,9 @@
+// ── loading.tsx ──────────────────────────────────────────────
+// archives page skeleton — mirrors header, filter pills, and grid layout
+//
+// notes: pill widths vary to mimic real semester label lengths;
+//        12 grid skeletons approximate a typical gallery count
+// ─────────────────────────────────────────────────────────────
 export default function ArchivesLoading() {
   return (
     <div className="min-h-screen bg-[#0f0f0f]">

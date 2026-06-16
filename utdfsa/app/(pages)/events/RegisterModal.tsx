@@ -1,3 +1,12 @@
+// ── RegisterModal.tsx ─────────────────────────────────────
+// ticket registration modal for a single event; initiates stripe checkout
+//
+// data:  props — event (id, name, date, location, prices, early_bird flag),
+//                isMember (bool), memberInfo (pre-fill | null)
+// deps:  POST /api/events/register → stripe checkout session
+// notes: members are limited to 1 ticket and have their fields pre-filled + disabled;
+//        non-members can add up to 10 tickets. free events skip stripe and go to a success url.
+
 'use client'
 
 import { useState } from 'react'
@@ -48,22 +57,29 @@ const blank = (): Ticket => ({ fname: '', lname: '', email: '' })
 // do not remove or rename the variables being rendered
 // ============================================================
 export default function RegisterModal({ event, isMember, memberInfo }: Props) {
+  // controls modal visibility; toggled by the "Get Tickets" button
   const [open, setOpen] = useState(false)
+  // list of attendee ticket rows; first slot pre-filled from memberInfo when available
   const [tickets, setTickets] = useState<Ticket[]>([
     memberInfo
       ? { fname: memberInfo.fname, lname: memberInfo.lname, email: memberInfo.email }
       : blank(),
   ])
+  // true while POST /api/events/register is in flight
   const [loading, setLoading] = useState(false)
+  // validation or api error message shown below the form
   const [error, setError] = useState<string | null>(null)
 
+  // member pricing vs. general admission — both stored as cents in the db
   const pricePerTicket = isMember ? event.price_cents_members : event.price_cents_nonmembers
+  // total in cents; displayed as "Free" when 0
   const total = pricePerTicket * tickets.length
 
   function updateTicket(i: number, field: keyof Ticket, value: string) {
     setTickets(prev => prev.map((t, idx) => idx === i ? { ...t, [field]: value } : t))
   }
 
+  // hard cap at 10 tickets per order for non-members
   function addTicket() {
     if (tickets.length < 10) setTickets(prev => [...prev, blank()])
   }
@@ -92,7 +108,7 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
         return
       }
 
-      // redirect to Stripe checkout (or success page for free events)
+      // data.url is a stripe checkout url for paid events, or an internal success url for free ones
       window.location.href = data.url
     } catch {
       setError('Network error — please try again.')

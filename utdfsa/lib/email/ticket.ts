@@ -1,3 +1,14 @@
+// ── ticket.ts ─────────────────────────────────────────────────────────────────
+// generates the html body for the event ticket email containing the attendee's qr code.
+//
+// notes: table-based layout for broad email client compatibility.
+//        qr code is embedded as a cid inline attachment (not a data: url) because
+//        gmail, outlook, and apple mail all block data: urls in email bodies.
+//        the cid value ('ticket_qr') must match the contentId set in resend's
+//        attachments array in the stripe-webhook route.
+//        date/time is formatted in america/chicago (ct) — utd is in dallas, tx.
+//        called once per ticket per registration after payment succeeds.
+
 export function ticketEmailHtml({
   attendeeName,
   eventName,
@@ -11,6 +22,7 @@ export function ticketEmailHtml({
   location: string | null
   qrCid: string
 }): string {
+  // format event_date (iso string) into a human-readable date in central time
   const dateStr = eventDate
     ? new Date(eventDate).toLocaleDateString('en-US', {
         weekday: 'long',
@@ -21,6 +33,7 @@ export function ticketEmailHtml({
       })
     : null
 
+  // format time separately so it can be appended inline after the date
   const timeStr = eventDate
     ? new Date(eventDate).toLocaleTimeString('en-US', {
         hour: 'numeric',

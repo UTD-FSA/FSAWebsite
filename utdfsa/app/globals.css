@@ -1,5 +1,15 @@
+/* ── globals.css ─────────────────────────────────────────────
+   global styles, design tokens, and third-party overrides
+
+   data:  none
+   notes: CSS custom properties defined here are mapped into tailwind
+          via @theme inline so they can be used as utility classes;
+          FullCalendar and officer-select overrides live at the bottom
+   ───────────────────────────────────────────────────────────── */
 @import "tailwindcss";
 
+/* ── design tokens ───────────────────────────────────────────
+   base palette and layout variables shared across all pages */
 :root {
   --background: #0e0e0e;
   --foreground: #ffffff;
@@ -26,6 +36,9 @@
   }
 }
 
+/* ── tailwind theme mapping ──────────────────────────────────
+   bridges CSS custom properties into tailwind utility classes
+   (e.g. bg-brand-bg, text-accent-green, font-display) */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -41,6 +54,9 @@
   --animate-marquee: marquee 35s linear infinite;
 }
 
+/* ── animations ──────────────────────────────────────────────
+   marquee slides to -50% because content is duplicated 8x,
+   making the loop seamless when it wraps back to 0 */
 @keyframes marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
@@ -52,9 +68,12 @@ body {
   font-family: var(--font-sans), Arial, sans-serif;
 }
 
+/* modal entrance animations used by Modal component and event detail overlay */
 @keyframes backdropIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes modalIn { from { opacity: 0; transform: translateY(14px) scale(0.985); } to { opacity: 1; transform: none; } }
 
+/* ── event card hover ────────────────────────────────────────
+   purple glow lift used on the events grid cards */
 .event-card {
   transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
 }

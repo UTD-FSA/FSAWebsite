@@ -1,5 +1,16 @@
+// ── utils/supabase/middleware.ts ──────────────────────────
+// next.js middleware — refreshes the supabase session and
+// enforces route-level auth guards for member and officer paths.
+//
+// data:  members (role, membership_status)
+// deps:  supabase/ssr
+// notes: called by proxy.ts on every non-static request;
+//        all redirects preserve the original path in ?next=
+
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+
+// ── route protection lists ────────────────────────────────
 
 // any logged-in user can access these routes
 const MEMBER_ROUTES = ['/member']
@@ -16,6 +27,8 @@ const ALLOWED_UNPAID_PATHS = [
   '/login',
 ]
 
+// ── session refresh + auth guards ─────────────────────────
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -28,6 +41,8 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
+          // write cookies to both the request and the response so the
+          // refreshed session token reaches the browser
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
@@ -51,6 +66,7 @@ export async function updateSession(request: NextRequest) {
   if ((needsMember || needsOfficer) && !user) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/login'
+    // ?next= lets the login page redirect back to the originally requested path after sign-in
     loginUrl.searchParams.set('next', pathname)
     return NextResponse.redirect(loginUrl)
   }
@@ -60,6 +76,7 @@ export async function updateSession(request: NextRequest) {
   let memberRow: { role: string; membership_status: string } | null = null
 
   if (user && (needsMember || needsOfficer || pathname === '/membership')) {
+    // respects rls — only returns the row matching the caller's email
     const { data } = await supabase
       .from('members')
       .select('role, membership_status')
@@ -84,6 +101,7 @@ export async function updateSession(request: NextRequest) {
     const isPaid = memberRow?.membership_status === 'active'
 
     if (!isPaid) {
+      // allow exceptions (onboarding, auth routes) so the payment flow itself isn't blocked
       const isAllowed = ALLOWED_UNPAID_PATHS.some(p => pathname.startsWith(p))
 
       if (!isAllowed) {
@@ -102,6 +120,7 @@ export async function updateSession(request: NextRequest) {
       // not an officer — redirect to their profile with an error flag
       const redirectUrl = request.nextUrl.clone()
       redirectUrl.pathname = '/member/profile'
+      // ?error=unauthorized lets the profile page surface a toast or banner
       redirectUrl.searchParams.set('error', 'unauthorized')
       return NextResponse.redirect(redirectUrl)
     }

@@ -1,3 +1,11 @@
+// ── loading.tsx ───────────────────────────────────────────
+// skeleton screen for the pamilyas page
+//
+// notes: mirrors the full section order of pamilyas/page.tsx:
+//        hero, what-is bar, carousel, meet-pamilyas bar,
+//        pamilya cards, sign-up bar, and form card grid
+// ──────────────────────────────────────────────────────────
+
 export default function Loading() {
   return (
     <main className="bg-section-bg overflow-x-hidden">

@@ -1,17 +1,12 @@
-// ============================================================
-// UI — this page is fully static, safe to restyle everything
-// no data fetching or auth logic present
-// photos are in public/ — filenames listed at top of file
+// ── page.tsx ──────────────────────────────────────────────
+// goodphil about page — hero, what-is, participation rules,
+// and team-grid linking to spirit/cultural/modern/sports
 //
-// PHOTOS:
-//   /hero-1-gp.jpg       — hero full-bleed background
-//   /hero-2-gp.jpg       — hero second layered image (right side)
-//   /what-is-gp.jpg      — "What Is Goodphil?" section
-//   /spirit-gp.jpg       — Spirit team card
-//   /cultural-gp.jpg     — Cultural team card
-//   /modern-gp.jpg       — Modern team card
-//   /sports-gp.jpg       — Sports team card
-// ============================================================
+// notes: fully static; all photos served from /public —
+//        hero-1-gp.jpg, hero-2-gp.jpg, what-is-gp.jpg,
+//        spirit-gp.jpg, cultural-gp.jpg, modern-gp.jpg,
+//        sports-gp.jpg
+// ──────────────────────────────────────────────────────────
 
 import Image from 'next/image'
 import Link from 'next/link'

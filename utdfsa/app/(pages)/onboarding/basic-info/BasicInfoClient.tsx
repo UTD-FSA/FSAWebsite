@@ -1,3 +1,11 @@
+// ── BasicInfoClient.tsx ───────────────────────────────────
+// client form for collecting/updating a member's basic profile fields
+//
+// data:  props — initial (BasicInfoForm) pre-filled from the server component
+// deps:  POST /api/onboarding/update-basic-info
+// notes: reached from the onboarding "not interested" path or as a standalone profile edit.
+//        does not set onboarding_complete — that is handled by the onboarding flow.
+
 'use client'
 
 import { useState } from 'react'
@@ -18,8 +26,11 @@ interface Props {
 
 export default function BasicInfoClient({ initial }: Props) {
   const router = useRouter()
+  // all editable profile fields; seeded from pre-filled server data via props
   const [form, setForm] = useState<BasicInfoForm>(initial)
+  // true while POST /api/onboarding/update-basic-info is in flight
   const [loading, setLoading] = useState(false)
+  // validation or api error shown inline above the submit button
   const [error, setError] = useState<string | null>(null)
 
   function set<K extends keyof BasicInfoForm>(field: K, value: BasicInfoForm[K]) {
@@ -27,11 +38,13 @@ export default function BasicInfoClient({ initial }: Props) {
   }
 
   async function handleSubmit() {
+    // client-side validation: names are required
     if (!form.first_name.trim() || !form.last_name.trim()) {
       setError('first and last name are required')
       return
     }
 
+    // strip non-digits to check the raw digit count (must be at least 10 for a valid us number)
     if (!form.phone || form.phone.replace(/\D/g, '').length < 10) {
       setError('a valid phone number is required')
       return

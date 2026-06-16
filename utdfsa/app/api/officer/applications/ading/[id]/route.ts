@@ -1,3 +1,8 @@
+// ── route.ts ─────────────────────────────────────────────
+// PATCH /api/officer/applications/ading/[id] — update ading application status and/or pamilya assignment
+//
+// data:  ading_applications, members (pamilya field)
+// notes: pamilya is stored on the member row, not the application; officer-only
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import { z } from 'zod'
 import { NextResponse } from 'next/server'
@@ -14,11 +19,16 @@ const patchSchema = z.object({
 
 type RouteContext = { params: Promise<{ id: string }> }
 
+// ── auth guard ───────────────────────────────────────────
+// returns null if unauthenticated or if role is not officer/admin;
+// callers must check for null and return 403 before proceeding
 async function requireOfficer() {
+  // respects rls — user client; only returns a user if a valid session exists
   const supabase = await createUserClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return null
 
+  // bypass rls — admin client needed to read role from members table
   const admin = createAdminClient()
   const { data: member } = await admin
     .from('members')
@@ -44,7 +54,9 @@ export async function PATCH(req: Request, { params }: RouteContext) {
 
   const { status, pamilya } = parsed.data
 
+  // ── status update ─────────────────────────────────────────
   if (status !== undefined) {
+    // bypass rls — officer action; updates ading_applications.status
     const { error } = await ctx.admin
       .from('ading_applications')
       .update({ status })
@@ -56,8 +68,10 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     }
   }
 
+  // ── pamilya assignment ────────────────────────────────────
   if (pamilya !== undefined) {
     // resolve the member_id for this ading application
+    // bypass rls — reads ading_applications to get the linked member_id
     const { data: appRow, error: appError } = await ctx.admin
       .from('ading_applications')
       .select('member_id')
@@ -70,6 +84,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
     }
 
     // update members.pamilya directly — pamilya lives on the member, not the application
+    // bypass rls — officer action; writes to members table on behalf of an officer
     const { error: memberError } = await ctx.admin
       .from('members')
       .update({ pamilya })

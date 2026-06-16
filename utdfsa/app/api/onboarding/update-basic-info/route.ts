@@ -1,3 +1,11 @@
+// ── route.ts (onboarding/update-basic-info) ───────────────────────────────────
+// saves name, phone, year, and major for a member who opted out of pamilya.
+//
+// data:  members (read via user client, write via admin client)
+// notes: does NOT touch onboarding_complete — that is already set by the
+//        not-interested route before the client navigates here.
+//        used by the /onboarding/basic-info page.
+
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import { phoneField } from '@/lib/schemas'
 import { formatPhone } from '@/lib/format'
@@ -16,11 +24,12 @@ const schema = z.object({
   major: z.string().max(100).trim().optional().nullable(),
 })
 
-// POST /api/onboarding/update-basic-info
+// ── POST /api/onboarding/update-basic-info ────────────────────────────────────
 // saves profile fields (name, phone, year, major) for a member.
 // does NOT touch onboarding_complete — that is already set by the not-interested route.
 // used by the /onboarding/basic-info page after a member opts out of the pamilya program.
 export async function POST(req: Request) {
+  // respects rls — confirms caller is authenticated; returns 401 on failure
   const supabase = await createUserClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -38,6 +47,9 @@ export async function POST(req: Request) {
     )
   }
 
+  // ── auth / membership checks ──────────────────────────────────────────────
+
+  // respects rls — fetch the caller's own member row to verify eligibility
   const { data: member } = await supabase
     .from('members')
     .select('id, membership_status')
@@ -48,12 +60,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'member not found' }, { status: 404 })
   }
 
+  // guard: only active (paid) members can update their profile via onboarding
   if (member.membership_status !== 'active') {
     return NextResponse.json({ error: 'membership not active' }, { status: 400 })
   }
 
+  // bypass rls — user client cannot update its own members row
   const admin = createAdminClient()
 
+  // update basic profile fields; phone is normalized to e.164 format via formatPhone
   const { error } = await admin
     .from('members')
     .update({

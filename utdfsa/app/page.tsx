@@ -1,3 +1,10 @@
+// ── page.tsx ─────────────────────────────────────────────────
+// home page — static marketing layout with hero, marquee, and mission
+//
+// data:  none — fully static, no database queries
+// notes: z-10 overlay and z-20 logo/text layer the hero; marquee duplicates
+//        8 items so the looping seam is never visible at any viewport width
+// ─────────────────────────────────────────────────────────────
 import Image from "next/image"
 import PhotoCarousel from "@/components/PhotoCarousel"
 
@@ -19,9 +26,11 @@ export default function Home() {
         />
 
         {/* Dark overlay so text reads clearly over the busy photo */}
+        {/* z-10 sits above the hero image but below the logo (z-20) */}
         <div className="absolute inset-0 bg-black/20 z-10" />
 
         {/* Centered FSA logo */}
+        {/* z-20 keeps the logo and subtitle text above the dark overlay */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
           <div className="w-[200px] h-[200px] sm:w-[360px] sm:h-[360px] md:w-[515px] md:h-[515px]">
             <Image
@@ -48,6 +57,7 @@ export default function Home() {
 
       {/* ── MARQUEE ───────────────────────────────────────────────── */}
       <div className="bg-brand-bg h-[42px] sm:h-[52px] md:h-[59px] flex items-center overflow-hidden">
+        {/* 8 copies so the loop seam is never visible — animation slides to -50% */}
         <div className="flex gap-10 whitespace-nowrap w-max animate-marquee">
           {Array.from({ length: 8 }).map((_, i) => (
             <span key={i} className="font-display font-bold text-[15px] sm:text-[22px] md:text-[32px] text-white shrink-0 tracking-wide">

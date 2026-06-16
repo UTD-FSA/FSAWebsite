@@ -1,3 +1,11 @@
+// ── Navbar.tsx ────────────────────────────────────────────
+// sticky site-wide navigation with desktop dropdowns and mobile slide-out menu
+//
+// data:  props — initialMember (Member pick | null) from the root layout server component
+//        supabase: members table (select on auth state change)
+// deps:  supabase auth listener (onAuthStateChange)
+// notes: member state is seeded from SSR then kept live via the auth subscription
+
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
@@ -28,13 +36,21 @@ interface NavbarProps {
 // ============================================================
 export default function Navbar({ initialMember }: NavbarProps) {
   type NavbarMember = Pick<Member, 'id' | 'first_name' | 'last_name' | 'avatar_url' | 'role'>
+  // seeded from SSR; updated live by the auth state change listener below
   const [member, setMember] = useState<NavbarMember | null>(initialMember)
+  // controls the desktop profile/avatar dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  // controls the desktop goodphil sub-navigation dropdown
   const [goodphilOpen, setGoodphilOpen] = useState(false)
+  // controls the mobile full-screen slide-out menu
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  // controls the inline goodphil accordion inside the mobile menu
   const [mobileGoodphilOpen, setMobileGoodphilOpen] = useState(false)
+  // ref used to detect outside clicks and close the avatar dropdown
   const dropdownRef = useRef<HTMLLIElement>(null)
+  // ref used to detect outside clicks and close the goodphil dropdown
   const goodphilRef = useRef<HTMLLIElement>(null)
+  // stable client instance; useRef prevents re-creation on every render
   const supabase = useRef(createClient()).current
 
   useEffect(() => {
@@ -92,6 +108,7 @@ export default function Navbar({ initialMember }: NavbarProps) {
     setMobileGoodphilOpen(false)
   }
 
+  // gates officer-only nav links; both 'officer' and 'admin' roles qualify
   const isOfficer = member?.role === 'officer' || member?.role === 'admin'
   const pathname = usePathname()
 
@@ -102,6 +119,7 @@ export default function Navbar({ initialMember }: NavbarProps) {
 
   return (
     <>
+      {/* z-[60]: above carousel cards (z-20) and page content; below Modal (z-[300]) */}
       <nav className="flex justify-between items-center px-6 md:px-14 bg-brand-bg h-20 sticky top-0 z-[60]">
         {/* route: / — home page — do not change this path */}
         <Link href="/" className="flex items-center gap-3">
