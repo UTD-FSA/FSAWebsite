@@ -224,56 +224,71 @@ export default function PamilyasClient({
   // ── Card prop helpers ────────────────────────────────────────────────────────
 
   function kuyateCardProps(): { href?: string; onClick?: () => void } {
-    if (!memberState.isLoggedIn) return { href: '/login?next=/pamilyas' }
-    if (!memberState.isMember) return { href: '/membership' }
-    if (memberState.memberType === 'kuyate' && memberState.hasKuyateApp) {
-      return {
-        onClick: () => setPopup({
-          title: 'Application Submitted',
-          message: 'You have already submitted your Kuya/Ate application. The pam chair will be in touch after the sorting process.',
-        }),
-      }
-    }
-    if (memberState.memberType === 'ading' && memberState.hasAdingApp) {
-      return {
-        onClick: () => setPopup({
-          title: 'Already Applied as Ading',
-          message: 'You have already submitted an Ading application. You cannot apply as both Ading and Kuya/Ate.',
-        }),
-      }
-    }
-    if (!isKuyateOpen) {
-      return {
-        onClick: () => setPopup({
-          title: 'Applications Closed',
-          message: 'Kuya/Ate applications have closed for this semester. You can still apply as an Ading.',
-        }),
-      }
-    }
-    if (memberState.memberType === 'not_interested') return { href: '/onboarding?reapply=true&type=kuyate' }
+    // not logged in → login with redirect
+    if (!memberState.isLoggedIn)
+      return { href: '/login?next=/pamilyas' }
+
+    // logged in but not a paid member → membership page
+    if (!memberState.isMember)
+      return { href: '/membership' }
+
+    // already submitted a kuyate app → already submitted popup
+    if (memberState.memberType === 'kuyate' && memberState.hasKuyateApp)
+      return { onClick: () => setPopup({
+        title: 'Application Submitted',
+        message: 'You have already submitted your Kuya/Ate application. The pam chair will be in touch after the sorting process.',
+      })}
+
+    // already submitted an ading app → cross-apply block popup
+    if (memberState.memberType === 'ading' && memberState.hasAdingApp)
+      return { onClick: () => setPopup({
+        title: 'Already Applied as Ading',
+        message: 'You have already submitted an Ading application. You cannot apply as both Ading and Kuya/Ate.',
+      })}
+
+    // kuyate applications are closed → closed popup
+    if (!isKuyateOpen)
+      return { onClick: () => setPopup({
+        title: 'Applications Closed',
+        message: 'Kuya/Ate applications have closed for this semester.',
+      })}
+
+    // not_interested member → reapply flow with type param
+    if (memberState.memberType === 'not_interested')
+      return { href: '/onboarding?reapply=true&type=kuyate' }
+
+    // member with no type yet → normal onboarding
     return { href: '/onboarding' }
   }
 
   function adingCardProps(): { href?: string; onClick?: () => void } {
-    if (!memberState.isLoggedIn) return { href: '/login?next=/pamilyas' }
-    if (!memberState.isMember) return { href: '/membership' }
-    if (memberState.memberType === 'ading' && memberState.hasAdingApp) {
-      return {
-        onClick: () => setPopup({
-          title: 'Application Submitted',
-          message: 'You have already submitted your Ading application. The pam chair will be in touch after the sorting process.',
-        }),
-      }
-    }
-    if (memberState.memberType === 'kuyate' && memberState.hasKuyateApp) {
-      return {
-        onClick: () => setPopup({
-          title: 'Already Applied as Kuya/Ate',
-          message: 'You have already submitted a Kuya/Ate application. You cannot apply as both Kuya/Ate and Ading.',
-        }),
-      }
-    }
-    if (memberState.memberType === 'not_interested') return { href: '/onboarding?reapply=true&type=ading' }
+    // not logged in → login with redirect
+    if (!memberState.isLoggedIn)
+      return { href: '/login?next=/pamilyas' }
+
+    // logged in but not a paid member → membership page
+    if (!memberState.isMember)
+      return { href: '/membership' }
+
+    // already submitted an ading app → already submitted popup
+    if (memberState.memberType === 'ading' && memberState.hasAdingApp)
+      return { onClick: () => setPopup({
+        title: 'Application Submitted',
+        message: 'You have already submitted your Ading application. The pam chair will be in touch after the sorting process.',
+      })}
+
+    // already submitted a kuyate app → cross-apply block popup
+    if (memberState.memberType === 'kuyate' && memberState.hasKuyateApp)
+      return { onClick: () => setPopup({
+        title: 'Already Applied as Kuya/Ate',
+        message: 'You have already submitted a Kuya/Ate application. You cannot apply as both Kuya/Ate and Ading.',
+      })}
+
+    // not_interested member → reapply flow with type param
+    if (memberState.memberType === 'not_interested')
+      return { href: '/onboarding?reapply=true&type=ading' }
+
+    // member with no type yet → normal onboarding
     return { href: '/onboarding' }
   }
 

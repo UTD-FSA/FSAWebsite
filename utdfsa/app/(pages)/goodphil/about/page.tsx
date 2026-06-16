@@ -205,7 +205,7 @@ export default function GoodphilAboutPage() {
               </p>
               <ul className="list-disc pl-8 font-sans font-bold text-[clamp(16px,2vw,29px)] text-white space-y-2">
                 <li>
-                  <Link href="/login" className="underline">Be a paid member</Link>
+                  <Link href="/membership" className="underline">Be a paid member</Link>
                   {' '}of UTD FSA
                 </li>
                 <li>Earn 6 Goodphil points by attending UTD FSA events</li>

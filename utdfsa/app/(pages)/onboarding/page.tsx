@@ -60,10 +60,9 @@ export default async function OnboardingPage({ searchParams }: Props) {
         .update({ onboarding_complete: false, member_type: null })
         .eq('id', member.id)
       // fall through to render onboarding normally
-    } else {
-      // ading/kuyate applicants cannot reapply via this route
-      redirect('/member/profile')
     }
+    // if member_type is null or any other value, fall through
+    // to render onboarding normally — do not redirect
   } else if (member.onboarding_complete) {
     // onboarding already finished — nothing left to do, send to profile
     redirect('/member/profile')
