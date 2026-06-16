@@ -12,7 +12,7 @@ export default function SpiritPage() {
     <main className="bg-section-bg text-white overflow-x-hidden">
 
       {/* ── SECTION 1 — HERO ──────────────────────────────────────── */}
-      <section className="relative w-full h-[600px] overflow-hidden">
+      <section className="relative w-full h-[40vh] md:h-[600px] overflow-hidden">
 
         {/* Background layer: dark radial gradient (no bg PNG for Spirit) */}
         <div
@@ -23,27 +23,22 @@ export default function SpiritPage() {
           }}
         />
 
-        {/* Middle layer: spirit-hero.png — flex-centered wrapper eliminates translate offsets */}
-        <div
-          className="absolute inset-0 flex items-center justify-center"
-          style={{ zIndex: 1 }}
-        >
-          <div className="relative w-[90%] md:w-[65%]" style={{ height: '85%' }}>
-            <Image
-              src="/spirit-hero.png"
-              alt="UTD FSA Spirit team"
-              fill
-              className="object-contain"
-              priority
-              quality={90}
-              sizes="(max-width: 768px) 90vw, 65vw"
-            />
-          </div>
+        {/* Middle layer: spirit-hero.jpg — full-bleed cover at all sizes */}
+        <div className="absolute inset-0 z-10">
+          <Image
+            src="/spirit-hero.jpg"
+            alt="UTD FSA Spirit team"
+            fill
+            className="object-cover object-center"
+            priority
+            quality={90}
+            sizes="100vw"
+          />
         </div>
 
         {/* Top layer: SPIRIT title centered over hero photo */}
         <h1
-          className="absolute z-20 w-full text-center font-display font-black text-white leading-none select-none"
+          className="absolute z-30 w-full text-center font-display font-black text-white leading-none select-none"
           style={{
             left: '50%',
             top: '50%',
@@ -75,7 +70,7 @@ export default function SpiritPage() {
         <div className="max-w-3xl mx-auto">
 
           <h2
-            className="font-display font-black text-white text-center mb-14"
+            className="font-display font-black text-white text-center w-full block mb-14"
             style={{
               fontSize: 'clamp(30px, 4.3vw, 65px)',
               letterSpacing: '3.25px',

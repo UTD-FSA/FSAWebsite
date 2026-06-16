@@ -13,7 +13,7 @@ export default function SportsPage() {
     <main className="bg-section-bg text-white overflow-x-hidden">
 
       {/* ── SECTION 1 — HERO ──────────────────────────────────────── */}
-      <section className="relative w-full h-[600px] overflow-hidden">
+      <section className="relative w-full h-[40vh] md:h-[600px] overflow-hidden">
 
         {/* Background layer: dark radial gradient (no bg PNG for Sports) */}
         <div
@@ -24,31 +24,22 @@ export default function SportsPage() {
           }}
         />
 
-        {/* Middle layer: sports-hero.jpg centered, ~65% of hero width */}
-        <div
-          className="absolute z-10"
-          style={{
-            left: '50%',
-            top: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '65%',
-          }}
-        >
+        {/* Middle layer: sports-hero.jpg — full-bleed cover at all sizes */}
+        <div className="absolute inset-0 z-10">
           <Image
             src="/sports-hero.jpg"
             alt="UTD FSA Sports team"
-            width={1128}
-            height={576}
-            className="w-full object-contain"
+            fill
+            className="object-cover object-top"
             priority
             quality={90}
-            sizes="65vw"
+            sizes="100vw"
           />
         </div>
 
         {/* Top layer: SPORTS title centered over hero photo */}
         <h1
-          className="absolute z-20 w-full text-center font-display font-black text-white leading-none select-none"
+          className="absolute z-30 w-full text-center font-display font-black text-white leading-none select-none"
           style={{
             left: '50%',
             top: '50%',

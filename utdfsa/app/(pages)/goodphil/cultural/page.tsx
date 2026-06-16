@@ -1,6 +1,6 @@
 // ============================================================
 // UI — this page is fully static, safe to restyle everything
-// photos are in public/ — cultural-hero.png, cultural-logo.png
+// photos are in public/ — cultural-hero.jpg, cultural-logo.png
 // no background png for this page — use dark gradient instead
 // youtube video IDs are hardcoded below
 // ============================================================
@@ -12,38 +12,64 @@ export default function CulturalPage() {
     <main className="bg-section-bg text-white overflow-x-hidden">
 
       {/* ── SECTION 1 — HERO ──────────────────────────────────────── */}
-      <section className="relative w-full h-[600px] overflow-hidden">
+      <section className="relative w-full h-[40vh] md:h-[600px] overflow-hidden">
 
-        {/* Background layer: dark radial gradient (no bg PNG for Cultural) */}
+        {/* Background layer: cultural-hero-bg.png fills entire hero */}
         <div
           className="absolute inset-0 z-0"
-          style={{
-            background:
-              'radial-gradient(ellipse at center, rgba(40,40,40,0.8) 0%, rgba(10,10,10,1) 100%)',
-          }}
-        />
+          style={{ transform: 'translateX(0px) scale(1.0)', transformOrigin: 'center center' }}
+        >
+          <Image
+            src="/cultural-hero-bg.png"
+            alt=""
+            fill
+            className="object-cover object-center"
+            priority
+            quality={90}
+            sizes="100vw"
+          />
+        </div>
 
-        {/* Middle layer: cultural-hero.png — flex-centered wrapper eliminates translate offsets */}
+        {/* Middle layer: cultural-hero.jpg — flex-centered wrapper eliminates translate offsets */}
         <div
           className="absolute inset-0 flex items-center justify-center"
           style={{ zIndex: 1 }}
         >
-          <div className="relative w-[90%] md:w-[65%]" style={{ height: '85%' }}>
+
+          {/* mobile: full-bleed cover */}
+          <div className="absolute inset-0 md:hidden">
             <Image
-              src="/cultural-hero.png"
+              src="/cultural-hero.jpg"
+              alt="UTD Pamana cultural dance team"
+              fill
+              className="object-cover object-center"
+              priority
+              quality={90}
+              sizes="100vw"
+            />
+          </div>
+
+          {/* desktop: centered contained image, unchanged */}
+          <div className="relative hidden md:block w-[65%]" style={{ height: '95%' }}>
+            <Image
+              src="/cultural-hero.jpg"
               alt="UTD Pamana cultural dance team"
               fill
               className="object-contain"
               priority
               quality={90}
-              sizes="(max-width: 768px) 90vw, 65vw"
+              sizes="65vw"
             />
           </div>
+
         </div>
+
+        {/* dark overlay — mobile only, keeps title readable */}
+        <div className="absolute inset-0 bg-black/40 md:hidden z-[2]" />
 
         {/* Top layer: CULTURAL title centered over hero photo */}
         <h1
-          className="absolute z-20 w-full text-center font-display font-black text-white leading-none select-none"
+          className="absolute z-30 w-full text-center font-display font-black text-white leading-none select-none"
           style={{
             left: '50%',
             top: '50%',
@@ -75,7 +101,7 @@ export default function CulturalPage() {
         <div className="max-w-3xl mx-auto">
 
           <h2
-            className="font-display font-black text-white text-center mb-14"
+            className="font-display font-black text-white text-center w-full block mb-14"
             style={{
               fontSize: 'clamp(30px, 4.3vw, 65px)',
               letterSpacing: '3.25px',

@@ -244,7 +244,7 @@ export default function GoodphilAboutPage() {
             {[
               { name: 'SPIRIT',   photo: '/spirit-gp.jpg',   href: '/goodphil/spirit' },
               { name: 'CULTURAL', photo: '/cultural-gp.jpg', href: '/goodphil/cultural' },
-              { name: 'MODERN',   photo: '/modern-gp.jpg',   href: '/goodphil/modern' },
+              { name: 'MODERN',   photo: '/modern-goop.jpg',   href: '/goodphil/modern' },
               { name: 'SPORTS',   photo: '/sports-gp.jpg',   href: '/goodphil/sports' },
             ].map(({ name, photo, href }) => (
               <Link
