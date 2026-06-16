@@ -78,8 +78,8 @@ body {
   transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
 }
 .event-card:hover {
-  border-color: rgba(151, 113, 255, 0.55);
-  box-shadow: 0 0 0 1px rgba(151, 113, 255, 0.22), 0 18px 38px -16px rgba(151, 113, 255, 0.42);
+  border-color: rgba(117, 186, 120, 0.55);
+  box-shadow: 0 0 0 1px rgba(117, 186, 120, 0.22), 0 18px 38px -16px rgba(117, 186, 120, 0.42);
   transform: translateY(-4px);
 }
 
@@ -116,7 +116,7 @@ body {
 /* FIX 4 — day numbers left-justified */
 .fc-dark .fc-daygrid-day-top { flex-direction: row; }
 .fc-dark .fc-daygrid-day-number { color: rgba(255,255,255,0.6); font-size: 0.875rem; font-weight: 600; text-decoration: none; text-align: left; float: left; padding: 4px 8px; }
-.fc-dark .fc-day-today .fc-daygrid-day-number { color: #fff; background: #9747FF; border-radius: 999px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; padding: 0; margin: 4px; font-size: 0.72rem; }
+.fc-dark .fc-day-today .fc-daygrid-day-number { color: #fff; background: #75ba78; border-radius: 999px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; padding: 0; margin: 4px; font-size: 0.72rem; }
 .fc-dark .fc-day-today { background: rgba(255,255,255,0.03) !important; }
 
 /* event pills + overflow */

@@ -269,14 +269,14 @@ export default function Navbar({ initialMember }: NavbarProps) {
       {/* Backdrop — closes mobile menu when tapping outside */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/50 xl:hidden"
+          className="fixed inset-0 z-50 bg-black/50 xl:hidden"
           onClick={closeMobileMenu}
         />
       )}
 
       {/* Mobile menu panel — slides in below navbar */}
       {mobileMenuOpen && (
-        <div className="fixed top-20 left-0 right-0 z-40 bg-brand-bg border-t border-white/10 overflow-y-auto max-h-[calc(100vh-5rem)] xl:hidden">
+        <div className="fixed top-20 left-0 right-0 z-60 bg-brand-bg border-t border-white/10 overflow-y-auto max-h-[calc(100vh-5rem)] xl:hidden">
           <ul>
             {/* route: /about — About Us page — do not change this path */}
             <li><Link href="/about" className={mobileLinkClass} onClick={closeMobileMenu}>About Us</Link></li>

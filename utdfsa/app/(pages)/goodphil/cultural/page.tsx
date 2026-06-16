@@ -70,6 +70,7 @@ export default function CulturalPage() {
             style={{
               fontSize: 'clamp(30px, 4.3vw, 65px)',
               letterSpacing: '3.25px',
+              paddingLeft: '3.25px',
               textShadow: '0px 16px 4px rgba(255,251,251,0.26)',
             }}
           >

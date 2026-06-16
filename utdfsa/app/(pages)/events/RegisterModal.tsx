@@ -121,7 +121,7 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
     'w-full rounded-lg px-3 py-2 text-sm transition-colors',
     'focus:outline-none focus:ring-1',
     'text-white bg-[#1e1e1e] border border-white/[0.12]',
-    'placeholder:text-white/30 focus:ring-[#9747FF] focus:border-[#9747FF]',
+    'placeholder:text-white/30 focus:ring-[#2b5f2e] focus:border-[#2b5f2e]',
     'disabled:opacity-50 disabled:cursor-not-allowed',
   ].join(' ')
 
@@ -134,14 +134,14 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
         className="w-full rounded-[13px] text-white font-bold text-[15px] tracking-[0.01em] transition-all"
         style={{
           padding: '16px',
-          background: '#9747FF',
+          background: '#2b5f2e',
         }}
         onMouseEnter={e => {
-          (e.currentTarget as HTMLButtonElement).style.background = '#a85eff'
-          ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 14px 34px -12px rgba(151,71,255,0.75)'
+          (e.currentTarget as HTMLButtonElement).style.background = '#347b38'
+          ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 14px 34px -12px rgba(77, 119, 79, 0.75)'
         }}
         onMouseLeave={e => {
-          (e.currentTarget as HTMLButtonElement).style.background = '#9747FF'
+          (e.currentTarget as HTMLButtonElement).style.background = '#2b5f2e'
           ;(e.currentTarget as HTMLButtonElement).style.boxShadow = 'none'
         }}
       >
@@ -310,7 +310,7 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
                 type="submit"
                 disabled={loading}
                 className="w-full text-white font-bold py-4 rounded-[13px] text-[15px] tracking-[0.01em] transition-opacity disabled:opacity-60"
-                style={{ background: '#9747FF' }}
+                style={{ background: '#2b5f2e' }}
               >
                 {/* only shows "Processing…" while the checkout API call is in flight — do not remove this condition */}
                 {loading
