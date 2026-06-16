@@ -23,7 +23,7 @@ export default function GoodphilAboutPage() {
       {/* ── SECTION 1 — HERO ──────────────────────────────────────── */}
 
       {/* Mobile hero — simplified single-image layout for small screens */}
-      <div className="block md:hidden">
+      <div className="block lg:hidden">
         <div className="relative w-full h-[50vh] overflow-hidden bg-[#1f1f1f]">
           <Image
             src="/hero-2-gp.jpg"
@@ -50,70 +50,67 @@ export default function GoodphilAboutPage() {
         </div>
       </div>
 
-      {/* Desktop hero — flex layout, hidden on mobile */}
-      <section className="hidden md:block relative w-full overflow-hidden bg-[#1f1f1f] h-[1040px]">
+      {/* Desktop hero — hidden below lg */}
+      <section className="hidden lg:block relative w-full overflow-hidden bg-[#1f1f1f] h-[900px]">
 
-        {/* Inner flex row: gp-back.png watermark left, stacked photos right */}
-        <div className="flex flex-row h-full w-full">
-
-          {/* Left child: gp-back.png — same visible width as original (50% of hero) */}
-          <div className="relative h-full overflow-hidden flex-shrink-0" style={{ flexBasis: '50%' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/gp-back.png"
-              alt=""
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                width: '100%',
-                height: 'auto',
-                pointerEvents: 'none',
-                userSelect: 'none',
-              }}
-            />
-          </div>
-
-          {/* Right child: two photos stacked — padding replicates original vertical centering */}
-          <div
-            className="flex-1 flex flex-col h-full gap-[30px]"
-            style={{ paddingTop: '215px', paddingBottom: '215px', paddingRight: '50px' }}
-          >
-            <div className="flex-1 relative overflow-hidden">
-              <Image
-                src="/hero-1-gp.jpg"
-                alt="Goodphil"
-                fill
-                className="object-cover object-center"
-                priority
-                quality={85}
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-            </div>
-            <div className="flex-1 relative overflow-hidden">
-              <Image
-                src="/hero-2-gp.jpg"
-                alt=""
-                fill
-                className="object-cover object-center"
-                priority
-                quality={85}
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
-            </div>
-          </div>
-
+        {/* gp-back.png — background layer, left 58%, no padding */}
+        <div className="absolute left-0 top-0 h-full z-0" style={{ width: '62%' }}>
+          <img
+            src="/gp-back.png"
+            alt=""
+            aria-hidden="true"
+            style={{
+              width: '120%',
+              height: '100%',
+              objectFit: 'cover',
+              objectPosition: 'left center',
+              pointerEvents: 'none',
+              userSelect: 'none',
+            }}
+          />
         </div>
 
-        {/* GOODPHIL title — overlaps bottom edge of second photo, 80px from right */}
-        <h1
-          className="absolute font-display font-black text-9xl text-white leading-none text-right"
+        {/* stacked photos — right side, foreground, overlaps bg pattern on the left */}
+        <div
+          className="absolute z-10 flex flex-col gap-[30px]"
           style={{
-            top: '82%',
-            transform: 'translateY(-50%)',
-            right: '80px',
-            zIndex: 10,
+            top: '60px',
+            bottom: '128px',
+            right: '50px',
+            width: '47%',
+          }}
+        >
+          <div className="flex-1 relative overflow-hidden rounded-sm">
+            <Image
+              src="/hero-1-gp.jpg"
+              alt="Goodphil"
+              fill
+              className="object-cover object-center"
+              priority
+              quality={85}
+              sizes="55vw"
+            />
+          </div>
+          <div className="flex-1 relative overflow-hidden rounded-sm">
+            <Image
+              src="/hero-2-gp.jpg"
+              alt=""
+              fill
+              className="object-cover object-center"
+              priority
+              quality={85}
+              sizes="55vw"
+            />
+          </div>
+        </div>
+
+        {/* GOODPHIL title — overlaps bottom photo and bg pattern */}
+        <h1
+          className="absolute font-display font-black text-white leading-none z-20"
+          style={{
+            bottom: '90px',
+            right: '210px',
+            fontSize: 'clamp(60px, 8vw, 120px)',
           }}
         >
           GOODPHIL
@@ -155,7 +152,7 @@ export default function GoodphilAboutPage() {
           </div>
 
           {/* Staggered heading overlaid on the photo — matches Figma's 4-line layout */}
-          <div className="relative z-10 px-8 md:px-16 py-12 md:py-20">
+          <div className="relative z-10 px-8 md:px-16 h-full flex flex-col justify-between pt-8 pb-6 md:pt-16 md:pb-12">
             <h2 className="font-display font-black text-[clamp(40px,6.5vw,96px)] text-white leading-none">
               <span className="block">WHAT</span>
               <span className="block text-right pr-4 md:pr-16">IS</span>
@@ -170,7 +167,7 @@ export default function GoodphilAboutPage() {
         <div className="max-w-[1218px] mx-auto px-8 py-16 text-center">
 
           {/* Vertical decorative divider — separator between photo/heading and text */}
-          <div className="w-px h-24 bg-white/50 mx-auto mb-8" />
+          <div className="w-px h-12 bg-white/50 mx-auto mb-8" />
 
           <p className="font-sans font-bold text-[clamp(16px,2vw,29px)] text-white leading-relaxed mb-6">
             Goodphil, also known as the GoodPhil Games, is an intercollegiate four-day competition where Filipino Student Associations across Texas and Oklahoma compete in a variety of sports and performances. The conference celebrates school pride, unity, community, Filipino culture, and unforgettable memories for all participants and spectators!

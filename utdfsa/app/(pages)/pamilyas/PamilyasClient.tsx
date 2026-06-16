@@ -316,7 +316,7 @@ export default function PamilyasClient({
       {/* ── SECTION 1 — HERO ──────────────────────────────────────── */}
 
       {/* Mobile hero — simplified single-image layout */}
-      <div className="block md:hidden">
+      <div className="block lg:hidden">
         <div className="relative w-full h-[50vh] overflow-hidden bg-[#1f1f1f]">
           <Image
             src="/pam-hero.png"
@@ -334,60 +334,60 @@ export default function PamilyasClient({
         </div>
       </div>
 
-      {/* Desktop hero — flex layout, hidden on mobile */}
-      <section className="hidden md:block relative w-full overflow-hidden bg-[#1f1f1f] h-[870px]">
+      {/* Desktop hero */}
+      <section className="hidden lg:block relative w-full overflow-hidden bg-[#1f1f1f] h-[870px]">
 
-        {/* Inner flex row: group photo on left, bg PNG on right */}
-        <div className="flex flex-row h-full w-full">
-
-          {/* Left child: pam-hero.png fills the larger left portion */}
-          <div className="relative h-full overflow-hidden flex-shrink-0" style={{ flexBasis: '55%' }}>
-            <Image
-              src="/pam-hero.png"
-              alt="Pamilyas"
-              fill
-              className="object-cover object-top"
-              priority
-              quality={85}
-              sizes="(max-width: 768px) 100vw, 55vw"
-            />
-          </div>
-
-          {/* Right child: pam-hero-bg.png, left-edge anchored within the child */}
-          <div className="flex-1 relative h-full overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/pam-hero-bg.png"
-              alt=""
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                height: '100%',
-                width: 'auto',
-                pointerEvents: 'none',
-                userSelect: 'none',
-              }}
-            />
-          </div>
-
+        {/* pam-hero-bg.png — background layer, right 55%, no padding */}
+        <div className="absolute right-0 top-0 h-full z-0" style={{ width: '57%' }}>
+          <img
+            src="/pam-hero-bg.png"
+            alt=""
+            aria-hidden="true"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              pointerEvents: 'none',
+              userSelect: 'none',
+            }}
+          />
         </div>
 
-        {/* PAMILYAS title overlay */}
+        {/* pam-hero.png — floating photo card, foreground layer */}
+        {/* left-anchored with padding, overlaps bg pattern slightly on the right */}
+        <div
+          className="absolute z-10 overflow-hidden shadow-2xl"
+          style={{
+            top: '40px',
+            bottom: '40px',
+            left: '40px',
+            width: '52%',
+          }}
+        >
+          <Image
+            src="/pam-hero.png"
+            alt="Pamilyas"
+            fill
+            className="object-cover object-top"
+            priority
+            quality={85}
+            sizes="52vw"
+          />
+        </div>
+
+        {/* PAMILYAS title */}
         <h1
-          className="absolute font-display font-black text-white leading-none text-right"
+          className="absolute font-display font-black text-white leading-none text-right z-10"
           style={{
             bottom: '100px',
             right: '80px',
-            zIndex: 10,
             fontSize: 'clamp(60px, 8.5vw, 128px)',
           }}
         >
           PAMILYAS
         </h1>
 
-      </section>
+  </section>
 
       {/* ── SECTION 2 — WHAT IS A PAMILYA? ───────────────────────── */}
       <section>
