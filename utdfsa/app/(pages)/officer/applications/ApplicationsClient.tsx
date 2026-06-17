@@ -27,6 +27,7 @@ interface MemberInfo {
 
 interface AdingApplication {
   id: string
+  member_id: string
   submitted_at: string
   status: Status
   additional_notes: string | null
@@ -53,6 +54,7 @@ interface AdingApplication {
 
 interface KuyateApplication {
   id: string
+  member_id: string
   submitted_at: string
   status: Status
   additional_notes: string | null
@@ -234,6 +236,7 @@ function ApplicationDetailModal({
   onStatusChange,
   onPamilyaChange,
   pamilyaSaving,
+  onDelete,
 }: {
   application: AdingApplication | KuyateApplication | null
   type: 'ading' | 'kuyate'
@@ -241,6 +244,7 @@ function ApplicationDetailModal({
   onStatusChange: (id: string, status: Status) => void
   onPamilyaChange?: (id: string, pamilya: string | null) => void
   pamilyaSaving?: 'saving' | 'saved' | 'error' | null
+  onDelete: () => void
 }) {
   if (!application) return null
 
@@ -328,44 +332,60 @@ function ApplicationDetailModal({
           {type === 'kuyate' ? (
             <div className="flex items-center justify-between gap-3">
               <button
-                onClick={onClose}
-                className="text-sm text-[#6e6e6e] hover:text-[#cfcfcf] font-medium transition-colors"
+                onClick={onDelete}
+                className="text-[11.5px] font-semibold text-[#ef6f6f]/60 border border-[#ef6f6f]/25 hover:border-[#ef6f6f]/55 hover:text-[#ef6f6f]/90 rounded-[9px] px-2.5 py-1 transition-colors"
               >
-                Close
+                Delete
               </button>
-              <div className="flex gap-1.5">
-                <button
-                  onClick={() => onStatusChange(application.id, 'accepted')}
-                  className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border-none transition-colors ${
-                    application.status === 'accepted'
-                      ? 'bg-[#3a9d63] text-white'
-                      : 'bg-[rgba(58,157,99,0.14)] text-[#5fcf8f] hover:bg-[rgba(58,157,99,0.22)]'
-                  }`}
-                >
-                  Accept
-                </button>
-                <button
-                  onClick={() => onStatusChange(application.id, 'rejected')}
-                  className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border-none transition-colors ${
-                    application.status === 'rejected'
-                      ? 'bg-[#cf4d4d] text-white'
-                      : 'bg-[rgba(207,77,77,0.14)] text-[#ef6f6f] hover:bg-[rgba(207,77,77,0.22)]'
-                  }`}
-                >
-                  Reject
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {/* Row 1: Close far-left, status buttons far-right */}
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
                 <button
                   onClick={onClose}
                   className="text-sm text-[#6e6e6e] hover:text-[#cfcfcf] font-medium transition-colors"
                 >
                   Close
                 </button>
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => onStatusChange(application.id, 'accepted')}
+                    className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border-none transition-colors ${
+                      application.status === 'accepted'
+                        ? 'bg-[#3a9d63] text-white'
+                        : 'bg-[rgba(58,157,99,0.14)] text-[#5fcf8f] hover:bg-[rgba(58,157,99,0.22)]'
+                    }`}
+                  >
+                    Accept
+                  </button>
+                  <button
+                    onClick={() => onStatusChange(application.id, 'rejected')}
+                    className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border-none transition-colors ${
+                      application.status === 'rejected'
+                        ? 'bg-[#cf4d4d] text-white'
+                        : 'bg-[rgba(207,77,77,0.14)] text-[#ef6f6f] hover:bg-[rgba(207,77,77,0.22)]'
+                    }`}
+                  >
+                    Reject
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {/* Row 1: Delete far-left, Close + status buttons far-right */}
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={onDelete}
+                    className="text-[11.5px] font-semibold text-[#ef6f6f]/60 border border-[#ef6f6f]/25 hover:border-[#ef6f6f]/55 hover:text-[#ef6f6f]/90 rounded-[9px] px-2.5 py-1 transition-colors"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={onClose}
+                    className="text-sm text-[#6e6e6e] hover:text-[#cfcfcf] font-medium transition-colors"
+                  >
+                    Close
+                  </button>
+                </div>
                 <StatusButtons
                   current={application.status}
                   onSelect={s => onStatusChange(application.id, s)}
@@ -406,7 +426,7 @@ function ApplicationDetailModal({
 
 // ── Application Cards ───────────────────────────────────────────────────────
 
-function AdingCard({ app, onOpen }: { app: AdingApplication; onOpen: () => void }) {
+function AdingCard({ app, onOpen, onDelete }: { app: AdingApplication; onOpen: () => void; onDelete: () => void }) {
   const m = app.members
   return (
     <div
@@ -427,15 +447,21 @@ function AdingCard({ app, onOpen }: { app: AdingApplication; onOpen: () => void 
         {m.pamilya && (
           <p className="text-[12px] text-[#9747FF] mt-0.5 line-clamp-1 font-semibold">Pamilya: {m.pamilya}</p>
         )}
-        <div className="mt-auto pt-3 border-t border-white/6">
+        <div className="mt-auto pt-3 border-t border-white/6 flex items-center justify-between">
           <p className="text-[11.5px] text-[#5a5a5a] font-medium">Submitted {fmtDate(app.submitted_at)}</p>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete() }}
+            className="text-[10.5px] font-semibold text-[#ef6f6f]/50 border border-[#ef6f6f]/20 hover:border-[#ef6f6f]/55 hover:text-[#ef6f6f]/80 rounded-[6px] px-2 py-0.5 transition-colors"
+          >
+            Delete
+          </button>
         </div>
       </div>
     </div>
   )
 }
 
-function KuyateCard({ app, onOpen }: { app: KuyateApplication; onOpen: () => void }) {
+function KuyateCard({ app, onOpen, onDelete }: { app: KuyateApplication; onOpen: () => void; onDelete: () => void }) {
   const m = app.members
   return (
     <div
@@ -453,8 +479,14 @@ function KuyateCard({ app, onOpen }: { app: KuyateApplication; onOpen: () => voi
         <p className="text-[12px] text-[#6e6e6e] font-medium line-clamp-1 mt-0.5">
           {[m.year, m.major].filter(Boolean).join(' · ')}
         </p>
-        <div className="mt-auto pt-3 border-t border-white/6">
+        <div className="mt-auto pt-3 border-t border-white/6 flex items-center justify-between">
           <p className="text-[11.5px] text-[#5a5a5a] font-medium">Submitted {fmtDate(app.submitted_at)}</p>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete() }}
+            className="text-[10.5px] font-semibold text-[#ef6f6f]/50 border border-[#ef6f6f]/20 hover:border-[#ef6f6f]/55 hover:text-[#ef6f6f]/80 rounded-[6px] px-2 py-0.5 transition-colors"
+          >
+            Delete
+          </button>
         </div>
       </div>
     </div>
@@ -608,6 +640,16 @@ export default function ApplicationsClient({
     applicantFirstName: string
     status: 'accepted' | 'rejected'
   } | null>(null)
+  // delete confirmation — requires typing the applicant's full name to confirm
+  const [deleteTarget, setDeleteTarget] = useState<{
+    applicationId: string
+    type: 'ading' | 'kuyate'
+    applicantName: string
+    memberId: string
+  } | null>(null)
+  const [deleteConfirmInput, setDeleteConfirmInput] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   // Derive the live modal app from current state so status/pamilya changes are reflected
   const currentModalApp: AdingApplication | KuyateApplication | null = selectedAppId
@@ -712,6 +754,44 @@ export default function ApplicationsClient({
     }
   }
 
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return
+    if (deleteConfirmInput !== deleteTarget.applicantName) return
+
+    setDeleting(true)
+    setDeleteError(null)
+
+    // api: calls DELETE /api/officer/applications/[id]?type=ading|kuyate — deletes the application and resets member onboarding
+    const res = await fetch(
+      `/api/officer/applications/${deleteTarget.applicationId}?type=${deleteTarget.type}`,
+      { method: 'DELETE' },
+    )
+    const data = await res.json()
+    setDeleting(false)
+
+    if (!res.ok) {
+      setDeleteError(data.error ?? 'Failed to delete application')
+      return
+    }
+
+    // remove from local state so the UI updates immediately
+    if (deleteTarget.type === 'ading') {
+      setAdingApps(prev => prev.filter(a => a.id !== deleteTarget.applicationId))
+    } else {
+      setKuyateApps(prev => prev.filter(a => a.id !== deleteTarget.applicationId))
+    }
+
+    setDeleteTarget(null)
+    setDeleteConfirmInput('')
+    setSelectedAppId(null)
+  }
+
+  function handleDeleteCancel() {
+    setDeleteTarget(null)
+    setDeleteConfirmInput('')
+    setDeleteError(null)
+  }
+
   return (
     <main className="min-h-screen bg-[#070707] px-6 md:px-10 py-10">
       <div className="max-w-6xl mx-auto">
@@ -772,6 +852,12 @@ export default function ApplicationsClient({
                         setSelectedAppId(app.id)
                         setSelectedAppType('ading')
                       }}
+                      onDelete={() => setDeleteTarget({
+                        applicationId: app.id,
+                        type: 'ading',
+                        applicantName: `${app.members.first_name} ${app.members.last_name}`,
+                        memberId: app.member_id,
+                      })}
                     />
                   ))}
                 </div>
@@ -817,6 +903,12 @@ export default function ApplicationsClient({
                         setSelectedAppId(app.id)
                         setSelectedAppType('kuyate')
                       }}
+                      onDelete={() => setDeleteTarget({
+                        applicationId: app.id,
+                        type: 'kuyate',
+                        applicantName: `${app.members.first_name} ${app.members.last_name}`,
+                        memberId: app.member_id,
+                      })}
                     />
                   ))}
                 </div>
@@ -838,6 +930,15 @@ export default function ApplicationsClient({
           application={currentModalApp}
           type={selectedAppType}
           onClose={() => setSelectedAppId(null)}
+          onDelete={() => {
+            if (!currentModalApp) return
+            setDeleteTarget({
+              applicationId: currentModalApp.id,
+              type: selectedAppType,
+              applicantName: `${currentModalApp.members.first_name} ${currentModalApp.members.last_name}`,
+              memberId: currentModalApp.member_id,
+            })
+          }}
           onStatusChange={(id, s) => {
             if (selectedAppType === 'kuyate') {
               if (s === 'accepted' || s === 'rejected') {
@@ -894,6 +995,64 @@ export default function ApplicationsClient({
                   }`}
                 >
                   {pendingStatus.status === 'accepted' ? 'Yes, Accept' : 'Yes, Reject'}
+                </button>
+              </div>
+            </div>
+          </Modal>
+        )}
+        {/* Delete confirmation modal — appears above detail modal; requires typing exact full name */}
+        {deleteTarget && (
+          <Modal onClose={handleDeleteCancel} size="sm">
+            <div
+              className="bg-[#141414] border border-white/10 rounded-[18px] w-full p-7 shadow-[0_32px_72px_-16px_rgba(0,0,0,0.85)]"
+              style={{ animation: 'modalIn 0.18s ease-out' }}
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef6f6f" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <h2 className="text-[16px] font-bold text-white">Delete Application</h2>
+              </div>
+              <p className="text-[13.5px] text-[#8c8c8c] font-medium mb-2 leading-relaxed">
+                This will permanently delete{' '}
+                <strong className="text-white">{deleteTarget.applicantName}</strong>
+                &apos;s {deleteTarget.type} application and reset their onboarding so they can reapply.
+              </p>
+              <p className="text-[13px] text-[#6e6e6e] font-medium mb-5 leading-relaxed">
+                This action cannot be undone. The member will need to go through onboarding again to submit a new application.
+              </p>
+              <p className="text-[10.5px] font-bold tracking-[0.07em] uppercase text-[#7e7e7e] mb-1">
+                Type their full name to confirm
+              </p>
+              <p className="text-[11.5px] text-[#5a5a5a] font-medium mb-2">&ldquo;{deleteTarget.applicantName}&rdquo;</p>
+              <input
+                type="text"
+                value={deleteConfirmInput}
+                onChange={(e) => setDeleteConfirmInput(e.target.value)}
+                placeholder="Type full name here"
+                autoFocus
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d0d0d] border border-white/10 text-[13.5px] text-white placeholder:text-[#5a5a5a] focus:outline-none focus:border-[#ef6f6f] focus:shadow-[0_0_0_3px_rgba(239,111,111,0.12)] transition-[border-color,box-shadow] font-[inherit] mb-4"
+              />
+              {deleteError && (
+                <p className="text-[13px] text-[#ef6f6f] mb-3">{deleteError}</p>
+              )}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleDeleteCancel}
+                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-[#cfcfcf] border border-white/16 bg-transparent rounded-xl hover:border-white/30 hover:text-white transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteConfirm}
+                  disabled={deleteConfirmInput !== deleteTarget.applicantName || deleting}
+                  className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-[#cf4d4d] hover:bg-[#e05555] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl border-none transition-colors"
+                >
+                  {deleting ? 'Deleting…' : 'Delete Application'}
                 </button>
               </div>
             </div>

@@ -52,7 +52,7 @@ export default async function OfficerApplicationsPage() {
     admin
       .from('ading_applications')
       .select(`
-        id, submitted_at, status, additional_notes,
+        id, member_id, submitted_at, status, additional_notes,
         instagram, phone, birthday, pronouns, activity_level, hobbies,
         fave_music_genre, fave_artist, fave_food, pam_vibe,
         hangout_size_preference, fave_tv_show_movie, availability,
@@ -63,7 +63,7 @@ export default async function OfficerApplicationsPage() {
     admin
       .from('kuyate_applications')
       .select(`
-        id, submitted_at, status, additional_notes,
+        id, member_id, submitted_at, status, additional_notes,
         instagram, pamilya_name, wants_to_be_pam_head, pam_head_phone,
         why_kuyate, acknowledges_responsibilities,
         members!inner(first_name, last_name, email, year, major, phone, pamilya)
