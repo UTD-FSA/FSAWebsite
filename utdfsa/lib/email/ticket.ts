@@ -48,52 +48,63 @@ export function ticketEmailHtml({
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
-    <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;max-width:560px;width:100%;">
+<body style="margin:0;padding:0;background:#070707;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#070707" style="background:#070707;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table width="600" cellpadding="0" cellspacing="0" bgcolor="#0b0b0b" style="background:#0b0b0b;border-radius:12px;overflow:hidden;max-width:600px;width:100%;border:1px solid rgba(255,255,255,0.09);">
 
         <!-- header -->
         <tr>
-          <td style="background:#1e40af;padding:24px 32px;text-align:center;">
-            <p style="margin:0;color:#bfdbfe;font-size:13px;letter-spacing:1px;text-transform:uppercase;">UTD Filipino Student Association</p>
-            <h1 style="margin:8px 0 0;color:#ffffff;font-size:24px;">Your Ticket</h1>
+          <td bgcolor="#10220f" style="background:linear-gradient(135deg,#0a160c 0%,#10220f 55%,#16331a 100%);padding:40px 44px 36px;border-bottom:1px solid rgba(70,106,71,0.25);">
+            <p style="margin:0 0 18px;font-size:12px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#9db89e;font-family:Arial,Helvetica,sans-serif;">UTD Filipino Student Association</p>
+            <h1 style="margin:0;color:#ffffff;font-size:30px;font-weight:900;font-family:Arial,Helvetica,sans-serif;letter-spacing:-0.01em;line-height:1.05;">Your Ticket</h1>
           </td>
         </tr>
 
         <!-- body -->
         <tr>
-          <td style="padding:32px;">
-            <p style="margin:0 0 4px;color:#6b7280;font-size:14px;">Hi ${attendeeName},</p>
-            <h2 style="margin:8px 0 0;color:#111827;font-size:20px;">${eventName}</h2>
+          <td style="padding:38px 44px 44px;">
+            <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#9a9a9a;font-family:Arial,Helvetica,sans-serif;">Hi ${attendeeName},</p>
+            <h2 style="margin:0 0 22px;font-size:22px;font-weight:900;color:#ffffff;line-height:1.1;font-family:Arial,Helvetica,sans-serif;">${eventName}</h2>
 
-            ${dateStr ? `<p style="margin:16px 0 0;color:#374151;font-size:14px;">📅 ${dateStr}${timeStr ? ` · ${timeStr} CT` : ''}</p>` : ''}
-            ${location ? `<p style="margin:8px 0 0;color:#374151;font-size:14px;">📍 ${location}</p>` : ''}
+            <!-- date and location -->
+            <table cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:26px;">
+              ${dateStr ? `<tr>
+                <td style="padding-bottom:12px;font-size:15px;font-weight:700;color:#dcdcdc;font-family:Arial,Helvetica,sans-serif;">
+                  &#128197; ${dateStr}${timeStr ? ` &middot; ${timeStr} CT` : ''}
+                </td>
+              </tr>` : ''}
+              ${location ? `<tr>
+                <td style="font-size:15px;font-weight:700;color:#dcdcdc;font-family:Arial,Helvetica,sans-serif;">
+                  &#128205; ${location}
+                </td>
+              </tr>` : ''}
+            </table>
 
-            <p style="margin:24px 0 12px;color:#374151;font-size:14px;">
+            <p style="margin:0 0 28px;font-size:15px;line-height:1.65;color:#bdbdbd;font-family:Arial,Helvetica,sans-serif;">
               Show the QR code below at the door. Each QR code is unique and can only be scanned once.
             </p>
 
-            <!-- QR code -->
+            <!-- QR code — cid:${qrCid} embeds the attachment; do not change this reference -->
             <table width="100%" cellpadding="0" cellspacing="0">
               <tr>
-                <td align="center" style="padding:16px 0;">
+                <td align="center" style="padding:8px 0 0;">
                   <img src="cid:${qrCid}" width="220" height="220" alt="Ticket QR Code"
-                    style="display:block;border:1px solid #e5e7eb;border-radius:8px;padding:12px;background:#fff;" />
+                    style="display:block;border:1px solid rgba(70,106,71,0.35);border-radius:10px;padding:14px;background:#ffffff;" />
                 </td>
               </tr>
             </table>
 
-            <p style="margin:16px 0 0;color:#9ca3af;font-size:12px;text-align:center;">
-              Do not share this QR code — it is tied to your name.
+            <p style="margin:28px 0 0;font-size:13px;line-height:1.6;color:#6f6f6f;text-align:center;font-family:Arial,Helvetica,sans-serif;">
+              Do not share this QR code &mdash; it is tied to your name.
             </p>
           </td>
         </tr>
 
         <!-- footer -->
         <tr>
-          <td style="background:#f9fafb;padding:16px 32px;border-top:1px solid #e5e7eb;text-align:center;">
-            <p style="margin:0;color:#9ca3af;font-size:12px;">UTD Filipino Student Association &mdash; University of Texas at Dallas</p>
+          <td bgcolor="#080808" style="background:#080808;padding:20px 44px;border-top:1px solid rgba(255,255,255,0.07);text-align:center;">
+            <p style="margin:0;font-size:12px;color:#6f6f6f;letter-spacing:0.01em;font-family:Arial,Helvetica,sans-serif;"><strong style="color:#8fae90;font-weight:700;">UTD</strong> Filipino Student Association &mdash; University of Texas at Dallas</p>
           </td>
         </tr>
 

@@ -179,14 +179,14 @@ const SOCIALS = [
     label: 'Email',
     href: 'mailto:fsautd@gmail.com',
     icon: (
-      <img src="/gmail.svg" alt="Gmail" width={28} height={28} className="w-7 h-7 opacity-60" />
+      <img src="/gmail.svg" alt="Gmail" width={24} height={24} className="w-7 h-7 opacity-60" />
     ),
   },
 ]
 
 export default function AboutClient() {
   // tracks which past-officer accordion row is expanded; empty string = all collapsed
-  const [openYear, setOpenYear] = useState<string>('2025-2026')
+  const [openYear, setOpenYear] = useState<string>('')
 
   // ── accordion toggle ──────────────────────────────────────
   // clicking the same open year collapses it; clicking a different year opens it
@@ -310,7 +310,7 @@ export default function AboutClient() {
             className="inline-flex items-center gap-2.5 px-7 py-3 border border-white/30 rounded-full text-white font-sans font-semibold text-sm tracking-wide hover:border-white/60 hover:bg-white/5 transition-all duration-200"
           >
             <InstagramIcon className="w-4 h-4" />
-            @utdfsa
+            @fsautd
           </a>
         </div>
       </section>

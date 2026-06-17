@@ -431,7 +431,7 @@ function AdingCard({ app, onOpen, onDelete }: { app: AdingApplication; onOpen: (
   return (
     <div
       onClick={onOpen}
-      className="bg-[#121212] border border-white/8 rounded-2xl h-48 overflow-hidden cursor-pointer hover:border-[rgba(151,71,255,0.4)] hover:shadow-[0_0_0_1px_rgba(151,71,255,0.14),0_18px_38px_-16px_rgba(151,71,255,0.35)] transition-all flex flex-col"
+      className="bg-[#121212] border border-white/8 rounded-2xl h-48 overflow-hidden cursor-pointer hover:border-white/16 hover:-translate-y-0.5 hover:shadow-[0_5px_13px_-3px_rgba(0,0,0,0.35)] transition-all flex flex-col"
     >
       <div className="p-5 flex flex-col h-full">
         <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -466,7 +466,7 @@ function KuyateCard({ app, onOpen, onDelete }: { app: KuyateApplication; onOpen:
   return (
     <div
       onClick={onOpen}
-      className="bg-[#121212] border border-white/8 rounded-2xl h-48 overflow-hidden cursor-pointer hover:border-[rgba(151,71,255,0.4)] hover:shadow-[0_0_0_1px_rgba(151,71,255,0.14),0_18px_38px_-16px_rgba(151,71,255,0.35)] transition-all flex flex-col"
+      className="bg-[#121212] border border-white/8 rounded-2xl h-48 overflow-hidden cursor-pointer hover:border-white/16 hover:-translate-y-0.5 hover:shadow-[0_5px_13px_-3px_rgba(0,0,0,0.35)] transition-all flex flex-col"
     >
       <div className="p-5 flex flex-col h-full">
         <div className="flex items-start justify-between gap-2 mb-1.5">

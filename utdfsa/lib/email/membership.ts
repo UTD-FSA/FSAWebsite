@@ -21,45 +21,56 @@ export function membershipEmailHtml({
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:32px 16px;">
-    <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;max-width:560px;width:100%;">
+<body style="margin:0;padding:0;background:#070707;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#070707" style="background:#070707;">
+    <tr><td align="center" style="padding:32px 16px;">
+      <table width="600" cellpadding="0" cellspacing="0" bgcolor="#0b0b0b" style="background:#0b0b0b;border-radius:12px;overflow:hidden;max-width:600px;width:100%;border:1px solid rgba(255,255,255,0.09);">
 
         <!-- header -->
         <tr>
-          <td style="background:#1e40af;padding:24px 32px;text-align:center;">
-            <p style="margin:0;color:#bfdbfe;font-size:13px;letter-spacing:1px;text-transform:uppercase;">UTD Filipino Student Association</p>
-            <h1 style="margin:8px 0 0;color:#ffffff;font-size:24px;">Membership Confirmed</h1>
+          <td bgcolor="#10220f" style="background:linear-gradient(135deg,#0a160c 0%,#10220f 55%,#16331a 100%);padding:40px 44px 36px;border-bottom:1px solid rgba(70,106,71,0.25);">
+            <p style="margin:0 0 18px;font-size:12px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#9db89e;font-family:Arial,Helvetica,sans-serif;">UTD Filipino Student Association</p>
+            <h1 style="margin:0;color:#ffffff;font-size:30px;font-weight:900;font-family:Arial,Helvetica,sans-serif;letter-spacing:-0.01em;line-height:1.05;">Membership Confirmed</h1>
           </td>
         </tr>
 
         <!-- body -->
         <tr>
-          <td style="padding:32px;">
-            <p style="margin:0 0 16px;color:#374151;font-size:15px;">Hi ${firstName},</p>
-            <p style="margin:0 0 16px;color:#374151;font-size:15px;">
-              Welcome to UTD FSA! Your membership for the <strong>${membershipYear}</strong> school year
-              has been confirmed.
+          <td style="padding:40px 44px 44px;">
+            <p style="margin:0 0 18px;color:#d4d4d4;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">Hi ${firstName},</p>
+            <p style="margin:0 0 18px;color:#d4d4d4;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
+              Welcome to UTD FSA! Your membership for the <strong style="color:#ffffff;font-weight:700;">${membershipYear}</strong> school year has been confirmed.
             </p>
-            <p style="margin:0 0 24px;color:#374151;font-size:15px;">
-              Your membership is valid through <strong>${expiryDate}</strong>.
+            <p style="margin:0 0 30px;color:#d4d4d4;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
+              Your membership is valid through <strong style="color:#ffffff;font-weight:700;">${expiryDate}</strong>.
             </p>
 
-            <table width="100%" cellpadding="0" cellspacing="0" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;margin-bottom:24px;">
+            <!-- next steps box -->
+            <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0f110f" style="background:#0f110f;border:1px solid rgba(70,106,71,0.28);border-radius:10px;margin-bottom:28px;">
               <tr>
-                <td style="padding:20px 24px;">
-                  <p style="margin:0 0 10px;color:#1e40af;font-size:14px;font-weight:bold;">Next Steps</p>
-                  <ul style="margin:0;padding-left:20px;color:#374151;font-size:14px;line-height:1.9;">
-                    <li>Complete your member profile</li>
-                    <li>Check out upcoming events on the Events page</li>
-                    <li>Attend General Meetings to stay in the loop</li>
-                  </ul>
+                <td style="padding:22px 24px;">
+                  <p style="margin:0 0 14px;color:#7fae80;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">Next Steps</p>
+                  <table cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                      <td width="14" style="vertical-align:top;padding-top:2px;color:#466a47;font-size:15px;line-height:1.5;font-family:Arial,Helvetica,sans-serif;">&#9679;</td>
+                      <td style="padding-left:8px;font-size:15px;line-height:1.5;color:#cfcfcf;font-family:Arial,Helvetica,sans-serif;">Complete your member profile</td>
+                    </tr>
+                    <tr><td colspan="2" style="height:10px;"></td></tr>
+                    <tr>
+                      <td width="14" style="vertical-align:top;padding-top:2px;color:#466a47;font-size:15px;line-height:1.5;font-family:Arial,Helvetica,sans-serif;">&#9679;</td>
+                      <td style="padding-left:8px;font-size:15px;line-height:1.5;color:#cfcfcf;font-family:Arial,Helvetica,sans-serif;">Check out upcoming events on the Events page</td>
+                    </tr>
+                    <tr><td colspan="2" style="height:10px;"></td></tr>
+                    <tr>
+                      <td width="14" style="vertical-align:top;padding-top:2px;color:#466a47;font-size:15px;line-height:1.5;font-family:Arial,Helvetica,sans-serif;">&#9679;</td>
+                      <td style="padding-left:8px;font-size:15px;line-height:1.5;color:#cfcfcf;font-family:Arial,Helvetica,sans-serif;">Attend General Meetings to stay in the loop</td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
             </table>
 
-            <p style="margin:0;color:#6b7280;font-size:13px;">
+            <p style="margin:0;font-size:13px;line-height:1.6;color:#7a7a7a;font-family:Arial,Helvetica,sans-serif;">
               Your Stripe receipt has been sent separately to your email.
             </p>
           </td>
@@ -67,8 +78,8 @@ export function membershipEmailHtml({
 
         <!-- footer -->
         <tr>
-          <td style="background:#f9fafb;padding:16px 32px;border-top:1px solid #e5e7eb;text-align:center;">
-            <p style="margin:0;color:#9ca3af;font-size:12px;">UTD Filipino Student Association &mdash; University of Texas at Dallas</p>
+          <td bgcolor="#080808" style="background:#080808;padding:20px 44px;border-top:1px solid rgba(255,255,255,0.07);text-align:center;">
+            <p style="margin:0;font-size:12px;color:#6f6f6f;letter-spacing:0.01em;font-family:Arial,Helvetica,sans-serif;"><strong style="color:#8fae90;font-weight:700;">UTD</strong> Filipino Student Association &mdash; University of Texas at Dallas</p>
           </td>
         </tr>
 
