@@ -9,7 +9,7 @@
 // ─────────────────────────────────────────────────────────────
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useMemo, useRef, Fragment } from 'react'
 import Image from 'next/image'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
@@ -125,11 +125,40 @@ export default function EventsPageClient({ events, isMember, member, registeredE
   // tracks which event card was clicked to open the detail modal; null = closed
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [showPast, setShowPast] = useState(false)
+  // refreshed every 60s so events that pass their date while the page is open move to past automatically
+  const [now, setNow] = useState(() => new Date())
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 60000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // ── sort: upcoming ascending, past descending ─────────────
+  const { upcoming, past } = useMemo(() => {
+    const upcoming = events
+      .filter(e => new Date(e.event_date) >= now)
+      .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+    const past = events
+      .filter(e => new Date(e.event_date) < now)
+      .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+    return { upcoming, past }
+  }, [events, now])
+
+  // reset to page 1 if an event crosses into past while the tab is open
+  const prevUpcomingCount = useRef(upcoming.length)
+  useEffect(() => {
+    if (prevUpcomingCount.current !== upcoming.length) {
+      setCurrentPage(1)
+      prevUpcomingCount.current = upcoming.length
+    }
+  }, [upcoming.length])
 
   // ── pagination ────────────────────────────────────────────
-  const totalEvents = events.length
+  const displayEvents = showPast ? [...upcoming, ...past] : upcoming
+  const totalEvents = displayEvents.length
   const totalPages = Math.ceil(totalEvents / EVENTS_PER_PAGE)
-  const paginatedEvents = events.slice(
+  const paginatedEvents = displayEvents.slice(
     (currentPage - 1) * EVENTS_PER_PAGE,
     currentPage * EVENTS_PER_PAGE,
   )
@@ -153,7 +182,6 @@ export default function EventsPageClient({ events, isMember, member, registeredE
 
   // ── this-week filter ──────────────────────────────────────
   // compute a 7-day window from now; dates compared in JS local time
-  const now = new Date()
   const weekEnd = new Date(now)
   weekEnd.setDate(weekEnd.getDate() + 7)
   const thisWeek = events.filter(e => {
@@ -244,82 +272,92 @@ export default function EventsPageClient({ events, isMember, member, registeredE
         <div id="all-events" className="mt-10">
           <SectionLabel label="All Events" />
 
-          {/* only renders empty state when no active events exist — do not remove this condition */}
-          {events.length === 0 ? (
+          {/* only renders empty state when no displayable events exist — do not remove this condition */}
+          {displayEvents.length === 0 ? (
             <p className="py-6" style={{ color: '#6f6f6f' }}>No upcoming events right now — check back soon!</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[22px]">
               {paginatedEvents.map((event, index) => {
                 const badge = getBadge(event.event_type)
                 const isPastCard = new Date(event.event_date) < now
+                const globalIndex = (currentPage - 1) * EVENTS_PER_PAGE + index
+                const isFirstPastEvent = showPast && globalIndex === upcoming.length
                 return (
-                  <button
-                    key={event.id}
-                    onClick={() => setSelectedEvent(event)}
-                    className="event-card text-left rounded-[18px] overflow-hidden"
-                    style={{
-                      background: '#181818',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                    }}
-                  >
-                    {/* photo — 4:5 portrait */}
-                    <div
-                      className="relative w-full overflow-hidden"
+                  <Fragment key={event.id}>
+                    {isFirstPastEvent && (
+                      <div className="col-span-full flex items-center gap-4 py-2 my-2">
+                        <div className="flex-1 border-t border-white/10" />
+                        <span className="font-display font-bold text-[11px] tracking-[0.18em] uppercase whitespace-nowrap" style={{ color: '#6f6f6f' }}>Past Events</span>
+                        <div className="flex-1 border-t border-white/10" />
+                      </div>
+                    )}
+                    <button
+                      onClick={() => setSelectedEvent(event)}
+                      className="event-card text-left rounded-[18px] overflow-hidden"
                       style={{
-                        aspectRatio: '4/5',
-                        background: '#141414',
-                        borderBottom: '1px solid rgba(255,255,255,0.06)',
+                        background: '#181818',
+                        border: '1px solid rgba(255,255,255,0.08)',
                       }}
                     >
-                      {event.cover_photo_url ? (
-                        <Image
-                          src={event.cover_photo_url}
-                          alt={event.name}
-                          fill
-                          className={`object-cover object-top${isPastCard ? ' brightness-75' : ''}`}
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                          priority={index === 0 && currentPage === 1}
-                          loading={index === 0 ? 'eager' : 'lazy'}
-                        />
-                      ) : (
-                        <PhotoPlaceholder ratio="4:5" />
-                      )}
-                    </div>
-
-                    {/* card body */}
-                    <div style={{ padding: '16px 17px 19px' }}>
-                      <div className="flex items-center flex-wrap gap-2 mb-3">
-                        <span
-                          className="inline-flex items-center rounded-full text-[11px] font-bold tracking-[0.04em] uppercase whitespace-nowrap"
-                          style={{
-                            padding: '4px 11px',
-                            color: badge.text,
-                            background: badge.bg,
-                            border: `1px solid ${badge.border}`,
-                          }}
-                        >
-                          {badge.label}
-                        </span>
-                        {isPastCard && (
-                          <span
-                            className="text-[10px] font-bold tracking-[0.06em] uppercase px-2.5 py-1 rounded-full"
-                            style={{ background: 'rgba(0,0,0,0.55)', color: '#9a9a9a', border: '1px solid rgba(255,255,255,0.12)' }}
-                          >
-                            Past Event
-                          </span>
+                      {/* photo — 4:5 portrait */}
+                      <div
+                        className="relative w-full overflow-hidden"
+                        style={{
+                          aspectRatio: '4/5',
+                          background: '#141414',
+                          borderBottom: '1px solid rgba(255,255,255,0.06)',
+                        }}
+                      >
+                        {event.cover_photo_url ? (
+                          <Image
+                            src={event.cover_photo_url}
+                            alt={event.name}
+                            fill
+                            className={`object-cover object-top${isPastCard ? ' brightness-75' : ''}`}
+                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                            priority={index === 0 && currentPage === 1}
+                            loading={index === 0 ? 'eager' : 'lazy'}
+                          />
+                        ) : (
+                          <PhotoPlaceholder ratio="4:5" />
                         )}
                       </div>
-                      <h3
-                        className="font-bold tracking-[-0.01em] mb-1.5"
-                        style={{ fontSize: '18px', color: '#fff' }}
-                      >
-                        {event.name}
-                      </h3>
-                      <div className="text-[13px] font-medium" style={{ color: '#8c8c8c' }}>
-                        {fmtCardDate(event.event_date)}
+
+                      {/* card body */}
+                      <div style={{ padding: '16px 17px 19px' }}>
+                        <div className="flex items-center flex-wrap gap-2 mb-3">
+                          <span
+                            className="inline-flex items-center rounded-full text-[11px] font-bold tracking-[0.04em] uppercase whitespace-nowrap"
+                            style={{
+                              padding: '4px 11px',
+                              color: badge.text,
+                              background: badge.bg,
+                              border: `1px solid ${badge.border}`,
+                            }}
+                          >
+                            {badge.label}
+                          </span>
+                          {isPastCard && (
+                            <span
+                              className="text-[10px] font-bold tracking-[0.06em] uppercase px-2.5 py-1 rounded-full"
+                              style={{ background: 'rgba(0,0,0,0.55)', color: '#9a9a9a', border: '1px solid rgba(255,255,255,0.12)' }}
+                            >
+                              Past Event
+                            </span>
+                          )}
+                        </div>
+                        <h3
+                          className="font-bold tracking-[-0.01em] mb-1.5"
+                          style={{ fontSize: '18px', color: '#fff' }}
+                        >
+                          {event.name}
+                        </h3>
+                        <div className="text-[13px] font-medium" style={{ color: '#8c8c8c' }}>
+                          {fmtCardDate(event.event_date)}
+                        </div>
                       </div>
-                    </div>
-                  </button>
+                    </button>
+                  </Fragment>
                 )
               })}
             </div>
@@ -380,6 +418,21 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* ── past events toggle ───────────────────────────────────────────── */}
+          {past.length > 0 && (
+            <div className="flex items-center justify-center mt-4 mb-2">
+              <button
+                onClick={() => { setShowPast(prev => !prev); setCurrentPage(1) }}
+                className="text-[13px] font-semibold transition-colors border border-white/10 rounded-[10px] px-4 py-2 hover:border-white/30 hover:text-[#cfcfcf]"
+                style={{ color: '#8c8c8c' }}
+              >
+                {showPast
+                  ? 'Hide past events'
+                  : `Show ${past.length} past event${past.length === 1 ? '' : 's'}`}
+              </button>
             </div>
           )}
         </div>
