@@ -58,18 +58,19 @@ export function kuyateStatusEmailHtml({
 
         <!-- header -->
         <tr>
-          <td bgcolor="#10220f" style="background:linear-gradient(135deg,#0a160c 0%,#10220f 55%,#16331a 100%);padding:40px 44px 36px;border-bottom:1px solid rgba(70,106,71,0.25);">
-            <table cellpadding="0" cellspacing="0" style="margin:0 0 18px;">
-              <tr>
-                <td style="vertical-align:middle;">
-                  <img src="https://www.utdfsa.org/logo-head.png" width="36" height="36" alt="UTD FSA" style="display:block;border:0;" />
-                </td>
-                <td style="vertical-align:middle;padding-left:10px;">
-                  <span style="font-size:12px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#9db89e;font-family:Arial,Helvetica,sans-serif;">Filipino Student Association</span>
-                </td>
-              </tr>
-            </table>
-            <h1 style="margin:0;color:#ffffff !important;font-size:30px;font-weight:900;font-family:Arial,Helvetica,sans-serif;letter-spacing:-0.01em;line-height:1.05;">Kuya/Ate Application</h1>
+          <td style="padding:0;">
+            <img
+              src="https://www.utdfsa.org/kuyate-confirm.png"
+              alt="Kuya/Ate Application"
+              width="600"
+              style="
+                display:block;
+                width:100%;
+                max-width:600px;
+                height:auto;
+                border:0;
+              "
+            />
           </td>
         </tr>
 
