@@ -47,8 +47,9 @@ export function ticketEmailHtml({
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
 </head>
-<body style="margin:0;padding:0;background:#070707;font-family:Arial,Helvetica,sans-serif;">
+<body style="margin:0;padding:0;background:#070707;font-family:Arial,Helvetica,sans-serif;color-scheme:light;">
   <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#070707" style="background:#070707;">
     <tr><td align="center" style="padding:32px 16px;">
       <table width="600" cellpadding="0" cellspacing="0" bgcolor="#0b0b0b" style="background:#0b0b0b;border-radius:12px;overflow:hidden;max-width:600px;width:100%;border:1px solid rgba(255,255,255,0.09);">
