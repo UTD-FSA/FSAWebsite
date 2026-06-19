@@ -32,7 +32,7 @@ export default function SportsPage() {
             src="/sports-hero.jpg"
             alt="UTD FSA Sports team"
             fill
-            className="object-cover object-top"
+            className="object-cover object-[center_20%]"
             priority
             quality={90}
             sizes="100vw"

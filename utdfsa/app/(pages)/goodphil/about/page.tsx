@@ -249,7 +249,7 @@ export default function GoodphilAboutPage() {
                   src={photo}
                   alt={name}
                   fill
-                  className="object-cover object-center"
+                  className="object-cover object-[center_25%]"
                   sizes="(max-width: 768px) 50vw, (max-width: 1024px) 50vw, 700px"
                   quality={85}
                 />

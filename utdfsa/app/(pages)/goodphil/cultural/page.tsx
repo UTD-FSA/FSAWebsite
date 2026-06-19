@@ -22,7 +22,7 @@ export default function CulturalPage() {
             src="/cultural-hero.jpg"
             alt="UTD Pamana cultural dance team"
             fill
-            className="object-cover object-center"
+            className="object-cover object-[center_43%]"
             priority
             quality={90}
             sizes="100vw"
