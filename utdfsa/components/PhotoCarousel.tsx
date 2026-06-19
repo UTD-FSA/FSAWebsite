@@ -7,7 +7,7 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, type PointerEvent } from 'react'
 import Image from 'next/image'
 
 const slides = [
@@ -70,6 +70,42 @@ export default function PhotoCarousel() {
   const resetTimer = () => setTimerKey(k => k + 1)
   const prev = () => { setCurrent(i => (i - 1 + total) % total); resetTimer() }
   const next = () => { setCurrent(i => (i + 1) % total); resetTimer() }
+  const dragStart = useRef<{ x: number; y: number; pointerId: number } | null>(null)
+  const suppressClick = useRef(false)
+
+  const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return
+    dragStart.current = { x: e.clientX, y: e.clientY, pointerId: e.pointerId }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  const handlePointerUp = (e: PointerEvent<HTMLDivElement>) => {
+    const start = dragStart.current
+    if (!start) return
+
+    const dx = e.clientX - start.x
+    const dy = e.clientY - start.y
+    const isHorizontalSwipe = Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.25
+
+    dragStart.current = null
+    e.currentTarget.releasePointerCapture(start.pointerId)
+
+    if (!isHorizontalSwipe) return
+
+    suppressClick.current = true
+    if (dx < 0) next()
+    else prev()
+
+    window.setTimeout(() => {
+      suppressClick.current = false
+    }, 120)
+  }
+
+  const handlePointerCancel = (e: PointerEvent<HTMLDivElement>) => {
+    const start = dragStart.current
+    dragStart.current = null
+    if (start) e.currentTarget.releasePointerCapture(start.pointerId)
+  }
 
   const positions = isMobile ? MOBILE : DESKTOP
   // 4:3 landscape card dimensions; smaller on mobile to fit the narrower stage
@@ -80,7 +116,12 @@ export default function PhotoCarousel() {
     <div className="flex flex-col gap-6 w-full">
 
       {/* Stage — all 5 cards always in the DOM; only styles change per transition */}
-      <div className="relative h-[330px] md:h-[440px] overflow-hidden">
+      <div
+        className="relative h-[330px] md:h-[440px] overflow-hidden cursor-grab touch-pan-y select-none"
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
+      >
         {slides.map((slide, slideIdx) => {
           // wrap offset into [-2, +2] range so the two flanking cards always exist
           let offset = (slideIdx - current + total) % total
@@ -104,12 +145,13 @@ export default function PhotoCarousel() {
               }}
               className="rounded-2xl shadow-2xl overflow-hidden bg-[#2a2a2a] cursor-pointer"
               // Clicking a side card navigates in that direction
-              onClick={offset < 0 ? prev : offset > 0 ? next : undefined}
+              onClick={offset < 0 ? () => { if (!suppressClick.current) prev() } : offset > 0 ? () => { if (!suppressClick.current) next() } : undefined}
             >
               <Image
                 src={slide.src}
                 alt={slide.alt}
                 fill
+                draggable={false}
                 className="object-cover object-top"
                 sizes="(max-width: 768px) 50vw, 33vw"
                 quality={95}

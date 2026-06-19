@@ -1,8 +1,8 @@
 // ── page.tsx ──────────────────────────────────────────────
 // goodphil cultural page — utd pamana dance team profile
 //
-// notes: fully static; photos: cultural-hero-bg.png,
-//        cultural-hero.jpg, cultural-logo.png (all in /public);
+// notes: fully static; photos:
+//        cultural-hero.jpg, cultural-logo.svg (all in /public);
 //        youtube video ids hardcoded in the past-performances
 //        section; cta links to @utdpamana on instagram
 // ──────────────────────────────────────────────────────────
@@ -71,7 +71,7 @@ export default function CulturalPage() {
               fontSize: 'clamp(30px, 4.3vw, 65px)',
               letterSpacing: '3.25px',
               paddingLeft: '3.25px',
-              textShadow: '0px 16px 4px rgba(255,251,251,0.26)',
+              textShadow: '0px 9.6px 4px rgba(255,251,251,0.26)',
             }}
           >
             PAST PERFORMANCES
@@ -147,7 +147,7 @@ export default function CulturalPage() {
           {/* Pamana logo */}
           <div className="relative w-[264px] h-[264px] rounded-full overflow-hidden flex-shrink-0">
             <Image
-              src="/cultural-logo.png"
+              src="/cultural-logo.svg"
               alt="UTD Pamana logo"
               width={264}
               height={264}

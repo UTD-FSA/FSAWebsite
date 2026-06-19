@@ -1,8 +1,8 @@
 // ── page.tsx ──────────────────────────────────────────────
 // goodphil modern page — utd maharlika dance team profile
 //
-// notes: fully static; photos: modern-hero-bg.png,
-//        modern-hero.png, modern-logo.png (all in /public);
+// notes: fully static; photos:
+//        modern-hero.png, modern-logo.svg (all in /public);
 //        youtube video ids hardcoded in the past-performances
 //        section; cta links to @utdmaharlika on instagram
 // ──────────────────────────────────────────────────────────
@@ -71,7 +71,7 @@ export default function ModernPage() {
               fontSize: 'clamp(30px, 4.3vw, 65px)',
               letterSpacing: '3.25px',
               paddingLeft: '3.25px',
-              textShadow: '0px 16px 4px rgba(180,180,180,0.26)',
+              textShadow: '0px 9.6px 4px rgba(180,180,180,0.26)',
             }}
           >
             PAST PERFORMANCES
@@ -147,7 +147,7 @@ export default function ModernPage() {
           {/* Maharlika logo */}
           <div className="relative w-[264px] h-[264px] rounded-full overflow-hidden flex-shrink-0">
             <Image
-              src="/modern-logo.png"
+              src="/modern-logo.svg"
               alt="UTD Maharlika logo"
               width={264}
               height={264}

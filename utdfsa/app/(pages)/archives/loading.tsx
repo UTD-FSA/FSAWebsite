@@ -19,7 +19,7 @@ export default function ArchivesLoading() {
         {[90, 96, 88, 80, 92].map((w, i) => (
           <div
             key={i}
-            className="h-9 rounded-full bg-white/[0.06] animate-pulse"
+              className="h-9 rounded-[10px] bg-white/[0.06] animate-pulse"
             style={{ width: `${w}px` }}
           />
         ))}

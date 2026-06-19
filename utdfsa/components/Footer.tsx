@@ -26,9 +26,9 @@ export default function Footer() {
             <Image
               src="/logo-head.png"
               alt="UTD FSA"
-              width={120}
-              height={40}
-              style={{ height: '40px', width: 'auto' }}
+              width={43}
+              height={43}
+              style={{ width: '43px', height: '43px' }}
             />
           </Link>
           <p className="font-sans text-xs text-white/30 tracking-wide">

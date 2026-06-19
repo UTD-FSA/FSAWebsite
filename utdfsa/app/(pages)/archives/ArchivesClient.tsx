@@ -70,7 +70,7 @@ export default function ArchivesClient({ galleries }: Props) {
             <button
               key={option}
               onClick={() => setActiveFilter(option)}
-              className="filter-pill px-[18px] py-[9px] rounded-full text-[13px] font-bold tracking-[0.02em] transition-all duration-[180ms] cursor-pointer"
+              className="filter-pill px-[18px] py-[9px] rounded-[10px] text-[13px] font-bold tracking-[0.02em] transition-all duration-[180ms] cursor-pointer"
               style={{
                 background: active ? '#466a47' : 'rgba(255,255,255,0.03)',
                 color: active ? '#fff' : '#b8b8b8',

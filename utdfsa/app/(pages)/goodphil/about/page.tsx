@@ -147,12 +147,13 @@ export default function GoodphilAboutPage() {
           </div>
 
           {/* Staggered heading overlaid on the photo — matches Figma's 4-line layout */}
-          <div className="relative z-10 px-8 md:px-16 h-full flex flex-col justify-between pt-8 pb-6 md:pt-16 md:pb-12">
-            <h2 className="font-display font-black text-[clamp(40px,6.5vw,96px)] text-white leading-none">
-              <span className="block">WHAT</span>
-              <span className="block text-right pr-4 md:pr-16">IS</span>
-              <span className="block">&nbsp;</span>
-              <span className="block pl-[8%] md:pl-[12%]">GOODPHIL?</span>
+          <div className="relative z-10 min-h-[420px] md:min-h-[540px]">
+            <h2 className="absolute inset-0 font-display font-black text-[clamp(40px,6.5vw,96px)] text-white leading-none">
+              <span className="absolute top-8 left-8 md:top-16 md:left-16">WHAT</span>
+              <span className="absolute top-1/2 right-8 md:right-16 -translate-y-1/2">IS</span>
+              <span className="absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 w-full px-8 text-center">
+                GOODPHIL?
+              </span>
             </h2>
           </div>
 
@@ -160,9 +161,6 @@ export default function GoodphilAboutPage() {
 
         {/* Body text */}
         <div className="max-w-[1218px] mx-auto px-8 py-16 text-center">
-
-          {/* Vertical decorative divider — separator between photo/heading and text */}
-          <div className="w-px h-12 bg-white/50 mx-auto mb-8" />
 
           <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed mb-6">
             Goodphil, also known as the GoodPhil Games, is an intercollegiate four-day competition where Filipino Student Associations across Texas and Oklahoma compete in a variety of sports and performances. The conference celebrates school pride, unity, community, Filipino culture, and unforgettable memories for all participants and spectators!
@@ -227,9 +225,9 @@ export default function GoodphilAboutPage() {
       <section>
 
         {/* Section heading bar */}
-        <div className="bg-brand-bg py-8 px-4">
-          <h2 className="font-display font-black text-[clamp(14px,4.2vw,64px)] text-white text-center whitespace-nowrap">
-            ALL COMPETING GOODPHIL TEAMS
+        <div className="bg-brand-bg py-8 px-4 flex justify-center">
+          <h2 className="w-full mx-auto font-display font-black text-[clamp(14px,4.2vw,64px)] text-white text-center md:whitespace-nowrap"> 
+            ALL COMPETING GOODPHIL TEAMS 
           </h2>
         </div>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, type PointerEvent } from 'react'
 import Modal from '@/components/Modal'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -71,7 +71,43 @@ function PamilyasCarousel() {
   const resetTimer = () => setTimerKey(k => k + 1)
   const prev = () => { setCurrent(i => (i - 1 + total) % total); resetTimer() }
   const next = () => { setCurrent(i => (i + 1) % total); resetTimer() }
+  const dragStart = useRef<{ x: number; y: number; pointerId: number } | null>(null)
+  const suppressClick = useRef(false)
   const positions = isMobile ? MOBILE_POS : DESKTOP
+
+  const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return
+    dragStart.current = { x: e.clientX, y: e.clientY, pointerId: e.pointerId }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  const handlePointerUp = (e: PointerEvent<HTMLDivElement>) => {
+    const start = dragStart.current
+    if (!start) return
+
+    const dx = e.clientX - start.x
+    const dy = e.clientY - start.y
+    const isHorizontalSwipe = Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.25
+
+    dragStart.current = null
+    e.currentTarget.releasePointerCapture(start.pointerId)
+
+    if (!isHorizontalSwipe) return
+
+    suppressClick.current = true
+    if (dx < 0) next()
+    else prev()
+
+    window.setTimeout(() => {
+      suppressClick.current = false
+    }, 120)
+  }
+
+  const handlePointerCancel = (e: PointerEvent<HTMLDivElement>) => {
+    const start = dragStart.current
+    dragStart.current = null
+    if (start) e.currentTarget.releasePointerCapture(start.pointerId)
+  }
 
   // 4:3 landscape dimensions — larger than before to fill the section
   const cardW = isMobile ? 320 : 640
@@ -80,7 +116,12 @@ function PamilyasCarousel() {
   return (
     <div className="flex flex-col gap-6 w-full">
       {/* stage height accommodates 4:3 active card with breathing room */}
-      <div className="relative h-[280px] md:h-[560px] overflow-hidden">
+      <div
+        className="relative h-[280px] md:h-[560px] overflow-hidden cursor-grab touch-pan-y select-none"
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerCancel}
+      >
         {PAM_SLIDES.map((slide, slideIdx) => {
           let offset = (slideIdx - current + total) % total
           if (offset > Math.floor(total / 2)) offset -= total
@@ -102,12 +143,13 @@ function PamilyasCarousel() {
                 transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
               }}
               className="rounded-2xl shadow-2xl overflow-hidden bg-[#2a2a2a] cursor-pointer"
-              onClick={offset < 0 ? prev : offset > 0 ? next : undefined}
+              onClick={offset < 0 ? () => { if (!suppressClick.current) prev() } : offset > 0 ? () => { if (!suppressClick.current) next() } : undefined}
             >
               <Image
                 src={slide.src}
                 alt={slide.alt}
                 fill
+                draggable={false}
                 className="object-cover object-center"
                 sizes="(max-width: 768px) 50vw, 40vw"
                 quality={90}
@@ -411,17 +453,14 @@ export default function PamilyasClient({
           <h2 className="font-display font-black text-[clamp(18px,4.2vw,64px)] text-white text-center whitespace-nowrap">
             WHAT IS A PAMILYA?
           </h2>
+          <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed text-center max-w-[1218px] mx-auto mt-8">
+            Pamilyas (&lsquo;pam&rsquo; for short), which is also the Tagalog word for family, are smaller &ldquo;families&rdquo;
+            within UTD FSA where members have an opportunity to foster friendships, guidance, and a place to belong.
+          </p>
         </div>
 
         <div className="bg-section-bg">
-          <div className="max-w-[1218px] mx-auto px-8 py-12 text-center">
-
-            <div className="w-px h-16 bg-white/30 mx-auto mb-10" />
-
-            <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed mb-8">
-              Pamilyas (&lsquo;pam&rsquo; for short), which is also the Tagalog word for family, are smaller &ldquo;families&rdquo;
-              within UTD FSA where members have an opportunity to foster friendships, guidance, and a place to belong.
-            </p>
+          <div className="max-w-[1218px] mx-auto px-8 pt-12 pb-6 text-center">
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed mb-8">
               Each pam consists of Kuyas (older brother), Ates (older sisters), and Adings (younger sibling)!
@@ -446,7 +485,7 @@ export default function PamilyasClient({
       </section>
 
       {/* ── SECTION 3 — PAMILYA CAROUSEL ─────────────────────────── */}
-      <section className="bg-section-bg px-8 py-12">
+      <section className="bg-section-bg px-8 pt-4 pb-12">
         <PamilyasCarousel />
       </section>
 

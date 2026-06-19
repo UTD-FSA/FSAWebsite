@@ -126,11 +126,11 @@ export default function Navbar({ initialMember }: NavbarProps) {
           <Image
             src="/logo-head.png"
             alt="UTD FSA Logo"
-            width={40}
-            height={40}
+            width={43}
+            height={43}
             priority
             className="rounded-full"
-            style={{ width: 'auto' }}
+            style={{ width: '43px', height: '43px' }}
           />
           <span className="font-display font-black text-[26px] text-white leading-none tracking-wide">
             UTD FSA
