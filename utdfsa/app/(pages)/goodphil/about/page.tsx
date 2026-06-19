@@ -168,11 +168,11 @@ export default function GoodphilAboutPage() {
 
           <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed">
             Goodphil is held annually in the Spring semester, rotating between one of five host schools every year ({' '}
-            <span style={{ color: '#d46920' }}>UT</span>,{' '}
+            <span style={{ color: '#0064b1' }}>UTA</span>,{' '}
             <span style={{ color: '#dd4446' }}>TAMU</span>,{' '}
-            <span style={{ color: '#d46920' }}>UTA</span>,{' '}
-            <span style={{ color: '#75ba78' }}>UTD</span>,{' '}
-            <span style={{ color: '#687eb1' }}>UTSA</span>
+            <span style={{ color: '#d46920' }}>UT</span>,{' '}
+            <span style={{ color: '#c34f62' }}>UH</span>,{' '}
+            <span style={{ color: '#687eb0' }}>UTSA</span>
             ).
           </p>
         </div>
