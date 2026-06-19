@@ -56,17 +56,16 @@ export default function LoginPage() {
           <div
             className="w-[88px] h-[88px] rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
             style={{
-              background: 'conic-gradient(from 180deg at 50% 50%, #395131 104deg, #497047 242deg, #e3ae3d 292deg)',
-              boxShadow: '0 12px 40px -8px rgba(0,0,0,0.7)',
+              boxShadow: '0 12px 40px -8px rgba(0,0,0,0.7)'
             }}
           >
             <Image
               src="/logo-head.png"
               alt="UTD FSA"
-              width={72}
-              height={72}
+              width={88}
+              height={88}
               className="rounded-full"
-              style={{ width: '72px', height: '72px', objectFit: 'cover' }}
+              style={{ width: '88px', height: '88px', objectFit: 'cover' }}
             />
           </div>
           <div className="flex flex-col items-center gap-2">
@@ -102,15 +101,15 @@ export default function LoginPage() {
           <div className="lg:hidden flex justify-center mb-6">
             <div
               className="w-[72px] h-[72px] rounded-full flex items-center justify-center overflow-hidden"
-              style={{ background: 'conic-gradient(from 180deg at 50% 50%, #395131 104deg, #497047 242deg, #e3ae3d 292deg)' }}
+              style={{ boxShadow: '0 12px 40px -8px rgba(0,0,0,0.7)' }}
             >
               <Image
-                src="/logo-head.png"
+                src="/logo-head.svg"
                 alt="UTD FSA"
-                width={59}
-                height={59}
+                width={72}
+                height={72}
                 className="rounded-full"
-                style={{ width: '59px', height: '59px', objectFit: 'cover' }}
+                style={{ width: '72px', height: '72px', objectFit: 'cover' }}
               />
             </div>
           </div>

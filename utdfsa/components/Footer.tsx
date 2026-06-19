@@ -19,12 +19,12 @@ const SOCIALS = [
 export default function Footer() {
   return (
     <footer className="w-full border-t border-white/10 bg-brand-bg mt-auto">
-      <div className="px-6 py-8 flex items-center justify-between gap-8">
+      <div className="px-6 py-6 flex items-center justify-between gap-8">
         {/* logo + tagline */}
         <div className="flex flex-col gap-2">
           <Link href="/" aria-label="UTD FSA home">
             <Image
-              src="/logo-head.png"
+              src="/bare-logo.svg"
               alt="UTD FSA"
               width={43}
               height={43}
@@ -59,7 +59,7 @@ export default function Footer() {
               </a>
             ))}
           </div>
-          <p className="font-display font-semibold text-[11.7px] text-white text-right leading-relaxed">
+          <p className="font-display font-semibold text-[9.4px] text-white text-right leading-relaxed">
             &ldquo;WHO&rsquo;S GOT THAT GOOD D?&rdquo; &ldquo;WE GOT THAT GOOD D!&rdquo;<br />
             &ldquo;ONE, TWO, THREE! GIMME A U-T-D!&rdquo;
           </p>
