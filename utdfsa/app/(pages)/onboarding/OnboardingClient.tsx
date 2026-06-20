@@ -165,6 +165,10 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
     additional_notes: '',
   })
 
+  // privacy policy acknowledgment gates — separate from form data; not sent to the api
+  const [adingPrivacyAck, setAdingPrivacyAck] = useState(false)
+  const [kuyatePrivacyAck, setKuyatePrivacyAck] = useState(false)
+
   function toggleAvailabilityDay(day: string) {
     setAdingForm(p => ({
       ...p,
@@ -1076,14 +1080,45 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
               )}
             </div>
 
+            {/* privacy policy acknowledgment — blocks submission until checked */}
+            <div className="rounded-[14px] border border-white/[0.08] bg-[#0a0a0a] px-5 py-4">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <div className={`w-[22px] h-[22px] shrink-0 rounded-[5px] border-2 flex items-center justify-center transition-all mt-0.5 ${
+                  adingPrivacyAck
+                    ? 'bg-accent-green border-accent-green'
+                    : 'bg-[#141414] border-white/[0.18] hover:border-accent-green/40'
+                }`}>
+                  {adingPrivacyAck && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#08130a" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                  )}
+                </div>
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={adingPrivacyAck}
+                  onChange={e => setAdingPrivacyAck(e.target.checked)}
+                />
+                <span className="font-sans text-[14px] text-[#a8a8a8] leading-[1.55]">
+                  I have read and agree to the{' '}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-accent-green underline underline-offset-2 hover:opacity-80 transition-opacity">
+                    UTD FSA Privacy Policy
+                  </a>
+                  .
+                </span>
+              </label>
+            </div>
+
             {/* only renders when the submit API returns an error — do not remove this condition */}
             {error && (
               <p className="font-sans text-sm text-red-400">{error}</p>
             )}
 
+            {/* disabled until privacy policy is acknowledged */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !adingPrivacyAck}
               className="w-full py-4 rounded-[14px] bg-accent-green text-[#08130a] font-display font-extrabold text-[15px] tracking-[0.02em] hover:brightness-[1.08] disabled:opacity-50 transition-all mt-2"
             >
               {/* only shows "submitting..." while the API call is in flight — do not remove this condition */}
@@ -1297,15 +1332,45 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
               </label>
             </div>
 
+            {/* privacy policy acknowledgment — blocks submission until checked */}
+            <div className="rounded-[14px] border border-white/[0.08] bg-[#0a0a0a] px-5 py-4">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <div className={`w-[22px] h-[22px] shrink-0 rounded-[5px] border-2 flex items-center justify-center transition-all mt-0.5 ${
+                  kuyatePrivacyAck
+                    ? 'bg-accent-green border-accent-green'
+                    : 'bg-[#141414] border-white/[0.18] hover:border-accent-green/40'
+                }`}>
+                  {kuyatePrivacyAck && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#08130a" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                  )}
+                </div>
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={kuyatePrivacyAck}
+                  onChange={e => setKuyatePrivacyAck(e.target.checked)}
+                />
+                <span className="font-sans text-[14px] text-[#a8a8a8] leading-[1.55]">
+                  I have read and agree to the{' '}
+                  <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-accent-green underline underline-offset-2 hover:opacity-80 transition-opacity">
+                    UTD FSA Privacy Policy
+                  </a>
+                  .
+                </span>
+              </label>
+            </div>
+
             {/* only renders when the submit API returns an error — do not remove this condition */}
             {error && (
               <p className="font-sans text-sm text-red-400">{error}</p>
             )}
 
-            {/* disabled until acknowledges_responsibilities is checked */}
+            {/* disabled until acknowledges_responsibilities and privacy policy are both checked */}
             <button
               type="submit"
-              disabled={loading || !kuyateForm.acknowledges_responsibilities}
+              disabled={loading || !kuyateForm.acknowledges_responsibilities || !kuyatePrivacyAck}
               className="w-full py-4 rounded-[14px] bg-accent-green text-[#08130a] font-display font-extrabold text-[15px] tracking-[0.02em] hover:brightness-[1.08] disabled:opacity-50 transition-all mt-2"
             >
               {/* only shows "submitting..." while the API call is in flight — do not remove this condition */}

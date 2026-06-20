@@ -126,6 +126,9 @@ export function ticketEmailHtml({
         <!-- footer -->
         <tr>
           <td bgcolor="#080808" style="background:#080808;padding:20px 44px;border-top:1px solid rgba(255,255,255,0.07);text-align:center;">
+            <p style="margin:0 0 8px;font-size:11px;line-height:1.55;color:#4a4a4a;font-family:Arial,Helvetica,sans-serif;">
+              This ticket was purchased on your behalf. For information on how UTD FSA handles your data, see our <a href="https://www.utdfsa.org/privacy" style="color:#5a5a5a;text-decoration:underline;">Privacy Policy</a>.
+            </p>
             <p style="margin:0;font-size:12px;color:#6f6f6f;letter-spacing:0.01em;font-family:Arial,Helvetica,sans-serif;">UTD Filipino Student Association &mdash; University of Texas at Dallas</p>
           </td>
         </tr>

@@ -58,7 +58,7 @@ export default async function OfficerApplicationsPage() {
         hangout_size_preference, fave_tv_show_movie, availability,
         thoughts_on_drinking, dislikes, pam_dealbreakers, future_kuyate,
         mbti,
-        members!inner(first_name, last_name, email, year, major, phone, pamilya)
+        members!member_id!inner(first_name, last_name, email, year, major, phone, pamilya)
       `),
     admin
       .from('kuyate_applications')
@@ -66,7 +66,7 @@ export default async function OfficerApplicationsPage() {
         id, member_id, submitted_at, status, additional_notes,
         instagram, pamilya_name, wants_to_be_pam_head, pam_head_phone,
         why_kuyate, acknowledges_responsibilities,
-        members!inner(first_name, last_name, email, year, major, phone, pamilya)
+        members!member_id!inner(first_name, last_name, email, year, major, phone, pamilya)
       `),
   ])
 

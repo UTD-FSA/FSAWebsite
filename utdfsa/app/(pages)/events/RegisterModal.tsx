@@ -71,6 +71,8 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
   const [error, setError] = useState<string | null>(null)
   // per-ticket email confirmation mismatch errors; indexed by ticket slot
   const [emailErrors, setEmailErrors] = useState<string[]>([])
+  // privacy policy acknowledgment — one per transaction; only required for non-member purchases
+  const [privacyAck, setPrivacyAck] = useState(false)
 
   // member pricing vs. general admission — both stored as cents in the db
   const pricePerTicket = isMember ? event.price_cents_members : event.price_cents_nonmembers
@@ -344,6 +346,45 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
                 </span>
               </div>
 
+              {/* privacy policy acknowledgment — shown once per transaction for non-member purchases only */}
+              {!isMember && (
+                <div className="rounded-[12px] p-3.5" style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <div
+                      className={`w-[18px] h-[18px] shrink-0 rounded-[4px] border-2 flex items-center justify-center transition-all mt-0.5 flex-none ${
+                        privacyAck ? 'border-[#2b5f2e]' : 'border-white/20 hover:border-white/40'
+                      }`}
+                      style={{ background: privacyAck ? '#2b5f2e' : '#1e1e1e' }}
+                    >
+                      {privacyAck && (
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M20 6L9 17l-5-5" />
+                        </svg>
+                      )}
+                    </div>
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={privacyAck}
+                      onChange={e => setPrivacyAck(e.target.checked)}
+                    />
+                    <span className="text-sm leading-[1.5]" style={{ color: '#9a9a9a' }}>
+                      I have read and agree to the{' '}
+                      <a
+                        href="/privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={e => e.stopPropagation()}
+                        style={{ color: '#75ba78', textDecoration: 'underline' }}
+                      >
+                        Privacy Policy
+                      </a>
+                      .
+                    </span>
+                  </label>
+                </div>
+              )}
+
               {/* only renders when the API or network returned an error — do not remove this condition */}
               {error && (
                 <p className="text-sm rounded-[14px] px-3 py-2.5" style={{ color: '#ff84b0', background: 'rgba(255,92,150,0.08)', border: '1px solid rgba(255,120,170,0.2)' }}>
@@ -351,9 +392,10 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
                 </p>
               )}
 
+              {/* disabled until privacy policy is acknowledged for non-member purchases */}
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (!isMember && !privacyAck)}
                 className="w-full text-white font-bold py-4 rounded-[13px] text-[15px] tracking-[0.01em] transition-opacity disabled:opacity-60"
                 style={{ background: '#2b5f2e' }}
               >

@@ -37,7 +37,7 @@ async function requireOfficer() {
     .maybeSingle()
 
   if (!member || (member.role !== 'officer' && member.role !== 'admin')) return null
-  return { admin }
+  return { admin, officerId: member.id }
 }
 
 export async function PATCH(req: Request, { params }: RouteContext) {
@@ -57,9 +57,10 @@ export async function PATCH(req: Request, { params }: RouteContext) {
   // ── status update ─────────────────────────────────────────
   if (status !== undefined) {
     // bypass rls — officer action; updates ading_applications.status
+    // reviewed_by and reviewed_at are derived from the authenticated session — never client-supplied
     const { error } = await ctx.admin
       .from('ading_applications')
-      .update({ status })
+      .update({ status, reviewed_by: ctx.officerId, reviewed_at: new Date().toISOString() })
       .eq('id', id)
 
     if (error) {

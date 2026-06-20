@@ -67,10 +67,13 @@ export default function Footer() {
       </div>
 
       {/* credit bar */}
-      <div className="border-t border-white/10 py-3 px-6">
-        <p className="text-white/60 text-xs uppercase tracking-widest font-medium text-center">
+      <div className="border-t border-white/10 py-3 px-6 flex items-center justify-center gap-6 flex-wrap">
+        <p className="text-white/60 text-xs uppercase tracking-widest font-medium">
           WEBSITE CURATED BY THE UTD FSA 2026-27 WEB COMMITTEE
         </p>
+        <Link href="/privacy" className="text-white/35 text-[11px] uppercase tracking-widest font-medium hover:text-white/65 transition-colors whitespace-nowrap">
+          Privacy Policy
+        </Link>
       </div>
     </footer>
   )
