@@ -58,7 +58,7 @@ export default function PrivacyPage() {
                 </li>
                 <li>
                   <span className="text-[#e0e0e0] font-semibold">Account data:</span>{' '}
-                  your assigned role (member, officer, or admin), membership status, membership expiration date, pamilya assignment, FSA points balance, and profile photo if you choose to upload one.
+                  your assigned role (member, officer, or admin), membership status, membership expiration date, pamilya assignment, FSA points balance, and profile photo.
                 </li>
                 <li>
                   <span className="text-[#e0e0e0] font-semibold">Payment records:</span>{' '}
@@ -187,7 +187,7 @@ export default function PrivacyPage() {
                 </li>
                 <li>
                   <span className="text-[#e0e0e0] font-semibold">Google</span> —
-                  sign-in via Google OAuth. Google manages your Google account credentials; we receive only your name and email address.
+                  sign-in via Google OAuth. Google manages your Google account credentials; we receive only your name, email address, and profie picture.
                 </li>
                 <li>
                   <span className="text-[#e0e0e0] font-semibold">Amazon Web Services (S3)</span> —
@@ -209,7 +209,7 @@ export default function PrivacyPage() {
             </h2>
             <div className="font-sans text-[15px] text-[#a8a8a8] leading-[1.72] flex flex-col gap-3">
               <p>
-                We do not currently have an automatic data expiration or archival mechanism. Data you submit — including your member profile, application responses, event registrations, and attendance records — is retained as long as reasonably necessary to operate the organization, maintain historical records, administer membership programs, and comply with organizational requirements.
+                We do not currently have an automatic data expiration or archival mechanism. Data you submit, including your member profile, application responses, event registrations, and attendance records, is retained as long as reasonably necessary to operate the organization, maintain historical records, administer membership programs, and comply with organizational requirements.
               </p>
               <p>
                 If you would like your data removed, please submit a request as described in the Your Rights section below.

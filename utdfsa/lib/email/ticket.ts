@@ -52,18 +52,21 @@ export function ticketEmailHtml({
   <style>
     :root { color-scheme: light dark; }
     body { color-scheme: light dark; }
+    /* gmail dark mode — pin dark backgrounds; data-ogsc/ogsb are added by gmail to elements it has inverted */
+    [data-ogsc] body, [data-ogsb] body { background-color: #f3f4f3 !important; }
+    [data-ogsc] table, [data-ogsb] table { background-color: inherit !important; }
   </style>
 </head>
-<body style="margin:0;padding:0;background-color:#0e0e0e;font-family:Arial,Helvetica,sans-serif;color-scheme:light dark;">
+<body style="margin:0;padding:0;background-color:#f3f4f3;font-family:Arial,Helvetica,sans-serif;color-scheme:light dark;">
   <!--[if !mso]><!-->
   <div style="background:linear-gradient(rgba(255,255,255,0.01),rgba(255,255,255,0.01));display:none;max-height:0;overflow:hidden;mso-hide:all;">
     &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
     &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
   </div>
   <!--<![endif]-->
-  <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0e0e0e" style="background:#0e0e0e;">
+  <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f3f4f3" style="background:#f3f4f3;">
     <tr><td align="center" style="padding:32px 16px;">
-      <table width="600" cellpadding="0" cellspacing="0" bgcolor="#0b0b0b" style="background:#0b0b0b;border-radius:12px;overflow:hidden;max-width:600px;width:100%;border:1px solid rgba(255,255,255,0.09);">
+      <table width="600" cellpadding="0" cellspacing="0" bgcolor="#fafafa" style="background:#fafafa;border-radius:12px;overflow:hidden;max-width:600px;width:100%;border:1px solid rgba(255,255,255,0.09);">
 
         <!-- header -->
         <tr>
@@ -86,24 +89,24 @@ export function ticketEmailHtml({
         <!-- body -->
         <tr>
           <td style="padding:38px 44px 44px;">
-            <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#9a9a9a;font-family:Arial,Helvetica,sans-serif;">Hi ${attendeeName},</p>
-            <h2 style="margin:0 0 22px;font-size:22px;font-weight:900;color:#ffffff;line-height:1.1;font-family:Arial,Helvetica,sans-serif;">${eventName}</h2>
+            <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#2b2b2b;font-family:Arial,Helvetica,sans-serif;">Hi ${attendeeName},</p>
+            <h2 style="margin:0 0 22px;font-size:22px;font-weight:900;color:#2b2b2b;line-height:1.1;font-family:Arial,Helvetica,sans-serif;">${eventName}</h2>
 
             <!-- date and location -->
             <table cellpadding="0" cellspacing="0" width="100%" style="margin-bottom:26px;">
               ${dateStr ? `<tr>
-                <td style="padding-bottom:12px;font-size:15px;font-weight:700;color:#dcdcdc;font-family:Arial,Helvetica,sans-serif;">
+                <td style="padding-bottom:12px;font-size:15px;font-weight:700;color:#2b2b2b;font-family:Arial,Helvetica,sans-serif;">
                   &#128197; ${dateStr}${timeStr ? ` &middot; ${timeStr} CT` : ''}
                 </td>
               </tr>` : ''}
               ${location ? `<tr>
-                <td style="font-size:15px;font-weight:700;color:#dcdcdc;font-family:Arial,Helvetica,sans-serif;">
+                <td style="font-size:15px;font-weight:700;color:#2b2b2b;font-family:Arial,Helvetica,sans-serif;">
                   &#128205; ${location}
                 </td>
               </tr>` : ''}
             </table>
 
-            <p style="margin:0 0 28px;font-size:15px;line-height:1.65;color:#bdbdbd;font-family:Arial,Helvetica,sans-serif;">
+            <p style="margin:0 0 28px;font-size:15px;line-height:1.65;color:#2b2b2b;font-family:Arial,Helvetica,sans-serif;">
               Show the QR code below at the door. Each QR code is unique and can only be scanned once.
             </p>
 
@@ -112,12 +115,12 @@ export function ticketEmailHtml({
               <tr>
                 <td align="center" style="padding:8px 0 0;">
                   <img src="cid:${qrCid}" width="220" height="220" alt="Ticket QR Code"
-                    style="display:block;border:1px solid rgba(70,106,71,0.35);border-radius:10px;padding:14px;background:#ffffff;" />
+                    style="display:block;border:1px solid rgba(53,96,58,0.35);border-radius:10px;padding:14px;background:#ffffff;" />
                 </td>
               </tr>
             </table>
 
-            <p style="margin:28px 0 0;font-size:13px;line-height:1.6;color:#6f6f6f;text-align:center;font-family:Arial,Helvetica,sans-serif;">
+            <p style="margin:28px 0 0;font-size:13px;line-height:1.6;color:#2b2b2b;text-align:center;font-family:Arial,Helvetica,sans-serif;">
               Do not share this QR code &mdash; it is tied to your name.
             </p>
           </td>
@@ -125,15 +128,15 @@ export function ticketEmailHtml({
 
         <!-- footer — nested table keeps both rows visible in gmail; separate <p> tags get collapsed -->
         <tr>
-          <td bgcolor="#080808" style="background:#080808;padding:20px 44px;border-top:1px solid rgba(255,255,255,0.07);">
+          <td bgcolor="#e9ebe9" style="background:#e9ebe9;padding:20px 44px;border-top:1px solid rgba(255,255,255,0.07);">
             <table width="100%" cellpadding="0" cellspacing="0">
               <tr>
-                <td style="text-align:center;padding-bottom:7px;font-size:11px;line-height:1.55;color:#4a4a4a;font-family:Arial,Helvetica,sans-serif;">
-                  This ticket was purchased on your behalf. For information on how UTD FSA handles your data, see our <a href="https://www.utdfsa.org/privacy" style="color:#5a5a5a;text-decoration:underline;">Privacy Policy</a>.
+                <td style="text-align:center;padding-bottom:7px;font-size:11px;line-height:1.55;color:#2b2b2b;font-family:Arial,Helvetica,sans-serif;">
+                  This ticket was purchased on your behalf. For information on how UTD FSA handles your data, see our <a href="https://www.utdfsa.org/privacy" style="color:#2b2b2b;text-decoration:underline;">Privacy Policy</a>.
                 </td>
               </tr>
               <tr>
-                <td style="text-align:center;font-size:12px;color:#6f6f6f;letter-spacing:0.01em;font-family:Arial,Helvetica,sans-serif;">
+                <td style="text-align:center;font-size:12px;color:#2b2b2b;letter-spacing:0.01em;font-family:Arial,Helvetica,sans-serif;">
                   UTD Filipino Student Association &mdash; University of Texas at Dallas
                 </td>
               </tr>

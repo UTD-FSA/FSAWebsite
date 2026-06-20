@@ -24,11 +24,11 @@ export function kuyateStatusEmailHtml({
 
     // render a different paragraph depending on whether the pamilya has been assigned
     const pamilyaLine = pamilyaName
-      ? `<p style="margin:0 0 18px;color:#d4d4d4;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
-           You have been matched with <strong style="color:#ffffff;font-weight:700;">${pamilyaName}</strong>. Your pam chair will be in touch
+      ? `<p style="margin:0 0 18px;color:#2b2b2b;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
+           You have been matched with <strong style="color:#2b2b2b;font-weight:700;">${pamilyaName}</strong>. Your pam chair will be in touch
            with next steps &mdash; keep an eye on your inbox!
          </p>`
-      : `<p style="margin:0 0 18px;color:#d4d4d4;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
+      : `<p style="margin:0 0 18px;color:#2b2b2b;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
            Your pamilya assignment is being finalized. Look out for further instructions from your
            pam chair soon!
          </p>`
@@ -43,18 +43,21 @@ export function kuyateStatusEmailHtml({
   <style>
     :root { color-scheme: light dark; }
     body { color-scheme: light dark; }
+    /* gmail dark mode — pin dark backgrounds; data-ogsc/ogsb are added by gmail to elements it has inverted */
+    [data-ogsc] body, [data-ogsb] body { background-color: #f3f4f3 !important; }
+    [data-ogsc] table, [data-ogsb] table { background-color: inherit !important; }
   </style>
 </head>
-<body style="margin:0;padding:0;background-color:#0e0e0e;font-family:Arial,Helvetica,sans-serif;color-scheme:light dark;">
+<body style="margin:0;padding:0;background-color:#f3f4f3;font-family:Arial,Helvetica,sans-serif;color-scheme:light dark;">
   <!--[if !mso]><!-->
   <div style="background:linear-gradient(rgba(255,255,255,0.01),rgba(255,255,255,0.01));display:none;max-height:0;overflow:hidden;mso-hide:all;">
     &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
     &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
   </div>
   <!--<![endif]-->
-  <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0e0e0e" style="background:#0e0e0e;">
+  <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f3f4f3" style="background:#f3f4f3;">
     <tr><td align="center" style="padding:32px 16px;">
-      <table width="600" cellpadding="0" cellspacing="0" bgcolor="#0b0b0b" style="background:#0b0b0b;border-radius:12px;overflow:hidden;max-width:600px;width:100%;border:1px solid rgba(255,255,255,0.09);">
+      <table width="600" cellpadding="0" cellspacing="0" bgcolor="#fafafa" style="background:#fafafa;border-radius:12px;overflow:hidden;max-width:600px;width:100%;border:1px solid rgba(255,255,255,0.09);">
 
         <!-- header -->
         <tr>
@@ -77,18 +80,18 @@ export function kuyateStatusEmailHtml({
         <!-- body -->
         <tr>
           <td style="padding:40px 44px 44px;">
-            <p style="margin:0 0 18px;color:#d4d4d4;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">Hi ${firstName},</p>
-            <p style="margin:0 0 18px;color:#d4d4d4;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
+            <p style="margin:0 0 18px;color:#2b2b2b;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">Hi ${firstName},</p>
+            <p style="margin:0 0 18px;color:#2b2b2b;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
               We are thrilled to welcome you as an official Kuya/Ate of UTD FSA! Your application has
               been reviewed and we are so excited to have you join the family.
             </p>
 
             <!-- mandatory kuyate meeting — all accepted kuyates must attend; do not remove -->
-            <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0f170e" style="background:#0f170e;border-left:4px solid #466a47;margin:0 0 18px;">
+            <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#e1efe4" style="background:#e1efe4;border-left:4px solid #35603a;margin:0 0 18px;">
               <tr>
-                <td style="padding:14px 18px;color:#d4d4d4;font-size:15px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
-                  <strong style="color:#ffffff;">MANDATORY KUYATE MEETING:</strong> All accepted Kuya/Ates are required to attend
-                  the mandatory Kuyate meeting on <strong style="color:#ffffff;">September 9th at 7:00 PM</strong>.
+                <td style="padding:14px 18px;color:#2b2b2b;font-size:15px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
+                  <strong style="color:#2b2b2b;">MANDATORY KUYATE MEETING:</strong> All accepted Kuya/Ates are required to attend
+                  the mandatory Kuyate meeting on <strong style="color:#2b2b2b;">September 9th at 7:00 PM</strong>.
                   Location details will be shared closer to the date.
                   This meeting is required &mdash; please clear your schedule.
                 </td>
@@ -96,19 +99,19 @@ export function kuyateStatusEmailHtml({
             </table>
 
             ${pamilyaLine}
-            <p style="margin:0 0 18px;color:#d4d4d4;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
+            <p style="margin:0 0 18px;color:#2b2b2b;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
               Thank you for your commitment to our community. We cannot wait to see everything you
               bring to the org!
             </p>
-            <p style="margin:0 0 4px;color:#d4d4d4;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">Mahal namin kayo,</p>
-            <p style="margin:0;font-size:16px;font-weight:700;color:#7fae80;font-family:Arial,Helvetica,sans-serif;">UTD FSA</p>
+            <p style="margin:0 0 4px;color:#2b2b2b;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">Mahal namin kayo,</p>
+            <p style="margin:0;font-size:16px;font-weight:700;color:#35603a;font-family:Arial,Helvetica,sans-serif;">UTD FSA</p>
           </td>
         </tr>
 
         <!-- footer -->
         <tr>
-          <td bgcolor="#080808" style="background:#080808;padding:20px 44px;border-top:1px solid rgba(255,255,255,0.07);text-align:center;">
-            <p style="margin:0;font-size:12px;color:#6f6f6f;letter-spacing:0.01em;font-family:Arial,Helvetica,sans-serif;">UTD Filipino Student Association &mdash; University of Texas at Dallas</p>
+          <td bgcolor="#e9ebe9" style="background:#e9ebe9;padding:20px 44px;border-top:1px solid rgba(255,255,255,0.07);text-align:center;">
+            <p style="margin:0;font-size:12px;color:#2b2b2b;letter-spacing:0.01em;font-family:Arial,Helvetica,sans-serif;">UTD Filipino Student Association &mdash; University of Texas at Dallas</p>
           </td>
         </tr>
 
@@ -134,61 +137,65 @@ export function kuyateStatusEmailHtml({
   <style>
     :root { color-scheme: light dark; }
     body { color-scheme: light dark; }
+    /* gmail dark mode — pin dark backgrounds; data-ogsc/ogsb are added by gmail to elements it has inverted */
+    [data-ogsc] body, [data-ogsb] body { background-color: #f3f4f3 !important; }
+    [data-ogsc] table, [data-ogsb] table { background-color: inherit !important; }
   </style>
 </head>
-<body style="margin:0;padding:0;background-color:#0e0e0e;font-family:Arial,Helvetica,sans-serif;color-scheme:light dark;">
+<body style="margin:0;padding:0;background-color:#f3f4f3;font-family:Arial,Helvetica,sans-serif;color-scheme:light dark;">
   <!--[if !mso]><!-->
   <div style="background:linear-gradient(rgba(255,255,255,0.01),rgba(255,255,255,0.01));display:none;max-height:0;overflow:hidden;mso-hide:all;">
     &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
     &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
   </div>
   <!--<![endif]-->
-  <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#0e0e0e" style="background:#0e0e0e;">
+  <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#f3f4f3" style="background:#f3f4f3;">
     <tr><td align="center" style="padding:32px 16px;">
-      <table width="600" cellpadding="0" cellspacing="0" bgcolor="#0b0b0b" style="background:#0b0b0b;border-radius:12px;overflow:hidden;max-width:600px;width:100%;border:1px solid rgba(255,255,255,0.09);">
+      <table width="600" cellpadding="0" cellspacing="0" bgcolor="#fafafa" style="background:#fafafa;border-radius:12px;overflow:hidden;max-width:600px;width:100%;border:1px solid rgba(255,255,255,0.09);">
 
         <!-- header -->
         <tr>
-          <td bgcolor="#10220f" style="background:linear-gradient(135deg,#0a160c 0%,#10220f 55%,#16331a 100%);padding:40px 44px 36px;border-bottom:1px solid rgba(70,106,71,0.25);">
-            <table cellpadding="0" cellspacing="0" style="margin:0 0 18px;">
-              <tr>
-                <td style="vertical-align:middle;">
-                  <img src="https://www.utdfsa.org/logo-head.png" width="36" height="36" alt="UTD FSA" style="display:block;border:0;" />
-                </td>
-                <td style="vertical-align:middle;padding-left:10px;">
-                  <span style="font-size:12px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#9db89e;font-family:Arial,Helvetica,sans-serif;">Filipino Student Association</span>
-                </td>
-              </tr>
-            </table>
-            <h1 style="margin:0;color:#ffffff !important;font-size:30px;font-weight:900;font-family:Arial,Helvetica,sans-serif;letter-spacing:-0.01em;line-height:1.05;">Kuya/Ate Application</h1>
+          <td style="padding:0;">
+            <img
+              src="https://www.utdfsa.org/kuyate-confirm.png"
+              alt="Kuya/Ate Application"
+              width="600"
+              style="
+                display:block;
+                width:100%;
+                max-width:600px;
+                height:auto;
+                border:0;
+              "
+            />
           </td>
         </tr>
 
         <!-- body -->
         <tr>
           <td style="padding:40px 44px 44px;">
-            <p style="margin:0 0 18px;color:#d4d4d4;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">Hi ${firstName},</p>
-            <p style="margin:0 0 18px;color:#d4d4d4;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
+            <p style="margin:0 0 18px;color:#2b2b2b;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">Hi ${firstName},</p>
+            <p style="margin:0 0 18px;color:#2b2b2b;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
               Thank you so much for taking the time to apply to be a Kuya/Ate of UTD FSA. We truly
               appreciate your interest and the effort you put into your application.
             </p>
-            <p style="margin:0 0 18px;color:#d4d4d4;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
+            <p style="margin:0 0 18px;color:#2b2b2b;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
               After careful review, we are not able to move forward with your application for this
               cycle. This was a difficult decision &mdash; we had many wonderful applicants and limited spots.
             </p>
-            <p style="margin:0 0 18px;color:#d4d4d4;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
+            <p style="margin:0 0 18px;color:#2b2b2b;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
               We encourage you to stay involved as an ading and to apply again in a future cycle. Your
               enthusiasm means a lot to us and we hope to see you at our upcoming events!
             </p>
-            <p style="margin:0 0 4px;color:#d4d4d4;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">Mahal namin kayo,</p>
-            <p style="margin:0;font-size:16px;font-weight:700;color:#7fae80;font-family:Arial,Helvetica,sans-serif;">UTD FSA</p>
+            <p style="margin:0 0 4px;color:#2b2b2b;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">Mahal namin kayo,</p>
+            <p style="margin:0;font-size:16px;font-weight:700;color:#35603a;font-family:Arial,Helvetica,sans-serif;">UTD FSA</p>
           </td>
         </tr>
 
         <!-- footer -->
         <tr>
-          <td bgcolor="#080808" style="background:#080808;padding:20px 44px;border-top:1px solid rgba(255,255,255,0.07);text-align:center;">
-            <p style="margin:0;font-size:12px;color:#6f6f6f;letter-spacing:0.01em;font-family:Arial,Helvetica,sans-serif;">UTD Filipino Student Association &mdash; University of Texas at Dallas</p>
+          <td bgcolor="#e9ebe9" style="background:#e9ebe9;padding:20px 44px;border-top:1px solid rgba(255,255,255,0.07);text-align:center;">
+            <p style="margin:0;font-size:12px;color:#2b2b2b;letter-spacing:0.01em;font-family:Arial,Helvetica,sans-serif;">UTD Filipino Student Association &mdash; University of Texas at Dallas</p>
           </td>
         </tr>
 

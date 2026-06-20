@@ -31,8 +31,8 @@ const BENEFITS = [
         <path d="M14 6v12" strokeDasharray="2 2" />
       </svg>
     ),
-    title: 'Member event pricing',
-    desc: 'Discounted tickets on every social, party, and Goodphil event all year.',
+    title: 'Member Event Pricing',
+    desc: 'Discounted tickets on every party / social event.',
   },
   {
     icon: (
@@ -42,8 +42,8 @@ const BENEFITS = [
         <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15.5 14.2c2.5.4 4.5 2.5 4.5 5.3" />
       </svg>
     ),
-    title: 'Pamilya placement',
-    desc: 'Get sorted into a pamilya and meet your ates, kuyas, and ading.',
+    title: 'Pamilya Placement',
+    desc: 'Get sorted into a Pamilya and meet your ates, kuyas, and fellow adings.',
   },
   {
     icon: (
@@ -51,8 +51,8 @@ const BENEFITS = [
         <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
       </svg>
     ),
-    title: 'Points & attendance',
-    desc: 'Track your points and attendance history toward end-of-year rewards.',
+    title: 'Points & Attendance',
+    desc: 'Track your points and attendance history toward Goodphil eligibility.',
   },
   {
     icon: (
@@ -61,7 +61,7 @@ const BENEFITS = [
         <path d="M8 10V7a4 4 0 018 0v3" />
       </svg>
     ),
-    title: 'Member-only content',
+    title: 'Member-Only Content',
     desc: 'Access exclusive resources, photo dumps, and member announcements.',
   },
   {
@@ -70,7 +70,7 @@ const BENEFITS = [
         <path d="M8 4l4 3 4-3 4 3-3 4v9H7v-9L4 7z" />
       </svg>
     ),
-    title: 'Merch & perks',
+    title: 'Merch & Perks',
     desc: 'First dibs on limited FSA merch drops and partner discounts.',
   },
   {
@@ -79,7 +79,7 @@ const BENEFITS = [
         <path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 5.9L12 16.9 6.7 19.3l1.2-5.9L3.4 9.3l6-.7z" />
       </svg>
     ),
-    title: 'Officer eligibility',
+    title: 'Officer Eligibility',
     desc: 'Membership is your first step toward running for the officer board.',
   },
 ]
@@ -101,8 +101,8 @@ const FAQS = [
     a: 'Not at all! UTD FSA is open to everyone. We welcome anyone interested in celebrating Filipino-American culture and community.',
   },
   {
-    q: 'What is a pamilya?',
-    a: 'A pamilya is your FSA family — a small group of members and upperclassmen mentors who hang out, support each other, and compete together throughout the year.',
+    q: 'What is a Pamilya?',
+    a: 'A Pamilya is your FSA family — a small group of members and upperclassmen (kuyas / ates) who hang out, support each other, and compete together throughout the year.',
   },
   {
     q: 'I have an officer code — where do I enter it?',
@@ -208,13 +208,13 @@ export default function MembershipClient({
               </h1>
 
               <p className="max-w-[440px] text-lg leading-[1.65] text-[#9a9a9a] font-medium mt-6">
-                Join UTD FSA and unlock member pricing on every event, your pamilya placement, points tracking, and a whole community waiting to call you family.
+                Join UTD FSA and unlock member pricing on every event, your Pamilya placement, points tracking, and a whole community waiting to call you family.
               </p>
 
               {/* stats — "12 pamilyas" omitted per design spec */}
               <div className="flex items-center gap-7 mt-9">
                 <div>
-                  <div className="font-display font-extrabold text-[30px] text-white tracking-[-0.02em]">300+</div>
+                  <div className="font-display font-extrabold text-[30px] text-white tracking-[-0.02em]">600+</div>
                   <div className="text-[12.5px] text-[#7a7a7a] font-semibold tracking-[0.04em] mt-0.5">ACTIVE MEMBERS</div>
                 </div>
                 <span className="w-px h-10 bg-white/10" />
@@ -302,7 +302,7 @@ export default function MembershipClient({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="font-display font-extrabold text-[17px] tracking-[-0.01em] text-white">UTD FSA MEMBERSHIP</div>
-                <div className="text-[13px] text-[#8c8c8c] font-semibold mt-1">{membershipYear} · Full year</div>
+                <div className="text-[13px] text-[#8c8c8c] font-semibold mt-1">{membershipYear} · Full Year</div>
               </div>
               {/* only renders when early bird pricing is active */}
               {isEarlyBird && (

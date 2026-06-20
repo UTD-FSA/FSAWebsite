@@ -463,7 +463,7 @@ export default function PamilyasClient({
           <div className="max-w-[1218px] mx-auto px-8 pt-12 pb-6 text-center">
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed mb-8">
-              Each pam consists of Kuyas (older brothers), Ates (older sisters), and Adings (younger siblings)!
+              Each pam consists of Kuyas (older brothers), Ates (older sisters), and Adings (younger siblings).
               By treating others like family, regardless of blood relation, pamilyas help members turn UTD FSA
               into a second home throughout their college years.
             </p>
@@ -522,7 +522,7 @@ export default function PamilyasClient({
         <div className="bg-section-bg px-8 py-12">
 
           <p className="font-sans font-normal text-[clamp(16px,1.5vw,22px)] text-white/70 text-center mb-10 max-w-[1194px] mx-auto">
-            Select the form that best fits the role you&rsquo;ll play in your UTD FSA pamilya experience!
+            Select the form that best fits the role you&rsquo;ll play in your UTD FSA Pamilya experience!
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-[1218px] mx-auto">

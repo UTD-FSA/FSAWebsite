@@ -367,13 +367,13 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
           </h1>
 
           <p className="relative z-10 max-w-[560px] text-lg leading-[1.6] text-[#9a9a9a] font-medium mt-6">
-            You&rsquo;re officially part of the family. Before we get started, let us know which role fits you best — you can always change your mind later.
+            You&rsquo;re officially part of the family! Before we get started, let us know which role fits you best.
           </p>
 
           {/* step hint */}
           <div className="relative z-10 inline-flex items-center gap-2 mt-5 text-[12px] font-bold tracking-[0.1em] text-[#6a6a6a] uppercase">
             <span className="w-[18px] h-[18px] rounded-full bg-accent-green/10 border border-accent-green/30 flex items-center justify-center text-accent-green text-[10px] font-extrabold">1</span>
-            Choose your pamilya role
+            Choose your Pamilya role
           </div>
 
           {/* role cards — 2-col when kuyate open, single centered card when closed */}
@@ -396,16 +396,16 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
               <div className="absolute inset-0 bg-gradient-to-b from-[rgba(7,7,7,0.15)] via-[rgba(7,7,7,0.45)] to-[rgba(7,7,7,0.94)]" />
               <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-7 md:p-8">
                 <span className="self-start inline-flex px-2.5 py-1 rounded-full bg-black/45 backdrop-blur-sm border border-white/[0.18] text-[9px] sm:text-[10px] font-extrabold tracking-[0.1em] text-[#e6e6e6] uppercase mb-2.5 sm:mb-3.5">
-                  New member
+                  New Member
                 </span>
                 <h2 className="font-display font-extrabold text-[23px] sm:text-[30px] leading-none tracking-[-0.02em] text-white mb-1.5 sm:mb-2.5">
                   {isKuyateOpen ? 'ADING FORM' : 'APPLY AS ADING'}
                 </h2>
                 <p className="hidden sm:block text-[14px] leading-[1.55] text-[#c2c2c2] font-medium mb-5 max-w-[340px]">
-                  Join as an ading and get paired with kuya &amp; ate mentors who guide you through your first year in the family.
+                  Join as an ading and get paired with kuya &amp; ate mentors who guide you through your FSA experience.
                 </p>
                 <p className="sm:hidden text-[12.5px] leading-[1.5] text-[#c2c2c2] font-medium mb-3.5">
-                  Get paired with kuya &amp; ate mentors for your first year.
+                  Get paired with kuya &amp; ate mentors for your FSA experience.
                 </p>
                 <span className="inline-flex items-center gap-2 sm:gap-2.5 font-display text-[12px] sm:text-[13px] font-bold tracking-[0.01em] text-accent-green">
                   I&rsquo;m an ading
@@ -432,13 +432,13 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
                 <div className="absolute inset-0 bg-gradient-to-b from-[rgba(7,7,7,0.15)] via-[rgba(7,7,7,0.45)] to-[rgba(7,7,7,0.94)]" />
                 <div className="absolute inset-0 flex flex-col justify-end p-5 sm:p-7 md:p-8">
                   <span className="self-start inline-flex px-2.5 py-1 rounded-full bg-black/45 backdrop-blur-sm border border-white/[0.18] text-[9px] sm:text-[10px] font-extrabold tracking-[0.1em] text-[#e6e6e6] uppercase mb-2.5 sm:mb-3.5">
-                    Returning / mentor
+                    Returning / Mentor
                   </span>
                   <h2 className="font-display font-extrabold text-[23px] sm:text-[30px] leading-none tracking-[-0.02em] text-white mb-1.5 sm:mb-2.5">
                     KUYA/ATE FORM
                   </h2>
                   <p className="hidden sm:block text-[14px] leading-[1.55] text-[#c2c2c2] font-medium mb-5 max-w-[340px]">
-                    Step up as a kuya or ate to mentor incoming adings, share your experience, and lead your pamilya by example.
+                    Step up as a kuya or ate to mentor incoming adings, share your experience, and lead your pamilya.
                   </p>
                   <p className="sm:hidden text-[12.5px] leading-[1.5] text-[#c2c2c2] font-medium mb-3.5">
                     Mentor incoming adings and lead your pamilya.
@@ -463,7 +463,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
             >
               {loading ? 'saving...' : (
                 <>
-                  Not interested in the pamilya program
+                  Not interested in the Pamilya program
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14M13 6l6 6-6 6" />
                   </svg>
@@ -478,7 +478,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
             >
               <h2 className="font-display font-black text-base text-white uppercase mb-1">Not Interested</h2>
               <p className="font-sans text-sm text-white/50">
-                I&rsquo;ll sit out the pamilya program for now. I can still apply later if I change my mind.
+                I&rsquo;ll sit out the Pamilya program for now. I can still apply later if I change my mind.
               </p>
             </button>
           )}
@@ -712,7 +712,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
               {/* only renders when age is under 16 — do not remove this condition */}
               {birthdayAge !== null && birthdayAge < 16 && (
                 <p className="font-sans text-xs text-amber-400 mt-1.5">
-                  heads up — members must be at least 16 to participate in the pamilya program
+                  heads up — members must be at least 16 to participate in the Pamilya program
                 </p>
               )}
             </div>
@@ -982,7 +982,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
                 value={adingForm.pam_dealbreakers}
                 onChange={e => setAdingForm(p => ({ ...p, pam_dealbreakers: e.target.value }))}
                 className={textareaCls}
-                placeholder="Dealbreakers, things that would make you uncomfortable..."
+                placeholder="Dealbreakers, things that would make you uncomfortable... (enter n/a if unsure)"
                 maxLength={500}
                 required
               />
@@ -1171,7 +1171,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
 
             {/* intro text */}
             <p className="font-sans text-[14px] text-[#7a7a7a] leading-[1.6]">
-              Tell us about your interest in being a pamilya leader.
+              Tell us about your interest in being a kuya/ate.
             </p>
 
             {/* instagram */}
@@ -1196,14 +1196,14 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
             {/* pamilya name — free text since pams aren't finalized */}
             <div>
               <label className={labelCls}>
-                Which pamilya are you applying to lead? <span className="text-[#e8654f]">*</span>
+                Which Pamilya are you applying to lead? <span className="text-[#e8654f]">*</span>
               </label>
               <input
                 type="text"
                 value={kuyateForm.pamilya_name}
                 onChange={e => setKuyateForm(p => ({ ...p, pamilya_name: e.target.value }))}
                 className={fieldCls}
-                placeholder="e.g. Shiballers — enter n/a if unsure"
+                placeholder="e.g. [Pam Name] — enter n/a if unsure"
                 maxLength={100}
                 required
               />
@@ -1292,7 +1292,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
             {/* additional notes — optional */}
             <div>
               <label className={labelCls}>
-                Anything you&rsquo;d like us to know about your interest?
+                Anything else you&rsquo;d like us to know about you?
               </label>
               <textarea
                 value={kuyateForm.additional_notes}
