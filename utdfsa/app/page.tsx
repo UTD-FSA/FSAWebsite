@@ -5,7 +5,7 @@
 // notes: z-10 overlay and z-20 logo/text layer the hero; marquee duplicates
 //        8 items so the looping seam is never visible at any viewport width
 // ─────────────────────────────────────────────────────────────
-import Image from "next/image"
+import SmoothImage from "@/components/SmoothImage"
 import PhotoCarousel from "@/components/PhotoCarousel"
 import HeroSection from "@/components/HeroSection"
 import UpcomingEventsSection from "@/components/UpcomingEventsSection"
@@ -27,7 +27,7 @@ export default async function Home() {
       {/* ── HERO ──────────────────────────────────────────────────── */}
       <section className="relative h-[50vh] sm:h-[70vh] md:h-screen w-full overflow-hidden">
         {/* Background photo — object-top keeps faces in frame */}
-        <Image
+        <SmoothImage
           src="/hero-officers.jpg"
           alt="FSA Officers"
           fill
@@ -67,10 +67,10 @@ export default async function Home() {
               WHO ARE{'\n'}WE?
             </h2>
             <p className="font-sans text-[16px] md:text-[20px] text-white/60 leading-relaxed">
-              UTD FSA is a student-led social organization at UT Dallas, created to unite students who
-              are interested in promoting Filipino-American culture. Through many aspects of unity, such
-              as dance, sports, and social events, UTD FSA aims to celebrate &amp; foster community
-              through Filipino traditions.
+              UTD FSA is a student-led organization dedicated to bringing together students through Filipino culture, community, and connection. 
+              Whether through social events, cultural programs, sports, or service initiatives, 
+              FSA provides a welcoming space for students to build friendships, celebrate their heritage, and create lasting memories.
+
             </p>
           </div>
 
@@ -84,7 +84,7 @@ export default async function Home() {
 
       {/* ── FULL-BLEED PHOTO ──────────────────────────────────────── */}
       <div className="relative h-[300px] md:h-[450px] lg:h-[600px] w-full overflow-hidden">
-        <Image src="/event-photo.jpg" alt="FSA Event" fill className="object-cover object-[center_60%]" sizes="100vw" />
+        <SmoothImage src="/event-photo.jpg" alt="FSA Event" fill className="object-cover object-[center_60%]" sizes="100vw" />
       </div>
 
       {/* ── MISSION STATEMENT ─────────────────────────────────────── */}
@@ -115,7 +115,7 @@ export default async function Home() {
 
       {/* ── SECOND FULL-BLEED PHOTO ───────────────────────────────── */}
       <div className="relative h-[300px] md:h-[450px] lg:h-[600px] w-full overflow-hidden">
-        <Image src="/event-photo-2.jpg" alt="FSA Event" fill className="object-cover" sizes="100vw" />
+        <SmoothImage src="/event-photo-2.jpg" alt="FSA Event" fill className="object-cover" sizes="100vw" />
       </div>
 
     </main>

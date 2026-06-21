@@ -26,7 +26,7 @@ const unbounded = Unbounded({
 
 export const metadata: Metadata = {
   title: "UTD FSA - Filipino Student Association | The University of Texas at Dallas",
-  description: "The Filipino Student Association at The University of Texas at Dallas. Join events, become a member, explore Pamilyas, cultural programs, and connect with the Filipino-American community at UTD.",
+  description: "The Filipino Student Association at The University of Texas at Dallas. Join events, become a member, explore pamilyas, cultural programs, and connect with the Filipino-American community at UTD.",
 }
 
 export default async function RootLayout({

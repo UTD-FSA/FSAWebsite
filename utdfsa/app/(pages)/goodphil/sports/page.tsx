@@ -8,7 +8,7 @@
 //        forms/calendar urls; no purple highlights anywhere
 // ──────────────────────────────────────────────────────────
 
-import Image from 'next/image'
+import SmoothImage from '@/components/SmoothImage'
 import AnimatedTitle from '@/components/AnimatedTitle'
 
 export default function SportsPage() {
@@ -29,7 +29,7 @@ export default function SportsPage() {
 
         {/* Middle layer: sports-hero.jpg — full-bleed cover at all sizes */}
         <div className="absolute inset-0 z-10">
-          <Image
+          <SmoothImage
             src="/sports-hero.jpg"
             alt="UTD FSA Sports team"
             fill
@@ -84,7 +84,7 @@ export default function SportsPage() {
             {/* Card 1: Men's Basketball — /mens-bbal.jpg */}
             <div className="bg-[#151515] border border-white/[0.08] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
               <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <Image
+                <SmoothImage
                   src="/mens-bbal.jpg"
                   alt="Men's Basketball"
                   fill
@@ -102,7 +102,7 @@ export default function SportsPage() {
             {/* Card 2: Women's Basketball — /womens-bbal.jpg */}
             <div className="bg-[#151515] border border-white/[0.08] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
               <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <Image
+                <SmoothImage
                   src="/womens-bbal.jpg"
                   alt="Women's Basketball"
                   fill
@@ -120,7 +120,7 @@ export default function SportsPage() {
             {/* Card 3: Men's Volleyball — /mens-vb.jpg */}
             <div className="bg-[#151515] border border-white/[0.08] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
               <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <Image
+                <SmoothImage
                   src="/mens-vb.jpg"
                   alt="Men's Volleyball"
                   fill
@@ -138,7 +138,7 @@ export default function SportsPage() {
             {/* Card 4: Women's Volleyball — /womens-vb.jpg */}
             <div className="bg-[#151515] border border-white/[0.08] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
               <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <Image
+                <SmoothImage
                   src="/womens-vb.jpg"
                   alt="Women's Volleyball"
                   fill
@@ -156,7 +156,7 @@ export default function SportsPage() {
             {/* Card 5: Coed Volleyball — /coed-vb.jpg */}
             <div className="bg-[#151515] border border-white/[0.08] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
               <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <Image
+                <SmoothImage
                   src="/coed-vb.jpg"
                   alt="Coed Volleyball"
                   fill
@@ -174,7 +174,7 @@ export default function SportsPage() {
             {/* Card 6: Men's Flag Football — /mens-ff.jpg */}
             <div className="bg-[#151515] border border-white/[0.08] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
               <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <Image
+                <SmoothImage
                   src="/mens-ff.jpg"
                   alt="Men's Flag Football"
                   fill
@@ -192,7 +192,7 @@ export default function SportsPage() {
             {/* Card 7: Coed Soccer — /coed-soccer.jpg */}
             <div className="bg-[#151515] border border-white/[0.08] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
               <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <Image
+                <SmoothImage
                   src="/coed-soccer.jpg"
                   alt="Coed Soccer"
                   fill
@@ -210,7 +210,7 @@ export default function SportsPage() {
             {/* Card 8: Ultimate Frisbee — /ultimate-frisbee.jpg */}
             <div className="bg-[#151515] border border-white/[0.08] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
               <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <Image
+                <SmoothImage
                   src="/ultimate-frisbee.jpg"
                   alt="Ultimate Frisbee"
                   fill

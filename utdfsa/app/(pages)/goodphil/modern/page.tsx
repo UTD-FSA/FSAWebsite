@@ -7,7 +7,7 @@
 //        section; cta links to @utdmaharlika on instagram
 // ──────────────────────────────────────────────────────────
 
-import Image from 'next/image'
+import SmoothImage from '@/components/SmoothImage'
 import AnimatedTitle from '@/components/AnimatedTitle'
 
 export default function ModernPage() {
@@ -19,7 +19,7 @@ export default function ModernPage() {
 
         {/* full-bleed hero photo */}
         <div className="absolute inset-0 z-10">
-          <Image
+          <SmoothImage
             src="/modern-hero.jpg"
             alt="UTD Maharlika modern dance team"
             fill
@@ -149,7 +149,7 @@ export default function ModernPage() {
 
           {/* Maharlika logo */}
           <div className="relative w-[264px] h-[264px] rounded-full overflow-hidden flex-shrink-0">
-            <Image
+            <SmoothImage
               src="/modern-logo.svg"
               alt="UTD Maharlika logo"
               width={264}

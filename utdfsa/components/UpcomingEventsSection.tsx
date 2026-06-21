@@ -150,13 +150,11 @@ export default function UpcomingEventsSection({ events }: Props) {
           {/* See More Events — always shown as the last card */}
           <Link
             href="/events"
-            className="flex-none flex flex-col items-center justify-center gap-3 rounded-[16px] px-4 hover:brightness-110 transition-all duration-200"
+            className="flex-none flex flex-col items-center justify-center gap-3 rounded-[16px] px-4 bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] hover:border-white/20 hover:brightness-110 transition-all duration-200"
             style={{
               width: '240px',
               paddingTop: '18px',
               paddingBottom: '18px',
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.08)',
             }}
           >
             <div

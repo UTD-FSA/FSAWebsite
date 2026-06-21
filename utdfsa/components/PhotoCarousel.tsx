@@ -8,7 +8,7 @@
 'use client'
 
 import { useState, useEffect, useRef, type PointerEvent } from 'react'
-import Image from 'next/image'
+import SmoothImage from '@/components/SmoothImage'
 
 const slides = [
   { src: '/carousel-1.jpg', alt: 'FSA Event 1' },
@@ -147,7 +147,7 @@ export default function PhotoCarousel() {
               // Clicking a side card navigates in that direction
               onClick={offset < 0 ? () => { if (!suppressClick.current) prev() } : offset > 0 ? () => { if (!suppressClick.current) next() } : undefined}
             >
-              <Image
+              <SmoothImage
                 src={slide.src}
                 alt={slide.alt}
                 fill

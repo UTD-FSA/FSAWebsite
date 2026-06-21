@@ -9,7 +9,7 @@
 // ─────────────────────────────────────────────────────────────
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Gallery } from '@/types/database'
@@ -19,57 +19,143 @@ interface Props {
 }
 
 export default function ArchivesClient({ galleries }: Props) {
-  // tracks the active semester filter; 'All' shows every gallery
+  // activeFilter drives pill highlight immediately on click
+  // displayFilter drives which cards render (lags by 220ms for crossfade)
   const [activeFilter, setActiveFilter] = useState('All')
+  const [displayFilter, setDisplayFilter] = useState('All')
+  const [gridVisible, setGridVisible] = useState(true)
+
+  const labelRef   = useRef<HTMLParagraphElement>(null)
+  const titleRef   = useRef<HTMLHeadingElement>(null)
+  const subtitleRef = useRef<HTMLParagraphElement>(null)
+  const filtersRef = useRef<HTMLDivElement>(null)
+  const gridRef    = useRef<HTMLDivElement>(null)
 
   // ── filter options ────────────────────────────────────────
-  // build unique "Semester Year" labels from galleries array in arrival order;
-  // re-derived only when the galleries prop changes
   const filterOptions = useMemo(() => {
     const seen = new Set<string>()
     const options = ['All']
     for (const g of galleries) {
       if (g.semester && g.year) {
         const label = `${g.semester} ${g.year}`
-        if (!seen.has(label)) {
-          seen.add(label)
-          options.push(label)
-        }
+        if (!seen.has(label)) { seen.add(label); options.push(label) }
       }
     }
     return options
   }, [galleries])
 
-  // re-filters the gallery list whenever activeFilter or galleries prop changes
   const filtered = useMemo(() => {
-    if (activeFilter === 'All') return galleries
-    return galleries.filter(g => `${g.semester} ${g.year}` === activeFilter)
-  }, [galleries, activeFilter])
+    if (displayFilter === 'All') return galleries
+    return galleries.filter(g => `${g.semester} ${g.year}` === displayFilter)
+  }, [galleries, displayFilter])
+
+  // ── header entrance (mount only) ─────────────────────────
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    const sequence = [
+      { ref: labelRef,    anim: 'archFadeIn 500ms ease-out both' },
+      { ref: titleRef,    anim: 'archFadeUp24 700ms ease-out both' },
+      { ref: subtitleRef, anim: 'archFadeUp16 600ms ease-out 150ms both' },
+      { ref: filtersRef,  anim: 'archFadeUp12 500ms ease-out 250ms both' },
+    ]
+
+    if (reduced) {
+      sequence.forEach(({ ref }) => { if (ref.current) ref.current.style.opacity = '1' })
+      return
+    }
+
+    sequence.forEach(({ ref, anim }) => {
+      const el = ref.current
+      if (!el) return
+      el.style.animation = 'none'
+      void el.offsetHeight
+      el.style.animation = anim
+    })
+  }, [])
+
+  // ── gallery card entrance (mount only, scroll-triggered) ─
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduced) return
+
+    const grid = gridRef.current
+    if (!grid) return
+
+    const cards = Array.from(grid.querySelectorAll('.gcard')) as HTMLElement[]
+    cards.forEach(card => {
+      card.style.opacity = '0'
+      card.style.transform = 'translateY(24px) scale(0.98)'
+    })
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.filter(e => e.isIntersecting)
+      visible.forEach((entry, i) => {
+        const card = entry.target as HTMLElement
+        const delay = Math.min(i * 75, 225)
+        card.style.transition = `opacity 600ms ease-out ${delay}ms, transform 600ms ease-out ${delay}ms`
+        card.style.opacity = '1'
+        card.style.transform = 'translateY(0) scale(1)'
+        observer.unobserve(card)
+        // Remove inline styles after entrance so CSS hover transitions take back over
+        setTimeout(() => { card.style.cssText = '' }, 600 + delay + 50)
+      })
+    }, { threshold: 0.05 })
+
+    cards.forEach(card => observer.observe(card))
+    return () => observer.disconnect()
+  }, [])
+
+  // ── filter change: crossfade grid, then swap cards ────────
+  function handleFilterChange(option: string) {
+    if (option === activeFilter) return
+    setActiveFilter(option)
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduced) { setDisplayFilter(option); return }
+    setGridVisible(false)
+    setTimeout(() => { setDisplayFilter(option); setGridVisible(true) }, 220)
+  }
 
   return (
     <div className="min-h-screen bg-[#0f0f0f]">
+
       {/* Page header */}
       <div className="px-6 sm:px-10 lg:px-14 pt-14 pb-8">
-        <p className="font-display font-bold text-[12px] tracking-[0.2em] text-[#6f6f6f] uppercase mb-[18px]">
+        <p
+          ref={labelRef}
+          className="font-display font-bold text-[12px] tracking-[0.2em] text-[#6f6f6f] uppercase mb-[18px]"
+          style={{ opacity: 0 }}
+        >
           Photo Archive
         </p>
-        <h1 className="font-display font-black leading-[0.96] tracking-[-0.02em] text-white"
-          style={{ fontSize: 'clamp(42px,6vw,74px)' }}>
+        <h1
+          ref={titleRef}
+          className="font-display font-black leading-[0.96] tracking-[-0.02em] text-white"
+          style={{ fontSize: 'clamp(42px,6vw,74px)', opacity: 0 }}
+        >
           Archives
         </h1>
-        <p className="text-[18px] text-[#8c8c8c] font-medium mt-4">
+        <p
+          ref={subtitleRef}
+          className="text-[18px] text-[#8c8c8c] font-medium mt-4"
+          style={{ opacity: 0 }}
+        >
           Every moment, captured.
         </p>
       </div>
 
       {/* Filter pills */}
-      <div className="px-6 sm:px-10 lg:px-14 pb-7 flex items-center gap-2.5 flex-wrap">
+      <div
+        ref={filtersRef}
+        className="px-6 sm:px-10 lg:px-14 pb-7 flex items-center gap-2.5 flex-wrap"
+        style={{ opacity: 0 }}
+      >
         {filterOptions.map((option) => {
           const active = option === activeFilter
           return (
             <button
               key={option}
-              onClick={() => setActiveFilter(option)}
+              onClick={() => handleFilterChange(option)}
               className="filter-pill px-[18px] py-[9px] rounded-[10px] text-[13px] font-bold tracking-[0.02em] transition-all duration-[180ms] cursor-pointer"
               style={{
                 background: active ? '#466a47' : 'rgba(255,255,255,0.03)',
@@ -88,7 +174,6 @@ export default function ArchivesClient({ galleries }: Props) {
 
       {/* Gallery grid or empty state */}
       <div className="px-6 sm:px-10 lg:px-14 pb-14">
-        {/* only renders when filtered gallery count is zero — do not remove this condition */}
         {filtered.length === 0 ? (
           <div className="border border-dashed border-white/10 rounded-2xl min-h-[300px] flex flex-col items-center justify-center gap-4 text-center px-10 py-10">
             <div className="w-[58px] h-[58px] rounded-2xl bg-white/[0.04] border border-white/[0.09] flex items-center justify-center">
@@ -98,21 +183,22 @@ export default function ArchivesClient({ galleries }: Props) {
                 <path d="M21 15l-5-5L4 21" />
               </svg>
             </div>
-            <p className="font-display font-bold text-[18px] text-[#cfcfcf] tracking-[-0.01em]">
-              No galleries yet
-            </p>
+            <p className="font-display font-bold text-[18px] text-[#cfcfcf] tracking-[-0.01em]">No galleries yet</p>
             <p className="text-[14.5px] text-[#7a7a7a] font-medium max-w-[280px] leading-relaxed">
               Check back soon — we&apos;re busy capturing the next chapter of the FSA pamilya.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+          <div
+            ref={gridRef}
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2"
+            style={{ opacity: gridVisible ? 1 : 0, transition: 'opacity 200ms ease-out' }}
+          >
             {filtered.map((gallery) => {
               const termLabel = [gallery.semester, gallery.year].filter(Boolean).join(' ')
 
               const inner = (
                 <>
-                  {/* Cover photo */}
                   <div className="g-photo absolute inset-0 bg-[#161616]">
                     {gallery.cover_photo_url ? (
                       <Image
@@ -129,8 +215,6 @@ export default function ArchivesClient({ galleries }: Props) {
                       </div>
                     )}
                   </div>
-
-                  {/* Hover overlay */}
                   <div className="g-reveal absolute inset-0">
                     <div
                       className="absolute inset-0"
@@ -142,9 +226,7 @@ export default function ArchivesClient({ galleries }: Props) {
                       </h3>
                       <div className="flex items-end justify-between gap-2.5 mt-0.5">
                         {termLabel && (
-                          <span className="text-[12.5px] font-medium text-[#b3b3b3] tracking-[0.01em]">
-                            {termLabel}
-                          </span>
+                          <span className="text-[12.5px] font-medium text-[#b3b3b3] tracking-[0.01em]">{termLabel}</span>
                         )}
                         <span className="inline-flex items-center gap-1 text-[12px] font-bold tracking-[0.02em] text-[#75ba78] whitespace-nowrap ml-auto">
                           View Gallery
@@ -162,19 +244,11 @@ export default function ArchivesClient({ galleries }: Props) {
 
               // route: gallery.google_photos_url — opens the Google Photos album in a new tab — do not change this path
               return gallery.google_photos_url ? (
-                <Link
-                  key={gallery.id}
-                  href={gallery.google_photos_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cardClass}
-                >
+                <Link key={gallery.id} href={gallery.google_photos_url} target="_blank" rel="noopener noreferrer" className={cardClass}>
                   {inner}
                 </Link>
               ) : (
-                <div key={gallery.id} className={cardClass}>
-                  {inner}
-                </div>
+                <div key={gallery.id} className={cardClass}>{inner}</div>
               )
             })}
           </div>
@@ -182,6 +256,29 @@ export default function ArchivesClient({ galleries }: Props) {
       </div>
 
       <style>{`
+        @keyframes archFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes archFadeUp24 {
+          from { opacity: 0; transform: translateY(24px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes archFadeUp16 {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes archFadeUp12 {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .arch-label, .arch-title, .arch-subtitle, .arch-filters {
+            animation: none !important; opacity: 1 !important; transform: none !important;
+          }
+          .gcard { opacity: 1 !important; transform: none !important; }
+          .gcard, .gcard .g-photo, .gcard .g-reveal { transition: none !important; }
+        }
         .gcard .g-reveal { opacity: 0; transition: opacity .3s ease; }
         .gcard:hover .g-reveal { opacity: 1; }
         .gcard .g-photo { transition: transform .35s cubic-bezier(.2,.7,.2,1); }

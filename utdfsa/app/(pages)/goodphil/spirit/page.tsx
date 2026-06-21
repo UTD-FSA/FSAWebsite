@@ -7,7 +7,7 @@
 //        the past-performances section
 // ──────────────────────────────────────────────────────────
 
-import Image from 'next/image'
+import SmoothImage from '@/components/SmoothImage'
 import AnimatedTitle from '@/components/AnimatedTitle'
 
 export default function SpiritPage() {
@@ -28,7 +28,7 @@ export default function SpiritPage() {
 
         {/* Middle layer: spirit-hero.jpg — full-bleed cover at all sizes */}
         <div className="absolute inset-0 z-10">
-          <Image
+          <SmoothImage
             src="/spirit-hero.jpg"
             alt="UTD FSA Spirit team"
             fill

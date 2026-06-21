@@ -9,7 +9,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import Image from 'next/image'
+import SmoothImage from '@/components/SmoothImage'
 import AnimatedTitle from '@/components/AnimatedTitle'
 
 // ── officer data ──────────────────────────────────────────────
@@ -267,7 +267,7 @@ export default function AboutClient() {
 
         {/* background photo — object-center keeps composition */}
         <div className="absolute inset-0 z-0">
-          <Image
+          <SmoothImage
             src="/about-us-hero.jpg"
             alt="UTD FSA"
             fill
@@ -301,10 +301,10 @@ export default function AboutClient() {
               className="font-sans text-white leading-relaxed max-w-2xl mx-auto"
               style={{ fontSize: 'clamp(15px, 1.5vw, 18px)' }}
             >
-              UTD FSA is a student-led social organization at the University of Texas at Dallas,
-              created to unite students who are interested in promoting Filipino-American culture.
-              Through dance, sports, social events, and community outreach, UTD FSA aims to celebrate
-              and foster community through Filipino traditions and heritage.
+              Founded on the values of community, culture, and leadership, UTD FSA strives to create meaningful experiences that empower students both on and off campus. 
+              Through cultural showcases, pamilya programs, athletic initiatives, volunteer opportunities, and social events, we aim to foster a strong sense of belonging while celebrating the richness of Filipino heritage. 
+              Our mission is to build a community where students can grow, connect, and proudly display their culture.
+
             </AnimatedTitle>
 
           </div>
@@ -329,7 +329,7 @@ export default function AboutClient() {
                 className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden hover:brightness-110 transition-all duration-200"
               >
                 {/* replace this div with Next.js Image when officer photos are available:
-                    <Image src="/officers/[name].jpg" alt="[Name]" fill
+                    <SmoothImage src="/officers/[name].jpg" alt="[Name]" fill
                       className="object-cover object-top" /> */}
                 <div className="relative w-full aspect-square bg-[#1e1e1e] flex items-center justify-center overflow-hidden">
                   <svg

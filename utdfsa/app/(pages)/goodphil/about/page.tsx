@@ -8,7 +8,8 @@
 //        sports-gp.jpg
 // ──────────────────────────────────────────────────────────
 
-import Image from 'next/image'
+import SmoothImage from '@/components/SmoothImage'
+import BlurInImg from '@/components/BlurInImg'
 import Link from 'next/link'
 import AnimatedTitle from '@/components/AnimatedTitle'
 
@@ -21,7 +22,7 @@ export default function GoodphilAboutPage() {
       {/* Mobile hero — simplified single-image layout for small screens */}
       <div className="block lg:hidden">
         <div className="relative w-full h-[50vh] overflow-hidden bg-[#1f1f1f]">
-          <Image
+          <SmoothImage
             src="/hero-2-gp.jpg"
             alt="Goodphil"
             fill
@@ -51,7 +52,7 @@ export default function GoodphilAboutPage() {
 
         {/* gp-back.png — background layer, left 58%, no padding */}
         <div className="absolute left-0 top-0 h-full z-0" style={{ width: '62%' }}>
-          <img
+          <BlurInImg
             src="/gp-back.png"
             alt=""
             aria-hidden="true"
@@ -77,7 +78,7 @@ export default function GoodphilAboutPage() {
           }}
         >
           <div className="flex-1 relative overflow-hidden rounded-sm">
-            <Image
+            <SmoothImage
               src="/hero-1-gp.jpg"
               alt="Goodphil"
               fill
@@ -88,7 +89,7 @@ export default function GoodphilAboutPage() {
             />
           </div>
           <div className="flex-1 relative overflow-hidden rounded-sm">
-            <Image
+            <SmoothImage
               src="/hero-2-gp.jpg"
               alt=""
               fill
@@ -138,7 +139,7 @@ export default function GoodphilAboutPage() {
 
           {/* Background photo + overlay */}
           <div className="absolute inset-0">
-            <Image
+            <SmoothImage
               src="/what-is-gp.jpg"
               alt="Goodphil competition"
               fill
@@ -170,7 +171,7 @@ export default function GoodphilAboutPage() {
           </p>
 
           <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed">
-            Goodphil is held annually in the Spring semester, rotating between one of five host schools every year ({' '}
+            Goodphil is held annually in the Spring semester, rotating between one of five host schools every year (
             <span style={{ color: '#0064b1' }}>UTA</span>,{' '}
             <span style={{ color: '#dd4446' }}>TAMU</span>,{' '}
             <span style={{ color: '#d46920' }}>UT</span>,{' '}
@@ -248,7 +249,7 @@ export default function GoodphilAboutPage() {
                 href={href}
                 className="relative h-32 sm:h-48 lg:h-56 rounded-xl overflow-hidden block hover:brightness-110 hover:scale-[1.02] transition-all duration-200"
               >
-                <Image
+                <SmoothImage
                   src={photo}
                   alt={name}
                   fill

@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef, type PointerEvent } from 'react'
 import Modal from '@/components/Modal'
-import Image from 'next/image'
+import SmoothImage from '@/components/SmoothImage'
+import BlurInImg from '@/components/BlurInImg'
 import Link from 'next/link'
 import AnimatedTitle from '@/components/AnimatedTitle'
 
@@ -146,7 +147,7 @@ function PamilyasCarousel() {
               className="rounded-2xl overflow-hidden bg-[#2a2a2a] cursor-pointer"
               onClick={offset < 0 ? () => { if (!suppressClick.current) prev() } : offset > 0 ? () => { if (!suppressClick.current) next() } : undefined}
             >
-              <Image
+              <SmoothImage
                 src={slide.src}
                 alt={slide.alt}
                 fill
@@ -215,7 +216,7 @@ function FormCard({
 }) {
   const inner = (
     <>
-      <Image
+      <SmoothImage
         src={photo}
         alt={title}
         fill
@@ -376,7 +377,7 @@ export default function PamilyasClient({
       {/* Mobile hero — simplified single-image layout */}
       <div className="block lg:hidden">
         <div className="relative w-full h-[50vh] overflow-hidden bg-[#1f1f1f]">
-          <Image
+          <SmoothImage
             src="/pam-hero.jpg"
             alt="Pamilyas"
             fill
@@ -397,7 +398,7 @@ export default function PamilyasClient({
 
         {/* pam-hero-bg.jpg — background layer, right 55%, no padding */}
         <div className="absolute right-0 top-0 h-full z-0" style={{ width: '57%' }}>
-          <img
+          <BlurInImg
             src="/pam-hero-bg.png"
             alt=""
             aria-hidden="true"
@@ -422,7 +423,7 @@ export default function PamilyasClient({
             width: '52%',
           }}
         >
-          <Image
+          <SmoothImage
             src="/pam-hero.jpg"
             alt="Pamilyas"
             fill
@@ -472,13 +473,13 @@ export default function PamilyasClient({
             </p>
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed mb-8">
-              Each Pamilya is different, consisting of different hobbies, interests, and people! The Pamilya Chair
+              Each pamilya is different, consisting of different hobbies, interests, and people! The Pamilya Chair
               and UTD FSA Officer Board does their best to ensure that each ading is paired with a pam that best
               suits them, providing a positive experience in UTD FSA.
             </p>
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed">
-              The Pamilya system is exclusive to UTD FSA members only &mdash; be sure to pay your dues before
+              The pamilya system is exclusive to UTD FSA members only &mdash; be sure to pay your dues before
               filling out the Kuya/Ate OR Ading Form!
             </p>
 
@@ -525,7 +526,7 @@ export default function PamilyasClient({
         <div className="bg-section-bg px-8 py-12">
 
           <p className="font-sans font-normal text-[clamp(16px,1.5vw,22px)] text-white/70 text-center mb-10 max-w-[1194px] mx-auto">
-            Select the form that best fits the role you&rsquo;ll play in your UTD FSA Pamilya experience!
+            Select the form that best fits the role you&rsquo;ll play in your UTD FSA pamilya experience!
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-[1218px] mx-auto">

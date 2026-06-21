@@ -373,7 +373,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
           {/* step hint */}
           <div className="relative z-10 inline-flex items-center gap-2 mt-5 text-[12px] font-bold tracking-[0.1em] text-[#6a6a6a] uppercase">
             <span className="w-[18px] h-[18px] rounded-full bg-accent-green/10 border border-accent-green/30 flex items-center justify-center text-accent-green text-[10px] font-extrabold">1</span>
-            Choose your Pamilya role
+            Choose your pamilya role
           </div>
 
           {/* role cards — 2-col when kuyate open, single centered card when closed */}
@@ -463,7 +463,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
             >
               {loading ? 'saving...' : (
                 <>
-                  Not interested in the Pamilya program
+                  Not interested in the pamilya program
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14M13 6l6 6-6 6" />
                   </svg>
@@ -478,7 +478,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
             >
               <h2 className="font-display font-black text-base text-white uppercase mb-1">Not Interested</h2>
               <p className="font-sans text-sm text-white/50">
-                I&rsquo;ll sit out the Pamilya program for now. I can still apply later if I change my mind.
+                I&rsquo;ll sit out the pamilya program for now. I can still apply later if I change my mind.
               </p>
             </button>
           )}
@@ -654,7 +654,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
 
             {/* intro text */}
             <p className="font-sans text-[14px] text-[#7a7a7a] leading-[1.6]">
-              Help us pair you with a Pamilya that fits — there are no wrong answers.
+              Help us pair you with a pamilya that fits — there are no wrong answers.
             </p>
 
             {/* contacts & basics divider */}
@@ -712,7 +712,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
               {/* only renders when age is under 16 — do not remove this condition */}
               {birthdayAge !== null && birthdayAge < 16 && (
                 <p className="font-sans text-xs text-amber-400 mt-1.5">
-                  heads up — members must be at least 16 to participate in the Pamilya program
+                  heads up — members must be at least 16 to participate in the pamilya program
                 </p>
               )}
             </div>
@@ -994,7 +994,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
             {/* pam incompatibilities — own row, required */}
             <div>
               <label className={labelCls}>
-                Who can&rsquo;t you be in a Pamilya with and why? <span className="text-[#e8654f]">*</span>
+                Who can&rsquo;t you be in a pamilya with and why? <span className="text-[#e8654f]">*</span>
               </label>
               <textarea
                 value={adingForm.pam_incompatibilities}
@@ -1196,7 +1196,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
             {/* pamilya name — free text since pams aren't finalized */}
             <div>
               <label className={labelCls}>
-                Which Pamilya are you applying to lead? <span className="text-[#e8654f]">*</span>
+                Which pamilya are you applying to lead? <span className="text-[#e8654f]">*</span>
               </label>
               <input
                 type="text"

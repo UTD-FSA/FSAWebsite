@@ -16,20 +16,20 @@ export default function HeroSection() {
   const rightRef = useRef<HTMLParagraphElement>(null)
 
   useEffect(() => {
-    const ANIM = '0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'
+    const BASE = '0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
 
     function play() {
-      const targets: [React.RefObject<HTMLElement | null>, string][] = [
-        [logoRef,  'heroFadeIn'],
-        [leftRef,  'heroSlideFromLeft'],
-        [rightRef, 'heroSlideFromRight'],
+      const targets: [React.RefObject<HTMLElement | null>, string, string][] = [
+        [leftRef,  'heroSlideFromLeft',  '0s'],
+        [rightRef, 'heroSlideFromRight', '0s'],
+        [logoRef,  'heroFadeIn',         '0.25s'],
       ]
-      targets.forEach(([ref, name]) => {
+      targets.forEach(([ref, name, delay]) => {
         const el = ref.current
         if (!el) return
         el.style.animation = 'none'
         void el.offsetHeight        // force reflow — restarts the animation
-        el.style.animation = `${name} ${ANIM}`
+        el.style.animation = `${name} ${BASE} ${delay} both`
       })
     }
 

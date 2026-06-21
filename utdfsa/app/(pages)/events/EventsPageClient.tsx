@@ -140,6 +140,20 @@ export default function EventsPageClient({ events, isMember, member, registeredE
   // refreshed every 60s so events that pass their date while the page is open move to past automatically
   const [now, setNow] = useState(() => new Date())
 
+  // gridPhase drives the grid crossfade during page/filter transitions
+  // 'exiting': old cards fade out; 'entering': new cards fade in; 'idle': no transition
+  const [gridPhase, setGridPhase] = useState<'idle' | 'exiting' | 'entering'>('idle')
+  // contentState lags behind currentPage/showPast by 175ms so the exit animation plays first
+  // cardSetKey increments on every content change to force card remounts (re-triggers entrance animations)
+  const [contentState, setContentState] = useState({ page: 1, showPast: false, cardSetKey: 0 })
+
+  // header entrance refs
+  const labelRef = useRef<HTMLParagraphElement>(null)
+  const titleRef  = useRef<HTMLHeadingElement>(null)
+  const descRef   = useRef<HTMLDivElement>(null)
+  // calendar viewport-trigger ref
+  const calendarSectionRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 60000)
     return () => clearInterval(interval)
@@ -161,22 +175,49 @@ export default function EventsPageClient({ events, isMember, member, registeredE
   useEffect(() => {
     if (prevUpcomingCount.current !== upcoming.length) {
       setCurrentPage(1)
+      setContentState(prev => ({ ...prev, page: 1 }))
       prevUpcomingCount.current = upcoming.length
     }
   }, [upcoming.length])
 
-  // ── pagination ────────────────────────────────────────────
+  // ── pagination (immediate state — drives controls and count display) ──────
   const displayEvents = showPast ? [...upcoming, ...past] : upcoming
   const totalEvents = displayEvents.length
   const totalPages = Math.ceil(totalEvents / EVENTS_PER_PAGE)
-  const paginatedEvents = displayEvents.slice(
-    (currentPage - 1) * EVENTS_PER_PAGE,
-    currentPage * EVENTS_PER_PAGE,
+
+  // ── lagged content — drives which cards actually render during transitions ─
+  const displayEventsForCards = contentState.showPast ? [...upcoming, ...past] : upcoming
+  const paginatedEvents = displayEventsForCards.slice(
+    (contentState.page - 1) * EVENTS_PER_PAGE,
+    contentState.page * EVENTS_PER_PAGE,
   )
+
+  // ── grid crossfade: exit current cards, swap content, enter new cards ─────
+  function animateGridTransition(newPage: number, newShowPast: boolean) {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reduced) {
+      setContentState(prev => ({ page: newPage, showPast: newShowPast, cardSetKey: prev.cardSetKey + 1 }))
+      return
+    }
+    setGridPhase('exiting')
+    setTimeout(() => {
+      setContentState(prev => ({ page: newPage, showPast: newShowPast, cardSetKey: prev.cardSetKey + 1 }))
+      setGridPhase('entering')
+      setTimeout(() => setGridPhase('idle'), 350)
+    }, 175)
+  }
 
   function handlePageChange(page: number) {
     setCurrentPage(page)
+    animateGridTransition(page, showPast)
     document.getElementById('all-events')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  function handleShowPastToggle() {
+    const newShowPast = !showPast
+    setShowPast(newShowPast)
+    setCurrentPage(1)
+    animateGridTransition(1, newShowPast)
   }
 
   function getPageNumbers(current: number, total: number): (number | '...')[] {
@@ -200,27 +241,77 @@ export default function EventsPageClient({ events, isMember, member, registeredE
     return d >= now && d <= weekEnd
   })
 
+  // ── header entrance animation (mount only) ────────────────────────────────
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const sequence = [
+      { ref: labelRef, anim: 'evFadeIn 500ms ease-out both' },
+      { ref: titleRef, anim: 'evFadeUp24 700ms ease-out both' },
+      { ref: descRef,  anim: 'evFadeUp16 600ms ease-out 150ms both' },
+    ]
+    if (reduced) {
+      sequence.forEach(({ ref }) => { if (ref.current) ref.current.style.opacity = '1' })
+      return
+    }
+    sequence.forEach(({ ref, anim }) => {
+      const el = ref.current
+      if (!el) return
+      el.style.animation = 'none'
+      void el.offsetHeight
+      el.style.animation = anim
+    })
+  }, [])
+
+  // ── calendar viewport entrance (mount only) ───────────────────────────────
+  useEffect(() => {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const el = calendarSectionRef.current
+    if (!el) return
+    if (reduced) { el.style.opacity = '1'; return }
+    el.style.opacity = '0'
+    el.style.transform = 'translateY(12px)'
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        el.style.transition = 'opacity 500ms ease-out, transform 500ms ease-out'
+        el.style.opacity = '1'
+        el.style.transform = 'translateY(0)'
+        observer.disconnect()
+      }
+    }, { threshold: 0.1 })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <main className="min-h-screen text-white" style={{ background: '#0f0f0f' }}>
       <div className="max-w-[1280px] mx-auto px-6 sm:px-10 pb-20">
 
         {/* ── page header ──────────────────────────────────────────────────── */}
         <div className="pt-14 pb-10">
-          <p className="font-display font-bold text-xs tracking-[0.2em] uppercase mb-5" style={{ color: '#6f6f6f' }}>
+          <p
+            ref={labelRef}
+            className="font-display font-bold text-xs tracking-[0.2em] uppercase mb-5"
+            style={{ color: '#6f6f6f', opacity: 0 }}
+          >
             What&apos;s happening
           </p>
-          <h1 className="font-display font-black leading-[0.96] tracking-[-0.02em] text-white"
-            style={{ fontSize: 'clamp(42px,6vw,74px)' }}>
+          <h1
+            ref={titleRef}
+            className="font-display font-black leading-[0.96] tracking-[-0.02em] text-white"
+            style={{ fontSize: 'clamp(42px,6vw,74px)', opacity: 0 }}
+          >
             Events
           </h1>
-          <p className="text-sm font-medium mt-4 mb-1" style={{ color: '#8c8c8c' }}>
-            Stay up to date with everything UTD FSA.
-          </p>
-          <p className="text-sm font-medium" style={{ color: '#6f6f6f' }}>
-            {isMember
-              ? 'Member pricing applied. Limit one ticket per paid event.'
-              : 'Sign in as a member to unlock member pricing on paid events.'}
-          </p>
+          <div ref={descRef} style={{ opacity: 0 }}>
+            <p className="text-sm font-medium mt-4 mb-1" style={{ color: '#8c8c8c' }}>
+              Stay up to date with everything UTD FSA.
+            </p>
+            <p className="text-sm font-medium" style={{ color: '#6f6f6f' }}>
+              {isMember
+                ? 'Member pricing applied. Limit one ticket per paid event.'
+                : 'Sign in as a member to unlock member pricing on paid events.'}
+            </p>
+          </div>
         </div>
 
         {/* ── success banner ────────────────────────────────────────────────── */}
@@ -281,7 +372,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
             </p>
           ) : (
             <div className="tw-scroll flex gap-3.5 overflow-x-auto pb-3">
-              {thisWeek.map(event => {
+              {thisWeek.map((event, i) => {
                 const badge = getBadge(event.event_type)
                 return (
                   <button
@@ -294,6 +385,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                       paddingBottom: '15px',
                       background: '#161616',
                       border: '1px solid rgba(255,255,255,0.08)',
+                      animation: `evWeekIn 500ms ease-out ${i * 75}ms both`,
                     }}
                   >
                     <div className="flex items-center gap-2 mb-3">
@@ -323,14 +415,21 @@ export default function EventsPageClient({ events, isMember, member, registeredE
           {displayEvents.length === 0 ? (
             <p className="py-6" style={{ color: '#6f6f6f' }}>No upcoming events right now — check back soon!</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[22px]">
+            <div
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[22px]"
+              style={{
+                opacity: gridPhase === 'exiting' ? 0 : 1,
+                transform: gridPhase === 'exiting' ? 'translateY(-8px)' : 'none',
+                transition: gridPhase === 'exiting' ? 'opacity 175ms ease-out, transform 175ms ease-out' : 'none',
+              }}
+            >
               {paginatedEvents.map((event, index) => {
                 const badge = getBadge(event.event_type)
                 const isPastCard = new Date(event.event_date) < now
-                const globalIndex = (currentPage - 1) * EVENTS_PER_PAGE + index
-                const isFirstPastEvent = showPast && globalIndex === upcoming.length
+                const globalIndex = (contentState.page - 1) * EVENTS_PER_PAGE + index
+                const isFirstPastEvent = contentState.showPast && globalIndex === upcoming.length
                 return (
-                  <Fragment key={event.id}>
+                  <Fragment key={`${contentState.cardSetKey}-${event.id}`}>
                     {isFirstPastEvent && (
                       <div className="col-span-full flex items-center gap-4 py-2 my-2">
                         <div className="flex-1 border-t border-white/10" />
@@ -344,6 +443,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                       style={{
                         background: '#181818',
                         border: '1px solid rgba(255,255,255,0.08)',
+                        animation: `evCardIn 550ms ease-out ${index * 50}ms both`,
                       }}
                     >
                       {/* photo — 4:5 portrait */}
@@ -472,7 +572,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
           {past.length > 0 && (
             <div className="flex items-center justify-center mt-4 mb-2">
               <button
-                onClick={() => { setShowPast(prev => !prev); setCurrentPage(1) }}
+                onClick={handleShowPastToggle}
                 className="text-[13px] font-semibold transition-colors border border-white/10 rounded-[10px] px-4 py-2 hover:border-white/30 hover:text-[#cfcfcf]"
                 style={{ color: '#8c8c8c' }}
               >
@@ -485,7 +585,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
         </div>
 
         {/* ── event calendar ────────────────────────────────────────────────── */}
-        <div className="mt-12 hidden md:block">
+        <div ref={calendarSectionRef} className="mt-12 hidden md:block" style={{ opacity: 0 }}>
           <SectionLabel label="Event Calendar" />
           <div className="fc-dark rounded-[18px] overflow-hidden p-4" style={{ background: '#131313', border: '1px solid rgba(255,255,255,0.08)' }}>
             <FullCalendar
@@ -803,6 +903,33 @@ export default function EventsPageClient({ events, isMember, member, registeredE
           </div>
         </Modal>
       )}
+
+      <style>{`
+        @keyframes evFadeIn {
+          from { opacity: 0; }
+          to   { opacity: 1; }
+        }
+        @keyframes evFadeUp24 {
+          from { opacity: 0; transform: translateY(24px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes evFadeUp16 {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes evCardIn {
+          from { opacity: 0; transform: translateY(20px) scale(0.99); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes evWeekIn {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .event-card { animation: none !important; opacity: 1 !important; transform: none !important; }
+          .week-pill  { animation: none !important; opacity: 1 !important; transform: none !important; }
+        }
+      `}</style>
     </main>
   )
 }

@@ -7,7 +7,7 @@
 //        section; cta links to @utdpamana on instagram
 // ──────────────────────────────────────────────────────────
 
-import Image from 'next/image'
+import SmoothImage from '@/components/SmoothImage'
 import AnimatedTitle from '@/components/AnimatedTitle'
 
 export default function CulturalPage() {
@@ -19,7 +19,7 @@ export default function CulturalPage() {
 
         {/* middle layer: cultural-hero.jpg — full-bleed at all sizes */}
         <div className="absolute inset-0 z-10">
-          <Image
+          <SmoothImage
             src="/cultural-hero.jpg"
             alt="UTD Pamana cultural dance team"
             fill
@@ -149,7 +149,7 @@ export default function CulturalPage() {
 
           {/* Pamana logo */}
           <div className="relative w-[264px] h-[264px] rounded-full overflow-hidden flex-shrink-0">
-            <Image
+            <SmoothImage
               src="/cultural-logo.svg"
               alt="UTD Pamana logo"
               width={264}

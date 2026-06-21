@@ -43,7 +43,7 @@ const BENEFITS = [
       </svg>
     ),
     title: 'Pamilya Placement',
-    desc: 'Get sorted into a Pamilya and meet your ates, kuyas, and fellow adings.',
+    desc: 'Get sorted into a pamilya and meet your ates, kuyas, and fellow adings.',
   },
   {
     icon: (
@@ -208,7 +208,7 @@ export default function MembershipClient({
               </h1>
 
               <p className="max-w-[440px] text-lg leading-[1.65] text-[#9a9a9a] font-medium mt-6">
-                Join UTD FSA and unlock member pricing on every event, your Pamilya placement, points tracking, and a whole community waiting to call you family.
+                Join UTD FSA and unlock member pricing on every event, your pamilya placement, points tracking, and a whole community waiting to call you family.
               </p>
 
               {/* stats — "12 pamilyas" omitted per design spec */}
