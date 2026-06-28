@@ -11,6 +11,7 @@ import { useEffect } from 'react'
 interface ModalProps {
   onClose: () => void
   size?: 'sm' | 'md' | 'lg'
+  scrollable?: boolean
   children: React.ReactNode
 }
 
@@ -20,7 +21,7 @@ const sizeClass = {
   lg: 'max-w-2xl',
 }
 
-export default function Modal({ onClose, size = 'md', children }: ModalProps) {
+export default function Modal({ onClose, size = 'md', scrollable = true, children }: ModalProps) {
   // close modal on escape key press; re-registers if onClose reference changes
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
@@ -44,7 +45,7 @@ export default function Modal({ onClose, size = 'md', children }: ModalProps) {
     >
       {/* stop propagation so clicks inside the panel don't bubble up and close the modal */}
       <div
-        className={`relative w-full ${sizeClass[size]} max-h-[90dvh] overflow-y-auto rounded-2xl shadow-2xl`}
+        className={`relative w-full ${sizeClass[size]} max-h-[90dvh] ${scrollable ? 'overflow-y-auto' : 'overflow-hidden'} rounded-2xl shadow-2xl`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

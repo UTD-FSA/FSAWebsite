@@ -88,6 +88,7 @@ body {
   background: var(--brand-bg);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, sans-serif;
+  scrollbar-gutter: stable;
 }
 
 /* modal entrance animations used by Modal component and event detail overlay */

@@ -654,7 +654,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
            new Date() > new Date(event.registration_closes_at))
 
         return (
-          <Modal onClose={() => { setSelectedEvent(null); setShowAlreadyRegistered(false) }} size="lg">
+          <Modal onClose={() => { setSelectedEvent(null); setShowAlreadyRegistered(false) }} size="lg" scrollable={false}>
             <div
               style={{
                 background: '#141414',
