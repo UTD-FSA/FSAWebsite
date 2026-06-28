@@ -11,10 +11,10 @@
 
 import { useState, useEffect, useMemo, useCallback, useRef, Fragment, memo } from 'react'
 import Image from 'next/image'
-import FullCalendar from '@fullcalendar/react'
-import dayGridPlugin from '@fullcalendar/daygrid'
-import interactionPlugin from '@fullcalendar/interaction'
+import dynamic from 'next/dynamic'
 import type { EventClickArg } from '@fullcalendar/core'
+// ponytail: dynamic import keeps FullCalendar (~300KB) out of the initial bundle
+const EventCalendar = dynamic(() => import('./EventCalendar'), { ssr: false })
 import RegisterModal from './RegisterModal'
 import Modal from '@/components/Modal'
 import type { Event } from '@/types/database'
@@ -78,8 +78,6 @@ function getEventTypeColor(type: string): string {
 }
 
 const EVENTS_PER_PAGE = 12
-const CALENDAR_PLUGINS = [dayGridPlugin, interactionPlugin]
-const CALENDAR_HEADER = { left: 'title', center: '', right: 'prev,next' }
 
 // ── section divider ───────────────────────────────────────────────────────────
 const SectionLabel = memo(function SectionLabel({ label }: { label: string }) {
@@ -619,17 +617,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
         {showCalendar && <div ref={calendarSectionRef} className="mt-12" style={{ opacity: 0 }}>
           <SectionLabel label="Event Calendar" />
           <div className="fc-dark rounded-[18px] overflow-hidden p-4" style={{ background: '#131313', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <FullCalendar
-              plugins={CALENDAR_PLUGINS}
-              initialView="dayGridMonth"
-              height="auto"
-              headerToolbar={CALENDAR_HEADER}
-              forceEventDuration={false}
-              defaultAllDay={true}
-              displayEventTime={false}
-              events={calendarEvents}
-              eventClick={handleCalendarEventClick}
-            />
+            <EventCalendar events={calendarEvents} onEventClick={handleCalendarEventClick} />
           </div>
         </div>}
       </div>
