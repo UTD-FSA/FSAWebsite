@@ -5,6 +5,8 @@
 // notes: z-10 overlay and z-20 logo/text layer the hero; marquee duplicates
 //        8 items so the looping seam is never visible at any viewport width
 // ─────────────────────────────────────────────────────────────
+export const revalidate = 3600
+
 import SmoothImage from "@/components/SmoothImage"
 import PhotoCarousel from "@/components/PhotoCarousel"
 import HeroSection from "@/components/HeroSection"

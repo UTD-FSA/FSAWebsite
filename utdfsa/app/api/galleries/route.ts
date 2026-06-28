@@ -34,7 +34,9 @@ export async function GET() {
     return NextResponse.json({ error: 'Failed to load galleries' }, { status: 500 })
   }
 
-  return NextResponse.json(galleries ?? [])
+  return NextResponse.json(galleries ?? [], {
+    headers: { 'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400' },
+  })
 }
 
 // ── POST ──────────────────────────────────────────────────
