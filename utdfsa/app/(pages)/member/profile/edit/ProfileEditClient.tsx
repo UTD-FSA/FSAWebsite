@@ -7,7 +7,7 @@
 //        contact_email is a separate field the user can override for notifications
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { toTitleCase, formatPhone } from '@/lib/format'
 
@@ -45,6 +45,7 @@ interface Props {
 // ── component ─────────────────────────────────────────────────
 export default function ProfileEditClient({ member, loginEmail }: Props) {
   const router = useRouter()
+  useEffect(() => { router.prefetch('/member/profile') }, [router])
   // true while the POST /api/member/update-profile request is in flight
   const [loading, setLoading] = useState(false)
   // holds the error message from the api or null when no error

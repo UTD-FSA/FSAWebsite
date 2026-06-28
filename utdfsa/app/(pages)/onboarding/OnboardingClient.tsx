@@ -7,7 +7,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { toTitleCase, formatPhone } from '@/lib/format'
@@ -112,6 +112,10 @@ function StepIndicator({ step, memberType }: { step: string; memberType: MemberT
 
 export default function OnboardingClient({ memberId, firstName, isKuyateOpen, initialType, existingProfile }: Props) {
   const router = useRouter()
+  useEffect(() => {
+    router.prefetch('/onboarding/basic-info')
+    router.prefetch('/member/profile')
+  }, [router])
   const [step, setStep] = useState<'pick' | 'ading' | 'kuyate' | 'profile'>(initialType ? 'profile' : 'pick')
   const [memberType, setMemberType] = useState<MemberType | null>(initialType ?? null)
   const [loading, setLoading] = useState(false)

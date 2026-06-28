@@ -8,7 +8,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { toTitleCase, formatPhone } from '@/lib/format'
 
@@ -26,6 +26,7 @@ interface Props {
 
 export default function BasicInfoClient({ initial }: Props) {
   const router = useRouter()
+  useEffect(() => { router.prefetch('/member/profile'); router.prefetch('/onboarding') }, [router])
   // all editable profile fields; seeded from pre-filled server data via props
   const [form, setForm] = useState<BasicInfoForm>(initial)
   // true while POST /api/onboarding/update-basic-info is in flight
