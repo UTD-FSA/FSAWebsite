@@ -27,7 +27,7 @@ export default function GoodphilAboutPage() {
             alt="Goodphil"
             fill
             className="object-cover object-center"
-            priority
+            preload
             quality={85}
             sizes="100vw"
           />
@@ -83,7 +83,7 @@ export default function GoodphilAboutPage() {
               alt="Goodphil"
               fill
               className="object-cover object-center"
-              priority
+              preload
               quality={85}
               sizes="55vw"
             />
@@ -94,7 +94,7 @@ export default function GoodphilAboutPage() {
               alt=""
               fill
               className="object-cover object-center"
-              priority
+              preload
               quality={85}
               sizes="55vw"
             />

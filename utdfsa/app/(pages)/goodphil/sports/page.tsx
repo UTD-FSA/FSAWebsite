@@ -34,7 +34,7 @@ export default function SportsPage() {
             alt="UTD FSA Sports team"
             fill
             className="object-cover object-[center_20%]"
-            priority
+            preload
             quality={90}
             sizes="100vw"
           />

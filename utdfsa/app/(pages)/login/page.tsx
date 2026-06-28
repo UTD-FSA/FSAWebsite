@@ -44,7 +44,7 @@ export default function LoginPage() {
           fill
           style={{ objectFit: 'cover', objectPosition: 'center top' }}
           sizes="60vw"
-          priority
+          preload
         />
         {/* dark gradient overlay */}
         <div

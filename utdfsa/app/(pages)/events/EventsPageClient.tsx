@@ -491,7 +491,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                             fill
                             className={`object-cover object-top${isPastCard ? ' brightness-75' : ''}`}
                             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            priority={index === 0 && currentPage === 1}
+                            preload={index === 0 && currentPage === 1}
                             loading={index === 0 ? 'eager' : 'lazy'}
                           />
                         ) : (

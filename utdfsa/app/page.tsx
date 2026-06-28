@@ -34,7 +34,7 @@ export default async function Home() {
           alt="FSA Officers"
           fill
           className="object-cover object-top"
-          priority
+          preload
           sizes="100vw"
           quality={90}
         />

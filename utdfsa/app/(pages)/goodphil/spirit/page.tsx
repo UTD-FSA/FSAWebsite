@@ -33,7 +33,7 @@ export default function SpiritPage() {
             alt="UTD FSA Spirit team"
             fill
             className="object-cover object-center"
-            priority
+            preload
             quality={90}
             sizes="100vw"
           />

@@ -382,7 +382,7 @@ export default function PamilyasClient({
             alt="Pamilyas"
             fill
             className="object-cover object-center"
-            priority
+            preload
             quality={85}
             sizes="100vw"
           />
@@ -428,7 +428,7 @@ export default function PamilyasClient({
             alt="Pamilyas"
             fill
             className="object-cover object-top"
-            priority
+            preload
             quality={85}
             sizes="52vw"
           />

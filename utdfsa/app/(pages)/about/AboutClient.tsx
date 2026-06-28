@@ -272,7 +272,7 @@ export default function AboutClient() {
             alt="UTD FSA"
             fill
             className="object-cover object-center"
-            priority
+            preload
             quality={90}
             sizes="100vw"
           />

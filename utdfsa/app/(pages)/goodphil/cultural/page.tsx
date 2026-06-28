@@ -24,7 +24,7 @@ export default function CulturalPage() {
             alt="UTD Pamana cultural dance team"
             fill
             className="object-cover object-[center_43%]"
-            priority
+            preload
             quality={90}
             sizes="100vw"
           />
