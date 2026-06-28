@@ -142,6 +142,8 @@ export default function EventsPageClient({ events, isMember, member, registeredE
   const [showAlreadyRegistered, setShowAlreadyRegistered] = useState(false)
   // refreshed every 60s so events that pass their date while the page is open move to past automatically
   const [now, setNow] = useState(() => new Date())
+  // only mount FullCalendar on md+ — avoids loading heavy calendar code on mobile
+  const [showCalendar, setShowCalendar] = useState(false)
 
   // gridPhase drives the grid crossfade during page/filter transitions
   // 'exiting': old cards fade out; 'entering': new cards fade in; 'idle': no transition
@@ -160,6 +162,14 @@ export default function EventsPageClient({ events, isMember, member, registeredE
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 60000)
     return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)')
+    setShowCalendar(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setShowCalendar(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
   }, [])
 
   // ── sort: upcoming ascending, past descending ─────────────
@@ -281,8 +291,9 @@ export default function EventsPageClient({ events, isMember, member, registeredE
     })
   }, [])
 
-  // ── calendar viewport entrance (mount only) ───────────────────────────────
+  // ── calendar viewport entrance — re-runs when showCalendar mounts the section ─
   useEffect(() => {
+    if (!showCalendar) return
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const el = calendarSectionRef.current
     if (!el) return
@@ -299,7 +310,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
     }, { threshold: 0.1 })
     observer.observe(el)
     return () => observer.disconnect()
-  }, [])
+  }, [showCalendar])
 
   return (
     <main className="min-h-screen text-white" style={{ background: '#0f0f0f' }}>
@@ -605,7 +616,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
         </div>
 
         {/* ── event calendar ────────────────────────────────────────────────── */}
-        <div ref={calendarSectionRef} className="mt-12 hidden md:block" style={{ opacity: 0 }}>
+        {showCalendar && <div ref={calendarSectionRef} className="mt-12" style={{ opacity: 0 }}>
           <SectionLabel label="Event Calendar" />
           <div className="fc-dark rounded-[18px] overflow-hidden p-4" style={{ background: '#131313', border: '1px solid rgba(255,255,255,0.08)' }}>
             <FullCalendar
@@ -620,7 +631,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
               eventClick={handleCalendarEventClick}
             />
           </div>
-        </div>
+        </div>}
       </div>
 
       {/* ── event detail modal ─────────────────────────────────────────────── */}
