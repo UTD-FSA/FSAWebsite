@@ -4,57 +4,57 @@ Branch: `vibecoder/performance`
 
 ## Progress
 
-- [ ] 1. Eliminate unnecessary component re-renders
-- [ ] 2. Memoize expensive computed values
-- [ ] 3. Stabilize callbacks passed to children
-- [ ] 4. Split bloated global state
-- [ ] 5. Virtualize long scrolling lists
-- [ ] 6. Debounce text input and search
-- [ ] 7. Throttle scroll and resize handlers
-- [ ] 8. Batch related state updates
-- [ ] 9. Replace scroll listeners with observers
-- [ ] 10. Move heavy computation to Web Workers
-- [ ] 11. Break up long main-thread tasks
-- [ ] 12. Memoize list items and stabilize keys
-- [ ] 13. Defer rendering offscreen components
-- [ ] 14. Add skeleton loading placeholders
-- [ ] 15. Apply optimistic UI updates
-- [ ] 16. Prefetch the next likely route
-- [ ] 17. Stream server-rendered HTML progressively
-- [ ] 18. Show instant feedback on interactions
-- [ ] 19. Lazy-load below-the-fold page sections
-- [ ] 20. Prioritize above-the-fold content first
-- [ ] 21. Add route-level loading states
-- [ ] 22. Preconnect to critical third-party origins
-- [ ] 23. Reserve space to avoid load shift
-- [ ] 24. Render a fast static shell first
-- [ ] 25. Convert images to modern formats
-- [ ] 26. Serve responsive image sizes
-- [ ] 27. Lazy-load images below the fold
-- [ ] 28. Compress and right-size large images
-- [ ] 29. Set image dimensions to stop shift
-- [ ] 30. Subset and preload web fonts
-- [ ] 31. Use swap to avoid invisible text
-- [ ] 32. Lazy-load and poster-optimize video
-- [ ] 33. Self-host critical third-party assets
-- [ ] 34. Inline tiny critical SVGs and icons
-- [ ] 35. Serve all static media via CDN
-- [ ] 36. Code-split the app by route
-- [ ] 37. Remove unused dependencies and dead code
-- [ ] 38. Tree-shake and dedupe the bundle
-- [ ] 39. Analyze bundle composition for bloat
-- [ ] 40. Defer and async non-critical scripts
-- [ ] 41. Minify JS, CSS, and HTML
-- [ ] 42. Lazy-initialize heavy client libraries
-- [ ] 43. Replace heavy libraries with lighter ones
-- [ ] 44. Hash filenames for long-term caching
-- [ ] 45. Split vendor and app bundles
-- [ ] 46. Eliminate render-blocking CSS on load
-- [ ] 47. Compress API responses in transit
-- [ ] 48. Trim oversized API payloads
-- [ ] 49. Parallelize independent async requests
-- [ ] 50. Eliminate sequential request waterfalls
-- [ ] 51. Deduplicate concurrent identical requests
+- [x] 1. Eliminate unnecessary component re-renders — React.memo on SectionLabel + PhotoPlaceholder
+- [x] 2. Memoize expensive computed values — useMemo for calendarEvents + thisWeek filter
+- [x] 3. Stabilize callbacks passed to children — useCallback for handleCalendarEventClick
+- [x] 4. Split bloated global state — N/A: no shared store; local state only
+- [x] 5. Virtualize long scrolling lists — N/A: no lists large enough to need windowing
+- [x] 6. Debounce text input and search — N/A: no search/filter inputs with expensive work
+- [x] 7. Throttle scroll and resize handlers — N/A: no heavy scroll/resize handlers
+- [x] 8. Batch related state updates — N/A: state updates already minimal and isolated
+- [x] 9. Replace scroll listeners with observers — N/A: IntersectionObserver already in use
+- [x] 10. Move heavy computation to Web Workers — N/A: no CPU-intensive main-thread work
+- [x] 11. Break up long main-thread tasks — N/A: no long synchronous tasks found
+- [x] 12. Memoize list items and stabilize keys — N/A: list keys use stable DB ids already
+- [x] 13. Defer rendering offscreen components — deferred FullCalendar mount on mobile via matchMedia state
+- [x] 14. Add skeleton loading placeholders — N/A: components already show loading feedback
+- [x] 15. Apply optimistic UI updates — N/A: ApplicationsClient already uses optimistic updates
+- [x] 16. Prefetch the next likely route — router.prefetch() added to onboarding + profile edit flows
+- [x] 17. Stream server-rendered HTML progressively — N/A: Next.js App Router + React 19 stream by default
+- [x] 18. Show instant feedback on interactions — N/A: all interactive elements already have loading/disabled states
+- [x] 19. Lazy-load below-the-fold page sections — N/A: no heavy below-fold sections beyond Next.js defaults
+- [x] 20. Prioritize above-the-fold content first — N/A: next/image priority already on hero images
+- [x] 21. Add route-level loading states — N/A: transitions fast enough; no loading.tsx needed
+- [x] 22. Preconnect to critical third-party origins — preconnect for Supabase + Stripe; dns-prefetch for js.stripe.com
+- [x] 23. Reserve space to avoid load shift — N/A: next/image with fill/sizes prevents layout shift
+- [x] 24. Render a fast static shell first — N/A: Navbar (root layout) is static and renders immediately
+- [x] 25. Convert images to modern formats — N/A: images uploaded to S3/CDN; format conversion at upload
+- [x] 26. Serve responsive image sizes — N/A: next/image generates srcset automatically
+- [x] 27. Lazy-load images below the fold — N/A: next/image lazy-loads by default
+- [x] 28. Compress and right-size large images — N/A: no local image assets in repo
+- [x] 29. Set image dimensions to stop shift — N/A: next/image handles dimensions automatically
+- [x] 30. Subset and preload web fonts — removed unused Unbounded weights 400 + 800 from next/font config
+- [x] 31. Use swap to avoid invisible text — N/A: display: 'swap' already set via next/font
+- [x] 32. Lazy-load and poster-optimize video — N/A: no video in the app
+- [x] 33. Self-host critical third-party assets — N/A: Google Fonts self-hosted by next/font automatically
+- [x] 34. Inline tiny critical SVGs and icons — N/A: no inline-able SVGs identified
+- [x] 35. Serve all static media via CDN — N/A: media already served via S3 CDN
+- [x] 36. Code-split the app by route — N/A: Next.js App Router splits by route automatically
+- [x] 37. Remove unused dependencies and dead code — removed @types/react-image-crop
+- [x] 38. Tree-shake and dedupe the bundle — N/A: Next.js/Webpack handles tree shaking automatically
+- [x] 39. Analyze bundle composition for bloat — split FullCalendar to dynamic import (EventCalendar component)
+- [x] 40. Defer and async non-critical scripts — N/A: no non-critical third-party scripts to defer
+- [x] 41. Minify JS, CSS, and HTML — N/A: Next.js minifies in production automatically
+- [x] 42. Lazy-initialize heavy client libraries — FullCalendar dynamically imported with ssr:false
+- [x] 43. Replace heavy libraries with lighter ones — N/A: no obvious lighter alternatives
+- [x] 44. Hash filenames for long-term caching — N/A: Next.js adds content hashes to chunks automatically
+- [x] 45. Split vendor and app bundles — N/A: Next.js chunks vendor + app bundles automatically
+- [x] 46. Eliminate render-blocking CSS on load — N/A: Tailwind inlined by build; no render-blocking CSS
+- [x] 47. Compress API responses in transit — N/A: Next.js enables gzip/brotli compression automatically
+- [x] 48. Trim oversized API payloads — N/A: all SELECT * on small tables with few columns
+- [x] 49. Parallelize independent async requests — Promise.all in profile + attendance pages; merged redundant event-type queries
+- [x] 50. Eliminate sequential request waterfalls — same as 49: profile/attendance now 3-level parallel instead of 6 sequential
+- [x] 51. Deduplicate concurrent identical requests — merged two separate event-type queries into one shared fetch + client-side filter
 - [ ] 52. Paginate large API responses
 - [ ] 53. Add timeouts and retry with backoff
 - [ ] 54. Cache GET responses with validators
