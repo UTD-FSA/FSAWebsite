@@ -81,7 +81,7 @@ Branch: `vibecoder/ui`
 - [x] 75. Add Input Hints and Affordances — show textarea char counters from first keystroke (> 0 instead of > 80% threshold) on 9 counters across ading + kuyate forms; other fields already have good placeholders (phone format, major example, "N/A if unsure") and required * indicators
 - [x] 76. Clarify Form Submission Feedback — N/A: all submit buttons already disable + show loading text during submission (Processing…/Saving…/Deleting…/Submitting…); errors preserve form data; success states redirect or show confirmation; no double-submission gaps found
 - [x] 77. Build a Toast Notification System — N/A: feedback is fully covered by existing patterns — inline error messages, loading button text, URL-param Stripe success banners, optimistic UI updates (officer events), inline save indicators (pamilya assignment), QR scan overlay, page refresh showing new content (gallery); no centralized toast gap found
-- [ ] 78. Handle Loading, Empty, Error, Success States
+- [x] 78. Handle Loading, Empty, Error, Success States — added loading.tsx skeletons for officer/events and officer/gallery (only two missing); all client list views already have empty states; global error.tsx exists; success handled via redirect/banner/optimistic UI
 - [ ] 79. Add Graceful Error Boundaries
 - [ ] 80. Confirm Destructive and Irreversible Actions
 - [ ] 81. Add Undo for Reversible Actions
