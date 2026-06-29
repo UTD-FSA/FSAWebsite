@@ -197,16 +197,13 @@ export default function OrdersClient({ registrations, eventsData, contactEmail, 
                   </div>
 
                   {/* Payment status badge — no event type badge */}
-                  <span
-                    className="shrink-0 text-xs font-semibold px-2.5 py-1 rounded-full"
-                    style={
-                      isPaid
-                        ? { background: 'rgba(117,186,120,0.15)', color: '#75ba78' }
-                        : isPending
-                          ? { background: 'rgba(251,191,36,0.15)', color: '#fbbf24' }
-                          : { background: 'rgba(248,113,113,0.15)', color: '#f87171' }
-                    }
-                  >
+                  <span className={`shrink-0 text-[11px] font-bold tracking-[0.04em] px-2.5 py-0.5 rounded-full ${
+                    isPaid
+                      ? 'bg-[rgba(95,207,143,0.12)] border border-[rgba(95,207,143,0.35)] text-[#5fcf8f]'
+                      : isPending
+                        ? 'bg-[rgba(227,174,61,0.12)] border border-[rgba(227,174,61,0.35)] text-[#f0c869]'
+                        : 'bg-[rgba(239,111,111,0.12)] border border-[rgba(239,111,111,0.35)] text-[#ef6f6f]'
+                  }`}>
                     {isPaid ? 'Paid' : isPending ? 'Pending' : 'Failed'}
                   </span>
                 </div>

@@ -83,14 +83,11 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
             <p className="font-display text-5xl font-bold text-white leading-none">{points}</p>
             <p className="text-xs mt-1.5" style={{ color: 'var(--color-text-dim)' }}>Total Points</p>
           </div>
-          <span
-            className="text-xs font-semibold px-3 py-1.5 rounded-full mt-1"
-            style={
-              isEligible
-                ? { background: 'rgba(117,186,120,0.15)', color: 'var(--accent-green)' }
-                : { background: 'rgba(255,255,255,0.06)', color: 'var(--color-text-dim)' }
-            }
-          >
+          <span className={`text-[11px] font-bold tracking-[0.04em] px-2.5 py-0.5 rounded-full mt-1 ${
+            isEligible
+              ? 'bg-[rgba(95,207,143,0.12)] border border-[rgba(95,207,143,0.35)] text-[#5fcf8f]'
+              : 'bg-[rgba(255,255,255,0.06)] border border-white/10 text-[#7a7a7a]'
+          }`}>
             {isEligible ? '✓ Goodphil Eligible' : 'Requirements not yet met'}
           </span>
         </div>

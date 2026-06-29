@@ -88,7 +88,7 @@ Branch: `vibecoder/ui`
 - [x] 82. Handle Offline and Network Errors — wrapped bare fetch calls in try/catch in 4 components (OnboardingClient ×2, BasicInfoClient, ProfileEditClient, MembershipClient); all show 'Network error — please try again.' + reset loading on fetch failure; RegisterModal and OfficerEventsClient already had try/catch
 - [x] 83. Show Progress for Long Operations — N/A: all long operations already show progress — gallery create/edit set submitting=true before imageCompression ('Saving…' on button), event cover upload shows 'Uploading…' overlay during compression+upload, event form save shows 'Saving…', onboarding submit shows loading state
 - [x] 84. Improve Perceived Performance Everywhere — replaced 6 bare <a> tags with Next.js <Link> across member/profile/page.tsx (edit, membership, 2× reapply) and both error boundaries (officer home, my profile); enables prefetch-on-hover; router.prefetch already added to edit/onboarding/basic-info clients; dns-prefetch on Stripe in layout
-- [ ] 85. Add Contextual Help and Tooltips
+- [x] 85. Add Contextual Help and Tooltips — added 'Members scan this at the event to log attendance.' subtitle to Attendance QR section; early bird already has 'prices switch automatically — no action needed'; hangout size has Small/Big labels; MBTI has 'Not sure / don't know' default; ticketing has per-field guidance
 - [ ] 86. Standardize Status and State Indicators
 - [ ] 87. Clarify Primary Navigation Structure
 - [ ] 88. Add a Command Palette
