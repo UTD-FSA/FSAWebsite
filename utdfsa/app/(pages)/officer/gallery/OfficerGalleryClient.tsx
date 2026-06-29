@@ -93,6 +93,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
   const [editSubmitting, setEditSubmitting] = useState(false)
   const [editError, setEditError] = useState<string | null>(null)
   const [editDeleting, setEditDeleting] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
   const editFileInputRef = useRef<HTMLInputElement>(null)
 
   function closeModal() {
@@ -202,6 +203,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
     setEditCoverFile(null)
     setEditCoverPreview(null)
     setEditError(null)
+    setConfirmingDelete(false)
   }
 
   function handleEditFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -273,7 +275,6 @@ export default function OfficerGalleryClient({ galleries }: Props) {
 
   async function handleEditDelete() {
     if (!editingGallery) return
-    if (!confirm(`Delete "${editingGallery.title}"? This cannot be undone.`)) return
     setEditDeleting(true)
     // api: calls DELETE /api/galleries/[id] — removes gallery row from database — do not change this endpoint
     const res = await fetch(`/api/galleries/${editingGallery.id}`, { method: 'DELETE' })
@@ -766,14 +767,34 @@ export default function OfficerGalleryClient({ galleries }: Props) {
 
               {/* Footer */}
               <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between pt-5 border-t border-white/7 gap-3">
-                <button
-                  type="button"
-                  disabled={editDeleting}
-                  onClick={handleEditDelete}
-                  className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-[11px] bg-transparent border border-[rgba(239,111,111,0.4)] text-[#ef6f6f] text-sm font-bold cursor-pointer hover:bg-[rgba(239,111,111,0.1)] disabled:opacity-50 transition-colors"
-                >
-                  {editDeleting ? 'Deleting…' : 'Delete Archive'}
-                </button>
+                {confirmingDelete ? (
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <span className="text-sm text-[#ef6f6f] font-semibold shrink-0">Delete &ldquo;{editingGallery?.title}&rdquo;?</span>
+                    <button
+                      type="button"
+                      disabled={editDeleting}
+                      onClick={handleEditDelete}
+                      className="min-h-[40px] px-4 py-2 rounded-[10px] bg-[#ef6f6f] hover:bg-[#f78080] text-white text-sm font-bold disabled:opacity-50 transition-colors"
+                    >
+                      {editDeleting ? 'Deleting…' : 'Yes, delete'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmingDelete(false)}
+                      className="min-h-[40px] px-4 py-2 rounded-[10px] border border-white/16 text-[#cfcfcf] text-sm font-semibold hover:border-white/32 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setConfirmingDelete(true)}
+                    className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-[11px] bg-transparent border border-[rgba(239,111,111,0.4)] text-[#ef6f6f] text-sm font-bold cursor-pointer hover:bg-[rgba(239,111,111,0.1)] transition-colors"
+                  >
+                    Delete Archive
+                  </button>
+                )}
                 <div className="flex gap-2.5 w-full sm:w-auto">
                   <button
                     type="button"

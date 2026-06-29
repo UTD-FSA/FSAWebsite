@@ -82,7 +82,7 @@ Branch: `vibecoder/ui`
 - [x] 76. Clarify Form Submission Feedback — N/A: all submit buttons already disable + show loading text during submission (Processing…/Saving…/Deleting…/Submitting…); errors preserve form data; success states redirect or show confirmation; no double-submission gaps found
 - [x] 77. Build a Toast Notification System — N/A: feedback is fully covered by existing patterns — inline error messages, loading button text, URL-param Stripe success banners, optimistic UI updates (officer events), inline save indicators (pamilya assignment), QR scan overlay, page refresh showing new content (gallery); no centralized toast gap found
 - [x] 78. Handle Loading, Empty, Error, Success States — added loading.tsx skeletons for officer/events and officer/gallery (only two missing); all client list views already have empty states; global error.tsx exists; success handled via redirect/banner/optimistic UI
-- [ ] 79. Add Graceful Error Boundaries
+- [x] 79. Add Graceful Error Boundaries — added scoped error.tsx for member (Try Again + My Profile) and officer (Try Again + Officer Home, purple accent) route groups; global error.tsx catches public page errors; all log to console; no raw error details exposed to users
 - [ ] 80. Confirm Destructive and Irreversible Actions
 - [ ] 81. Add Undo for Reversible Actions
 - [ ] 82. Handle Offline and Network Errors
