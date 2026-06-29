@@ -116,7 +116,7 @@ export default function LoginPage() {
 
           {/* Heading */}
           <h1
-            className="font-display font-black text-white leading-[1.05] tracking-[-0.02em] mb-[14px] text-center"
+            className="font-display font-black text-white leading-[1.05] tracking-[-0.02em] mb-3.5 text-center"
             style={{ fontSize: 'clamp(30px, 3vw, 34px)' }}
           >
             Welcome Back
@@ -147,7 +147,7 @@ export default function LoginPage() {
           </button>
 
           {/* Divider */}
-          <div className="flex items-center gap-[14px] my-6">
+          <div className="flex items-center gap-3.5 my-6">
             <span className="h-px flex-1" style={{ background: 'var(--color-border-subtle)' }} />
             <span
               className="text-[12px] font-semibold tracking-[0.08em] uppercase"

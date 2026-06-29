@@ -662,7 +662,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
             </p>
 
             {/* contacts & basics divider */}
-            <div className="flex items-center gap-[14px]">
+            <div className="flex items-center gap-3.5">
               <span className="font-display text-[13px] font-bold text-white whitespace-nowrap">Contact &amp; Basics</span>
               <div className="flex-1 h-px bg-white/[0.07]" />
             </div>
@@ -743,7 +743,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
             </div>
 
             {/* — about you — */}
-            <div className="flex items-center gap-[14px] pt-1">
+            <div className="flex items-center gap-3.5 pt-1">
               <span className="font-display text-[13px] font-bold text-white whitespace-nowrap">About You</span>
               <div className="flex-1 h-px bg-white/[0.07]" />
             </div>
@@ -784,7 +784,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
             </div>
 
             {/* — interests — */}
-            <div className="flex items-center gap-[14px] pt-1">
+            <div className="flex items-center gap-3.5 pt-1">
               <span className="font-display text-[13px] font-bold text-white whitespace-nowrap">Interests</span>
               <div className="flex-1 h-px bg-white/[0.07]" />
             </div>
@@ -850,7 +850,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
             </div>
 
             {/* — pam match — */}
-            <div className="flex items-center gap-[14px] pt-1">
+            <div className="flex items-center gap-3.5 pt-1">
               <span className="font-display text-[13px] font-bold text-white whitespace-nowrap">Pam Matching</span>
               <div className="flex-1 h-px bg-white/[0.07]" />
             </div>
@@ -936,7 +936,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
             </div>
 
             {/* — compatibility — */}
-            <div className="flex items-center gap-[14px] pt-1">
+            <div className="flex items-center gap-3.5 pt-1">
               <span className="font-display text-[13px] font-bold text-white whitespace-nowrap">Compatibility</span>
               <div className="flex-1 h-px bg-white/[0.07]" />
             </div>
@@ -1013,7 +1013,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
             </div>
 
             {/* — wrap up — */}
-            <div className="flex items-center gap-[14px] pt-1">
+            <div className="flex items-center gap-3.5 pt-1">
               <span className="font-display text-[13px] font-bold text-white whitespace-nowrap">Wrap Up</span>
               <div className="flex-1 h-px bg-white/[0.07]" />
             </div>
