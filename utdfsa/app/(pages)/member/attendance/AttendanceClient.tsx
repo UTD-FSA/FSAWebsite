@@ -162,10 +162,11 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
 
       {attendanceRecords.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text-dim)' }}>
+          <p className="text-2xl mb-3" role="img" aria-label="calendar">📅</p>
+          <p className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text-secondary)' }}>
             No attendance records yet
           </p>
-          <p className="text-sm" style={{ color: 'var(--color-text-faint)' }}>
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
             Attend an event to start building your record.
           </p>
         </div>

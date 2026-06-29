@@ -124,10 +124,11 @@ export default function OrdersClient({ registrations, eventsData, contactEmail, 
       {/* only renders the empty state when the member has no registrations — do not remove this condition */}
       {registrations.length === 0 ? (
         <div className="text-center py-20">
-          <p className="text-lg font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <p className="text-2xl mb-3" role="img" aria-label="ticket">🎟️</p>
+          <p className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text-secondary)' }}>
             No orders yet
           </p>
-          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
             Register for an event to see your tickets here.
           </p>
         </div>

@@ -423,7 +423,11 @@ export default function EventsPageClient({ events, isMember, member, registeredE
 
           {/* only renders empty state when no displayable events exist — do not remove this condition */}
           {displayEvents.length === 0 ? (
-            <p className="py-6" style={{ color: 'var(--color-text-muted)' }}>No upcoming events right now — check back soon!</p>
+            <div className="text-center py-16">
+              <p className="text-2xl mb-3" role="img" aria-label="party popper">🎉</p>
+              <p className="text-base font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>No upcoming events right now</p>
+              <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Check back soon — new events drop regularly.</p>
+            </div>
           ) : (
             <div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[22px]"
