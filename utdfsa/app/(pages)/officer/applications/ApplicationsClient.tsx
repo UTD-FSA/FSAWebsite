@@ -1269,7 +1269,7 @@ export default function ApplicationsClient({
 
         {/* Delete confirmation modal — appears above detail modal; requires typing exact full name */}
         {deleteTarget && (
-          <Modal onClose={handleDeleteCancel} size="sm">
+          <Modal onClose={handleDeleteCancel} size="sm" scrollable={false}>
             <div
               className="bg-[#141414] border border-white/10 rounded-[18px] w-full p-7 shadow-modal"
               style={{ animation: 'modalIn 0.18s ease-out' }}

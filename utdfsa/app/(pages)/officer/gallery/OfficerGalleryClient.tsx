@@ -767,34 +767,13 @@ export default function OfficerGalleryClient({ galleries }: Props) {
 
               {/* Footer */}
               <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between pt-5 border-t border-white/7 gap-3">
-                {confirmingDelete ? (
-                  <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <span className="text-sm text-[#ef6f6f] font-semibold shrink-0">Delete &ldquo;{editingGallery?.title}&rdquo;?</span>
-                    <button
-                      type="button"
-                      disabled={editDeleting}
-                      onClick={handleEditDelete}
-                      className="min-h-[40px] px-4 py-2 rounded-[10px] bg-[#ef6f6f] hover:bg-[#f78080] text-white text-sm font-bold disabled:opacity-50 transition-colors"
-                    >
-                      {editDeleting ? 'Deleting…' : 'Yes, delete'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setConfirmingDelete(false)}
-                      className="min-h-[40px] px-4 py-2 rounded-[10px] border border-white/16 text-[#cfcfcf] text-sm font-semibold hover:border-white/32 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setConfirmingDelete(true)}
-                    className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-[11px] bg-transparent border border-[rgba(239,111,111,0.4)] text-[#ef6f6f] text-sm font-bold cursor-pointer hover:bg-[rgba(239,111,111,0.1)] transition-colors"
-                  >
-                    Delete Archive
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setConfirmingDelete(true)}
+                  className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-[11px] bg-transparent border border-[rgba(239,111,111,0.4)] text-[#ef6f6f] text-sm font-bold cursor-pointer hover:bg-[rgba(239,111,111,0.1)] transition-colors"
+                >
+                  Delete Archive
+                </button>
                 <div className="flex gap-2.5 w-full sm:w-auto">
                   <button
                     type="button"
@@ -813,6 +792,45 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                 </div>
               </div>
             </form>
+          </div>
+        </Modal>
+      )}
+
+      {/* only renders when the officer clicks Delete Archive inside the edit modal — do not remove this condition */}
+      {confirmingDelete && editingGallery && (
+        <Modal onClose={() => setConfirmingDelete(false)} size="sm" scrollable={false}>
+          <div
+            className="bg-[#141414] border border-white/10 rounded-[18px] w-full p-7 shadow-modal"
+            style={{ animation: 'modalIn 0.18s ease-out' }}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef6f6f" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <h2 className="text-[16px] font-bold text-white">Delete Archive</h2>
+            </div>
+            <p className="text-[14px] text-[#8c8c8c] font-medium mb-5 leading-relaxed">
+              Permanently delete <strong className="text-white">{editingGallery.title}</strong>? This cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirmingDelete(false)}
+                className="flex-1 px-4 py-2.5 text-sm font-semibold text-[#cfcfcf] border border-white/16 bg-transparent rounded-xl hover:border-white/30 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={editDeleting}
+                onClick={handleEditDelete}
+                className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-[#cf4d4d] hover:bg-[#e05555] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl border-none transition-colors"
+              >
+                {editDeleting ? 'Deleting…' : 'Delete Archive'}
+              </button>
+            </div>
           </div>
         </Modal>
       )}

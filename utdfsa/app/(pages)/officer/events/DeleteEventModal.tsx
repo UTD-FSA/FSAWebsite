@@ -45,62 +45,56 @@ export default function DeleteEventModal({
   }
 
   return (
-    <Modal onClose={onClose} size="sm">
-      <div className="bg-white rounded-xl shadow-xl w-full overflow-hidden">
-        <div className="bg-red-600 px-6 py-4 flex items-center gap-3">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+    <Modal onClose={onClose} size="sm" scrollable={false}>
+      <div
+        className="bg-[#141414] border border-white/10 rounded-[18px] w-full p-7 shadow-modal"
+        style={{ animation: 'modalIn 0.18s ease-out' }}
+      >
+        <div className="flex items-center gap-3 mb-3">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef6f6f" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
-          <h2 className="text-white font-bold text-lg">Delete Event</h2>
+          <h2 className="text-[16px] font-bold text-white">Delete Event</h2>
         </div>
-
-        <div className="px-6 py-5 flex flex-col gap-4">
-          <p className="text-sm text-gray-700">
-            This action cannot be undone. Deleting this event will permanently
-            remove all registration tickets and attendance records associated
-            with it, including records for members who have already paid.
-          </p>
-          <p className="text-sm font-bold text-red-600">
-            All paid ticket holders will lose their ticket records.
-          </p>
-
-          <div>
-            <label className="text-xs font-medium text-gray-600 block mb-1">
-              Type the event name to confirm:
-            </label>
-            <input
-              type="text"
-              value={typedValue}
-              onChange={e => setTypedValue(e.target.value)}
-              placeholder={eventName}
-              className="w-full border rounded-lg px-3 py-2 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-red-500 placeholder:text-gray-400"
-            />
-          </div>
-
-          {error && (
-            <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-              {error}
-            </p>
-          )}
-
-          <div className="flex gap-3 justify-end border-t pt-4">
-            <button type="button" onClick={onClose}
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900">
-              Cancel
-            </button>
-            <button
-              type="button"
-              disabled={!isMatch || loading}
-              onClick={handleDelete}
-              className={`px-5 py-2 font-semibold rounded-lg text-sm transition-colors ${
-                isMatch && !loading
-                  ? 'bg-red-600 hover:bg-red-700 text-white'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              {loading ? 'Deleting…' : 'Delete'}
-            </button>
-          </div>
+        <p className="text-[14px] text-[#8c8c8c] font-medium mb-2 leading-relaxed">
+          This will permanently delete <strong className="text-white">{eventName}</strong> and all associated registration tickets and attendance records. Paid ticket holders will lose their ticket records.
+        </p>
+        <p className="text-[13px] text-text-muted font-medium mb-5 leading-relaxed">
+          This action cannot be undone.
+        </p>
+        <p className="text-[11px] font-bold tracking-[0.07em] uppercase text-[#7e7e7e] mb-1">
+          Type the event name to confirm
+        </p>
+        <p className="text-[12px] text-text-muted font-medium mb-2">&ldquo;{eventName}&rdquo;</p>
+        <input
+          type="text"
+          value={typedValue}
+          onChange={e => setTypedValue(e.target.value)}
+          placeholder="Type event name here"
+          autoFocus
+          className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d0d0d] border border-white/10 text-[14px] text-white placeholder:text-text-muted focus:outline-none focus:border-[#ef6f6f] focus:shadow-[0_0_0_3px_rgba(239,111,111,0.12)] transition-[border-color,box-shadow] font-[inherit] mb-4"
+        />
+        {error && (
+          <p role="alert" className="text-[13px] text-[#ef6f6f] mb-3">{error}</p>
+        )}
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 px-4 py-2.5 text-sm font-semibold text-[#cfcfcf] border border-white/16 bg-transparent rounded-xl hover:border-white/30 hover:text-white transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            disabled={!isMatch || loading}
+            onClick={handleDelete}
+            className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-[#cf4d4d] hover:bg-[#e05555] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl border-none transition-colors"
+          >
+            {loading ? 'Deleting…' : 'Delete Event'}
+          </button>
         </div>
       </div>
     </Modal>
