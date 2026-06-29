@@ -251,6 +251,15 @@ function EventForm({
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
+  // warn before unload when the form has unsaved changes
+  useEffect(() => {
+    const isDirty = (Object.keys(form) as (keyof EventFormData)[]).some(k => form[k] !== initial[k])
+    if (!isDirty) return
+    const guard = (e: BeforeUnloadEvent) => { e.preventDefault() }
+    window.addEventListener('beforeunload', guard)
+    return () => window.removeEventListener('beforeunload', guard)
+  }, [form, initial])
+
   const ticketed = isTicketed(form.event_type)
 
   // true when the early bird deadline has already passed — used to show a warning banner
