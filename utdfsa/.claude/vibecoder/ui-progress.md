@@ -80,7 +80,7 @@ Branch: `vibecoder/ui`
 - [x] 74. Improve Password Field UX — N/A: app uses Google OAuth exclusively; no password inputs exist anywhere in the codebase
 - [x] 75. Add Input Hints and Affordances — show textarea char counters from first keystroke (> 0 instead of > 80% threshold) on 9 counters across ading + kuyate forms; other fields already have good placeholders (phone format, major example, "N/A if unsure") and required * indicators
 - [x] 76. Clarify Form Submission Feedback — N/A: all submit buttons already disable + show loading text during submission (Processing…/Saving…/Deleting…/Submitting…); errors preserve form data; success states redirect or show confirmation; no double-submission gaps found
-- [ ] 77. Build a Toast Notification System
+- [x] 77. Build a Toast Notification System — N/A: feedback is fully covered by existing patterns — inline error messages, loading button text, URL-param Stripe success banners, optimistic UI updates (officer events), inline save indicators (pamilya assignment), QR scan overlay, page refresh showing new content (gallery); no centralized toast gap found
 - [ ] 78. Handle Loading, Empty, Error, Success States
 - [ ] 79. Add Graceful Error Boundaries
 - [ ] 80. Confirm Destructive and Irreversible Actions
