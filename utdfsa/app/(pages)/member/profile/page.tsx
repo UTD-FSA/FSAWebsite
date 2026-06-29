@@ -9,6 +9,7 @@
 import { createUserClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { getSettings } from '@/lib/settings'
+import Link from 'next/link'
 
 export default async function ProfilePage() {
   // ============================================================
@@ -267,29 +268,29 @@ export default async function ProfilePage() {
             <h3 className="font-display font-black text-sm text-white uppercase mb-1">Changed your mind?</h3>
             <p className="font-sans text-sm text-white/50 mb-4">You can still apply.</p>
             <div className="flex gap-3 flex-wrap">
-              <a
+              <Link
                 href="/onboarding?reapply=true&type=ading"
                 className="inline-flex items-center font-display font-bold text-xs uppercase tracking-widest px-5 py-2.5 bg-accent-green text-[#0e0e0e] rounded-lg hover:opacity-90 transition-opacity"
               >
                 Apply as Ading
-              </a>
+              </Link>
               {/* only renders when kuyate applications are open — do not remove this condition */}
               {kuyateApplicationsOpen && (
-                <a
+                <Link
                   href="/onboarding?reapply=true&type=kuyate"
                   className="font-display font-bold text-xs uppercase tracking-widest px-5 py-2.5 border-2 border-white/30 text-white rounded-lg hover:border-white/60 transition-colors"
                 >
                   Apply as Kuya/Ate
-                </a>
+                </Link>
               )}
             </div>
           </section>
         )}
 
         {/* edit profile button — safe to restyle, keep the href */}
-        <a href="/member/profile/edit" className="inline-block mt-2 font-display font-bold text-xs text-accent-green uppercase tracking-widest hover:opacity-70 transition-opacity">
+        <Link href="/member/profile/edit" className="inline-block mt-2 font-display font-bold text-xs text-accent-green uppercase tracking-widest hover:opacity-70 transition-opacity">
           Edit Profile →
-        </a>
+        </Link>
 
         {/* Unpaid membership banner — only renders when membership is not active */}
         {/* do not remove this condition */}
@@ -297,9 +298,9 @@ export default async function ProfilePage() {
           <div className="mt-6 p-5 border-2 border-accent-gold/40 rounded-2xl bg-[#1a1a1a]">
             <p className="font-sans text-sm text-accent-gold">
               Your membership is not yet active.{' '}
-              <a href="/membership" className="underline font-bold">
+              <Link href="/membership" className="underline font-bold">
                 Complete payment to activate.
-              </a>
+              </Link>
             </p>
           </div>
         )}

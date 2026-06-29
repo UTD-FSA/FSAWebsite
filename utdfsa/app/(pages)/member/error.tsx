@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import Link from 'next/link'
 
 export default function MemberError({
   error,
@@ -27,12 +28,12 @@ export default function MemberError({
           >
             Try Again
           </button>
-          <a
+          <Link
             href="/member/profile"
             className="font-display font-bold text-xs uppercase tracking-widest px-5 py-3 border border-white/20 text-white rounded-lg hover:bg-white/5 active:scale-[0.98] transition-all"
           >
             My Profile
-          </a>
+          </Link>
         </div>
       </div>
     </main>
