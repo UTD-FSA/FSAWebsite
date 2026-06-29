@@ -18,7 +18,7 @@ Branch: `vibecoder/ui`
 - [x] 12. Eliminate Horizontal Scroll on Mobile — html has overflow-x:hidden globally; week-pill strip is intentional overflow-x-auto; added overflow-x-hidden to EventsPageClient main (card transform animations) + loading skeleton; no other overflow sources found
 - [x] 13. Build a Flexible Responsive Grid — grids are already mobile-first (grid-cols-1→md/lg); homepage events uses horizontal carousel (correct); archives uses 2→3→4 cols photo grid; snap events grid gap-[22px]→gap-6 to match loading skeleton and 4px grid
 - [x] 14. Enlarge Mobile Touch Targets — footer social icons 32→44px; carousel prev/next arrows p-2→p-3 (40→48px) in PhotoCarousel and PamilyasClient; modal close buttons 34→44px in EventsPageClient and UpcomingEventsSection; primary buttons already large
-- [ ] 15. Eliminate Cumulative Layout Shift
+- [x] 15. Eliminate Cumulative Layout Shift — all images use fill+explicit-height containers or aspect-square; archives grid reserves space; events page has streaming loading skeleton; added display:swap to Geist+GeistMono fonts; Unbounded already had display:swap
 - [ ] 16. Respect Mobile Safe Area Insets
 - [ ] 17. Build a Smart Sticky Header
 - [ ] 18. Balance Content Density and Whitespace

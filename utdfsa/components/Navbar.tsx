@@ -156,6 +156,7 @@ export default function Navbar({ initialMember }: NavbarProps) {
         style={{
           transform: navVisible ? 'translateY(0)' : 'translateY(-100%)',
           transition: 'transform 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
+          paddingTop: 'env(safe-area-inset-top)',
         }}
       >
         {/* route: / — home page — do not change this path */}
@@ -313,7 +314,7 @@ export default function Navbar({ initialMember }: NavbarProps) {
 
       {/* Mobile menu panel — slides in below navbar */}
       {mobileMenuOpen && (
-        <div className="fixed top-20 left-0 right-0 z-60 bg-brand-bg border-t border-white/10 overflow-y-auto max-h-[calc(100vh-5rem)] xl:hidden">
+        <div className="fixed top-[calc(5rem+env(safe-area-inset-top))] left-0 right-0 z-60 bg-brand-bg border-t border-white/10 overflow-y-auto max-h-[calc(100vh-5rem-env(safe-area-inset-top))] xl:hidden">
           <ul>
             {/* route: /about — About Us page — do not change this path */}
             <li><Link href="/about" className={mobileLinkClass} onClick={closeMobileMenu}>About Us</Link></li>

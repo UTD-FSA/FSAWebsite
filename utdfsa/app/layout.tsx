@@ -6,7 +6,7 @@
 // notes: member is fetched server-side so Navbar receives data before hydration;
 //        the three google fonts are registered as CSS custom properties via @theme
 // ─────────────────────────────────────────────────────────────
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono, Unbounded } from "next/font/google"
 import "./globals.css"
 import Navbar from "@/components/Navbar"
@@ -23,6 +23,10 @@ const unbounded = Unbounded({
   weight: ["600", "700", "900"],
   display: "swap",
 })
+
+export const viewport: Viewport = {
+  viewportFit: 'cover',
+}
 
 export const metadata: Metadata = {
   title: "UTD FSA - Filipino Student Association | The University of Texas at Dallas",
