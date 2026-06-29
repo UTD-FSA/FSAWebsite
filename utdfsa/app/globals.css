@@ -97,6 +97,12 @@
   }
 }
 
+/* native cross-document page transitions (Chrome 111+, Safari 18+, Firefox 133+)
+   degrades gracefully — unsupported browsers get instant navigation as before */
+@view-transition {
+  navigation: auto;
+}
+
 /* ── tailwind theme mapping ──────────────────────────────────
    bridges CSS custom properties into tailwind utility classes
    (e.g. bg-brand-bg, text-accent-green, font-display) */

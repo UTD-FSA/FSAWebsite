@@ -61,7 +61,7 @@ Branch: `vibecoder/ui`
 - [x] 55. Add a Skip-To-Content Link — added sr-only skip link in layout.tsx (becomes visible on focus: fixed top-4 left-4 z-400 accent-green bg); children wrapped in div#main-content tabIndex=-1 outline-none as focus target; activates on first Tab keypress on any page
 - [x] 56. Fix Page Titles and Language — added title template to root layout (default + %s | UTD FSA); exported typed Metadata from events/about/membership/archives/pamilyas pages; lang=en already set on html element
 - [x] 57. Add Small Purposeful Micro-Interactions — added active:scale-[0.98]+transition-all to 4 submit buttons missing press feedback (ProfileEditClient, OfficerEventsClient, OfficerGalleryClient ×2); main CTAs (membership/onboarding/events/pamilyas/error) already had active:scale-[0.98]
-- [ ] 58. Standardize Animation Timing and Easing
+- [x] 58. Standardize Animation Timing and Easing — added --ease-spring/smooth/standard CSS vars to :root documenting 3 easing curves; normalized duration-[180ms] → duration-150 in ArchivesClient filter pills + login button; 3 curves already consistent by context (spring=modal, smooth=scroll, standard=nav)
 - [ ] 59. Implement Smooth Page Transitions
 - [ ] 60. Animate Value and State Changes
 - [ ] 61. Refine Hover and Focus Feedback
