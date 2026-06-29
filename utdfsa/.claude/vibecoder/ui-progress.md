@@ -94,8 +94,8 @@ Branch: `vibecoder/ui`
 - [x] 88. Add a Command Palette — N/A: student org site with 5 public nav links and ~10 member/officer pages; command palette adds no meaningful value here — users navigate via the existing navbar; would add significant complexity (⌘K listener, modal, fuzzy search, command registry) for near-zero benefit
 - [x] 89. Show Clear Active Location Indicators — added role=tablist/tab + aria-selected to applications Ading/Kuyate tab bar (visual active state already existed: white text + purple bottom border); nav active underline added in prompt 87; no other within-page navigation needing active indicators found
 - [x] 90. Add Breadcrumbs for Deep Navigation — N/A: max page depth is 3 segments (/member/profile/edit); at this depth a breadcrumb is redundant — the edit page has a 'Cancel' link back to profile, and the navbar is always accessible; no navigation confusion warranting breadcrumbs found
-- [ ] 91. Improve In-App Search Experience
-- [ ] 92. Fix Scroll Position and Back Behavior
+- [x] 91. Improve In-App Search Experience — added 'X of Y result(s)' count on both ading/kuyate search tabs when a term is active; search already had type=search, icon, placeholder, and no-results empty state; only officer/applications has search — no other lists are large enough to need it
+- [x] 92. Fix Scroll Position and Back Behavior — N/A: Next.js App Router handles scroll restoration automatically; no scroll={false} on Link components; only manual scroll is EventsPageClient scrollIntoView on filter change (intentional — jumps past hero to event list); no scroll position bugs found
 - [ ] 93. Add Useful Keyboard Shortcuts
 - [ ] 94. Reduce Friction in Key Flows
 - [ ] 95. Make Data Tables Genuinely Usable
