@@ -28,6 +28,7 @@ export default async function Home() {
 
       {/* ── HERO ──────────────────────────────────────────────────── */}
       <section className="relative h-[50vh] sm:h-[70vh] md:h-screen w-full overflow-hidden">
+        <h1 className="sr-only">UTD FSA — Filipino Student Association at The University of Texas at Dallas</h1>
         {/* Background photo — object-top keeps faces in frame */}
         <SmoothImage
           src="/hero-officers.jpg"

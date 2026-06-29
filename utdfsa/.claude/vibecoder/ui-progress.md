@@ -28,7 +28,7 @@ Branch: `vibecoder/ui`
 - [x] 22. Add Fluid Responsive Typography — added --font-size-hero (36→96px) and --font-size-heading (37→54px) clamp tokens; applied to homepage WHO ARE WE and MISSION STATEMENT h2s, replacing 3-4 stepped breakpoint classes with smooth scaling
 - [x] 23. Optimize Reading Line Length — added max-w-prose (65ch) to WHO ARE WE body paragraph (was unconstrained → up to 1384px wide at desktop); privacy page uses max-w-[680px], about uses max-w-xl, all others already constrained; leading-relaxed (1.625) throughout
 - [x] 24. Optimize Web Font Loading — N/A: next/font/google self-hosts all 3 fonts (no external CDN requests); display:swap added in prompt 15; adjustFontFallback:true generates metric-adjusted @font-face fallbacks automatically; preload handled by Next.js
-- [ ] 25. Tune Text Color and Contrast
+- [x] 25. Tune Text Color and Contrast — fixed remaining failures: #5a5a5a (2.85:1)→text-text-muted in ApplicationsClient; #6e6e6e (3.2:1)→text-text-muted in GoodphilClient+EventsPageClient; placeholder:text-[#5a5a5a]→[#7a7a7a] (4.5:1) in 3 files; #7a7a7a on #0e0e0e = 4.50:1 (passes)
 - [ ] 26. Fix Semantic Heading Structure
 - [ ] 27. Handle Text Overflow Gracefully
 - [ ] 28. Format Numbers, Dates, and Currency
