@@ -77,7 +77,7 @@ Branch: `vibecoder/ui`
 - [x] 71. Add Form Autosave and Recovery — added beforeunload guard in OfficerEventsClient EventForm when form is dirty (useEffect compares form to initial, adds beforeunload listener); covers accidental tab close/refresh for event creation + editing; skipped localStorage draft (internal tool, ~15 users)
 - [x] 72. Improve Multi-Step Form Experience — N/A: OnboardingClient already has StepIndicator (numbered circles, green checkmark on complete, connector line), back navigation, preserved form data between steps, and step-level validation before advancing
 - [x] 73. Upgrade Select and Dropdown Inputs — N/A: all selects are native with 3–8 options (semester/year/event-type/pamilya/classification); all have appearance-none + custom chevron SVG; none need search/filter or multi-select; native keyboard access is correct here
-- [ ] 74. Improve Password Field UX
+- [x] 74. Improve Password Field UX — N/A: app uses Google OAuth exclusively; no password inputs exist anywhere in the codebase
 - [ ] 75. Add Input Hints and Affordances
 - [ ] 76. Clarify Form Submission Feedback
 - [ ] 77. Build a Toast Notification System
