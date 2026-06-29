@@ -192,7 +192,7 @@ export default function Navbar({ initialMember }: NavbarProps) {
 
             {/* only renders when the Goodphil dropdown button has been clicked — do not remove this condition */}
             {goodphilOpen && (
-              <div className="absolute top-full left-0 mt-2 w-48 bg-dropdown-bg shadow-xl rounded-[17px] py-2 z-50 border border-white/10">
+              <div className="absolute top-full left-0 mt-2 w-48 bg-dropdown-bg shadow-xl rounded-2xl py-2 z-50 border border-white/10">
                 {/* route: /goodphil/about — About Goodphil page — do not change this path */}
                 <Link href="/goodphil/about" className={dropdownItemClass} onClick={() => setGoodphilOpen(false)}>About Goodphil</Link>
                 <hr className="my-1 border-white/20" />
@@ -245,7 +245,7 @@ export default function Navbar({ initialMember }: NavbarProps) {
 
               {/* only renders when the avatar button has been clicked — do not remove this condition */}
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-dropdown-bg shadow-xl rounded-[17px] py-2 z-50 border border-white/10">
+                <div className="absolute right-0 mt-2 w-52 bg-dropdown-bg shadow-xl rounded-2xl py-2 z-50 border border-white/10">
                   {/* route: /member/profile — member profile page — do not change this path */}
                   <Link href="/member/profile" className={dropdownItemClass} onClick={() => setDropdownOpen(false)}>Profile</Link>
                   {/* route: /member/orders — member ticket order history page — do not change this path */}

@@ -259,7 +259,7 @@ export default function MembershipClient({
           </div>
 
           {/* mobile: single pamilya photo at 3:2 below the copy block */}
-          <div className="md:hidden relative aspect-[3/2] rounded-[16px] overflow-hidden border border-white/[0.08] mt-8 z-10">
+          <div className="md:hidden relative aspect-[3/2] rounded-2xl overflow-hidden border border-white/[0.08] mt-8 z-10">
             <Image
               src="/mem1.jpg"
               alt="FSA pamilya"
@@ -381,7 +381,7 @@ export default function MembershipClient({
           </div>
           <div className="grid sm:grid-cols-3 gap-5">
             {steps.map(s => (
-              <div key={s.num} className="bg-[#101010] border border-white/[0.08] rounded-[16px] p-6">
+              <div key={s.num} className="bg-[#101010] border border-white/[0.08] rounded-2xl p-6">
                 <div className="font-display font-black text-[18px] text-accent-green mb-4">{s.num}</div>
                 <div className="text-[16px] font-bold text-white tracking-[-0.01em] mb-2">{s.title}</div>
                 <div className="text-[13.5px] leading-[1.6] text-[#8c8c8c] font-medium">{s.desc}</div>

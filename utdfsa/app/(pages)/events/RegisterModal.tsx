@@ -348,7 +348,7 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
 
               {/* privacy policy acknowledgment — shown once per transaction for non-member purchases only */}
               {!isMember && (
-                <div className="rounded-[12px] p-3.5" style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}>
+                <div className="rounded-xl p-3.5" style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)' }}>
                   <label className="flex items-start gap-3 cursor-pointer">
                     <div
                       className={`w-[18px] h-[18px] shrink-0 rounded-[4px] border-2 flex items-center justify-center transition-all mt-0.5 flex-none ${
