@@ -567,6 +567,7 @@ function AttendanceQR({ event, onUpdate }: { event: Event; onUpdate: (e: Event) 
           </div>
           <div>
             <div className="text-[15px] font-bold text-white">Attendance QR</div>
+            <div className="text-[12px] text-[#7e7e7e] font-medium mt-0.5">Members scan this at the event to log attendance.</div>
             <div className="flex items-center gap-1.5 mt-1">
               <span className={`w-[7px] h-[7px] rounded-full ${isOpen ? 'bg-[#5fcf8f]' : 'bg-[#6e6e6e]'}`} />
               <span className={`text-[13px] font-semibold ${isOpen ? 'text-[#5fcf8f]' : 'text-[#8c8c8c]'}`}>

@@ -87,7 +87,7 @@ Branch: `vibecoder/ui`
 - [x] 81. Add Undo for Reversible Actions — N/A: delete actions all have confirmation modals (better than undo for DB+S3 ops); status changes are optimistic and immediately re-clickable (officer clicks correct status — no undo gap); no toast infrastructure to surface undo window anyway
 - [x] 82. Handle Offline and Network Errors — wrapped bare fetch calls in try/catch in 4 components (OnboardingClient ×2, BasicInfoClient, ProfileEditClient, MembershipClient); all show 'Network error — please try again.' + reset loading on fetch failure; RegisterModal and OfficerEventsClient already had try/catch
 - [x] 83. Show Progress for Long Operations — N/A: all long operations already show progress — gallery create/edit set submitting=true before imageCompression ('Saving…' on button), event cover upload shows 'Uploading…' overlay during compression+upload, event form save shows 'Saving…', onboarding submit shows loading state
-- [ ] 84. Improve Perceived Performance Everywhere
+- [x] 84. Improve Perceived Performance Everywhere — replaced 6 bare <a> tags with Next.js <Link> across member/profile/page.tsx (edit, membership, 2× reapply) and both error boundaries (officer home, my profile); enables prefetch-on-hover; router.prefetch already added to edit/onboarding/basic-info clients; dns-prefetch on Stripe in layout
 - [ ] 85. Add Contextual Help and Tooltips
 - [ ] 86. Standardize Status and State Indicators
 - [ ] 87. Clarify Primary Navigation Structure
