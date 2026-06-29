@@ -7,7 +7,7 @@
 //        ading status changes are optimistic and silent. pamilya assignment is ading-only.
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Modal from '@/components/Modal'
 
 // ── types and constants ───────────────────────────────────
@@ -622,6 +622,44 @@ function exportKuyateCSV(apps: KuyateApplication[]): void {
   downloadCSV('kuyate-applications.csv', [headers, ...rows])
 }
 
+// ── Keyboard Shortcuts Dialog ───────────────────────────────────────────────
+
+function ShortcutsDialog({ onClose }: { onClose: () => void }) {
+  const items: [string, string][] = [
+    ['/', 'Focus search'],
+    ['1', 'Switch to Ading tab'],
+    ['2', 'Switch to Kuyate tab'],
+    ['?', 'Show keyboard shortcuts'],
+    ['Esc', 'Close modal'],
+  ]
+  return (
+    <Modal onClose={onClose} size="sm">
+      <div className="bg-[#141414] border border-white/10 rounded-[18px] w-full p-6 shadow-modal" style={{ animation: 'modalIn 0.18s ease-out' }}>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-[16px] font-bold text-white">Keyboard Shortcuts</h2>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-[#8c8c8c] hover:text-white transition-colors"
+            aria-label="Close"
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round"/></svg>
+          </button>
+        </div>
+        <dl className="flex flex-col gap-3">
+          {items.map(([key, label]) => (
+            <div key={key} className="flex items-center justify-between">
+              <dt className="text-[13px] text-[#8c8c8c] font-medium">{label}</dt>
+              <dd>
+                <kbd className="text-[12px] font-mono font-semibold text-[#cfcfcf] bg-white/8 border border-white/12 rounded-[6px] px-2 py-0.5">{key}</kbd>
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </Modal>
+  )
+}
+
 // ── Main component ──────────────────────────────────────────────────────────
 
 export default function ApplicationsClient({
@@ -646,6 +684,30 @@ export default function ApplicationsClient({
   // name search — separate state per tab, composes on top of status filter
   const [adingSearch, setAdingSearch] = useState('')
   const [kuyateSearch, setKuyateSearch] = useState('')
+  const adingSearchRef = useRef<HTMLInputElement>(null)
+  const kuyateSearchRef = useRef<HTMLInputElement>(null)
+
+  // keyboard shortcuts: / → focus search, 1/2 → switch tabs, ? → shortcuts dialog
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement).tagName
+      const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
+      if (e.key === '/' && !inInput) {
+        e.preventDefault()
+        const ref = tab === 'ading' ? adingSearchRef : kuyateSearchRef
+        ref.current?.focus()
+      } else if (e.key === '?' && !inInput) {
+        e.preventDefault()
+        setShowShortcuts(s => !s)
+      } else if (e.key === '1' && !inInput) {
+        setTab('ading')
+      } else if (e.key === '2' && !inInput) {
+        setTab('kuyate')
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [tab])
   // id of the application whose detail modal is open; null means closed
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null)
   const [selectedAppType, setSelectedAppType] = useState<'ading' | 'kuyate'>('ading')
@@ -669,6 +731,7 @@ export default function ApplicationsClient({
   const [deleteConfirmInput, setDeleteConfirmInput] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [showShortcuts, setShowShortcuts] = useState(false)
 
   // Derive the live modal app from current state so status/pamilya changes are reflected
   const currentModalApp: AdingApplication | KuyateApplication | null = selectedAppId
@@ -844,11 +907,20 @@ export default function ApplicationsClient({
     <main className="min-h-screen bg-[#070707] px-6 md:px-10 py-10">
       <div className="max-w-6xl mx-auto">
         {/* page header */}
-        <div className="mb-8">
-          <h1 className="font-display font-black text-[32px] text-white tracking-tight leading-[1.02] mb-2">Applications</h1>
-          <p className="text-[15px] text-[#8c8c8c] font-medium">
-            Review and update ading and kuyate applications.
-          </p>
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="font-display font-black text-[32px] text-white tracking-tight leading-[1.02] mb-2">Applications</h1>
+            <p className="text-[15px] text-[#8c8c8c] font-medium">
+              Review and update ading and kuyate applications.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowShortcuts(true)}
+            title="Keyboard shortcuts (?)"
+            className="mt-1 shrink-0 text-[12px] font-mono font-semibold text-[#7e7e7e] hover:text-[#cfcfcf] border border-white/10 hover:border-white/22 rounded-[6px] px-2 py-0.5 transition-colors"
+          >
+            ?
+          </button>
         </div>
 
         {/* tab bar */}
@@ -886,10 +958,11 @@ export default function ApplicationsClient({
                   <path d="M21 21l-4.35-4.35" strokeLinecap="round"/>
                 </svg>
                 <input
+                  ref={adingSearchRef}
                   type="search"
                   value={adingSearch}
                   onChange={e => handleAdingSearchChange(e.target.value)}
-                  placeholder="Search by name…"
+                  placeholder="Search by name… ( / )"
                   className="w-full pl-8 pr-3.5 py-2 rounded-[10px] bg-[#0d0d0d] border border-white/10 text-[13px] text-white placeholder:text-text-muted focus:outline-none focus:border-white/24 transition-[border-color] font-[inherit]"
                 />
               </div>
@@ -956,10 +1029,11 @@ export default function ApplicationsClient({
                   <path d="M21 21l-4.35-4.35" strokeLinecap="round"/>
                 </svg>
                 <input
+                  ref={kuyateSearchRef}
                   type="search"
                   value={kuyateSearch}
                   onChange={e => handleKuyateSearchChange(e.target.value)}
-                  placeholder="Search by name…"
+                  placeholder="Search by name… ( / )"
                   className="w-full pl-8 pr-3.5 py-2 rounded-[10px] bg-[#0d0d0d] border border-white/10 text-[13px] text-white placeholder:text-text-muted focus:outline-none focus:border-white/24 transition-[border-color] font-[inherit]"
                 />
               </div>
@@ -1107,6 +1181,9 @@ export default function ApplicationsClient({
             </div>
           </Modal>
         )}
+
+        {/* Keyboard shortcuts help dialog */}
+        {showShortcuts && <ShortcutsDialog onClose={() => setShowShortcuts(false)} />}
 
         {/* Delete confirmation modal — appears above detail modal; requires typing exact full name */}
         {deleteTarget && (
