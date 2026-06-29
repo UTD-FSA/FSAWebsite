@@ -96,9 +96,9 @@ Branch: `vibecoder/ui`
 - [x] 90. Add Breadcrumbs for Deep Navigation — N/A: max page depth is 3 segments (/member/profile/edit); at this depth a breadcrumb is redundant — the edit page has a 'Cancel' link back to profile, and the navbar is always accessible; no navigation confusion warranting breadcrumbs found
 - [x] 91. Improve In-App Search Experience — added 'X of Y result(s)' count on both ading/kuyate search tabs when a term is active; search already had type=search, icon, placeholder, and no-results empty state; only officer/applications has search — no other lists are large enough to need it
 - [x] 92. Fix Scroll Position and Back Behavior — N/A: Next.js App Router handles scroll restoration automatically; no scroll={false} on Link components; only manual scroll is EventsPageClient scrollIntoView on filter change (intentional — jumps past hero to event list); no scroll position bugs found
-- [ ] 93. Add Useful Keyboard Shortcuts
-- [ ] 94. Reduce Friction in Key Flows
-- [ ] 95. Make Data Tables Genuinely Usable
+- [x] 93. Add Useful Keyboard Shortcuts — '/' focuses search (existing); added '1'/'2' to switch tabs, '?' opens shortcuts dialog; discoverable via header '?' button
+- [x] 94. Reduce Friction in Key Flows — added prev/next navigation to ApplicationDetailModal (N/M counter + arrow buttons); officers flip through filtered list without close/reopen
+- [x] 95. Make Data Tables Genuinely Usable — N/A: no tables in app; applications use card grid (3-col), orders/attendance use list rows; existing layouts are correct for the data type
 - [ ] 96. Add Powerful Filtering and Sorting
 - [ ] 97. Add Pagination or Infinite Scroll
 - [ ] 98. Polish Charts and Data Visualization
