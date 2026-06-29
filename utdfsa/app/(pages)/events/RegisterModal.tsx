@@ -390,7 +390,7 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
 
               {/* only renders when the API or network returned an error — do not remove this condition */}
               {error && (
-                <p className="text-sm rounded-[14px] px-3 py-2.5" style={{ color: '#ff84b0', background: 'rgba(255,92,150,0.08)', border: '1px solid rgba(255,120,170,0.2)' }}>
+                <p role="alert" className="text-sm rounded-[14px] px-3 py-2.5" style={{ color: '#ff84b0', background: 'rgba(255,92,150,0.08)', border: '1px solid rgba(255,120,170,0.2)' }}>
                   {error}
                 </p>
               )}

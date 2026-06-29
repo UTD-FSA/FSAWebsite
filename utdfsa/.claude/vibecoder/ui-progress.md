@@ -54,7 +54,7 @@ Branch: `vibecoder/ui`
 - [x] 48. Make Forms Fully Accessible — added htmlFor/id pairs to RegisterModal (4 per-ticket fields, index-scoped: fname-0/lname-0/email-0/email-confirm-0) and ProfileEditClient (6 fields); onboarding labels are visually grouped with inputs but lack programmatic association (acceptable as-is given form structure)
 - [x] 49. Use Proper Semantic HTML — converted PamilyasClient <div role=button> → <button type=button> (native keyboard/tab support); 92 semantic element uses across 30 files (nav/main/section/footer/article); no other div-as-button patterns found
 - [x] 50. Add Meaningful Image Alt Text — N/A: content images have descriptive alts; decorative images (pam-hero-bg, gp-back) use alt='' + aria-hidden=true (correct); [Name] in AboutClient is a comment-only placeholder; hero/event/QR image alts are accurate
-- [ ] 51. Respect Reduced Motion Preferences
+- [x] 51. Respect Reduced Motion Preferences — added @media(prefers-reduced-motion:reduce) to globals.css: stops animate-marquee (infinite) + collapses all animation/transition to 0.01ms; ArchivesClient+EventsPageClient already have JS matchMedia checks for JS-driven animations
 - [ ] 52. Announce Dynamic Changes to Screen Readers
 - [ ] 53. Build Fully Accessible Modals
 - [ ] 54. Don't Rely on Color Alone

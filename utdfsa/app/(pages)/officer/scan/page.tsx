@@ -119,7 +119,9 @@ export default function ScanPage() {
 
       {/* only renders for 2.5 s after each QR scan to display the pass/fail result — do not remove this condition */}
       {result && (
-        <div className={`fixed inset-0 flex flex-col items-center justify-center z-50
+        <div
+          role="alert"
+          className={`fixed inset-0 flex flex-col items-center justify-center z-50
           ${result.valid ? 'bg-green-600' : 'bg-red-600'}`}
         >
           <div className="text-8xl mb-6">
