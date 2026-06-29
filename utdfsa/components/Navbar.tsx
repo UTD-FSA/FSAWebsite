@@ -54,6 +54,7 @@ export default function Navbar({ initialMember }: NavbarProps) {
   const supabase = useRef(createClient()).current
   // false = navbar has slid off the top; true = visible
   const [navVisible, setNavVisible] = useState(true)
+  const [isScrolled, setIsScrolled] = useState(false)
   // ref so the scroll handler can read current dropdown state without a stale closure
   const anyDropdownOpenRef = useRef(false)
 
@@ -113,6 +114,7 @@ export default function Navbar({ initialMember }: NavbarProps) {
   let lastY = window.scrollY
   function onScroll() {
     const y = window.scrollY
+    setIsScrolled(y > 10)
     const scrollingUp = y < lastY
     if (!anyDropdownOpenRef.current) {
       if (y < 80) {
@@ -157,6 +159,7 @@ export default function Navbar({ initialMember }: NavbarProps) {
           transform: navVisible ? 'translateY(0)' : 'translateY(-100%)',
           transition: 'transform 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
           paddingTop: 'env(safe-area-inset-top)',
+          boxShadow: isScrolled ? '0 1px 0 rgba(255,255,255,0.06)' : 'none',
         }}
       >
         {/* route: / — home page — do not change this path */}

@@ -19,7 +19,7 @@ Branch: `vibecoder/ui`
 - [x] 13. Build a Flexible Responsive Grid — grids are already mobile-first (grid-cols-1→md/lg); homepage events uses horizontal carousel (correct); archives uses 2→3→4 cols photo grid; snap events grid gap-[22px]→gap-6 to match loading skeleton and 4px grid
 - [x] 14. Enlarge Mobile Touch Targets — footer social icons 32→44px; carousel prev/next arrows p-2→p-3 (40→48px) in PhotoCarousel and PamilyasClient; modal close buttons 34→44px in EventsPageClient and UpcomingEventsSection; primary buttons already large
 - [x] 15. Eliminate Cumulative Layout Shift — all images use fill+explicit-height containers or aspect-square; archives grid reserves space; events page has streaming loading skeleton; added display:swap to Geist+GeistMono fonts; Unbounded already had display:swap
-- [ ] 16. Respect Mobile Safe Area Insets
+- [x] 16. Respect Mobile Safe Area Insets — added viewport-fit:cover export in layout.tsx; navbar gets paddingTop:env(safe-area-inset-top) so bg extends through notch; mobile panel offset updated to calc(5rem+env(safe-area-inset-top))
 - [ ] 17. Build a Smart Sticky Header
 - [ ] 18. Balance Content Density and Whitespace
 - [ ] 19. Use Container Queries for Components
