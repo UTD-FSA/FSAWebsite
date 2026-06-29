@@ -184,7 +184,7 @@ export default function ArchivesClient({ galleries }: Props) {
               </svg>
             </div>
             <p className="font-display font-bold text-[18px] text-[#cfcfcf] tracking-[-0.01em]">No galleries yet</p>
-            <p className="text-[14.5px] text-[#7a7a7a] font-medium max-w-[280px] leading-relaxed">
+            <p className="text-[15px] text-[#7a7a7a] font-medium max-w-[280px] leading-relaxed">
               Check back soon — we&apos;re busy capturing the next chapter of the FSA pamilya.
             </p>
           </div>
@@ -226,7 +226,7 @@ export default function ArchivesClient({ galleries }: Props) {
                       </h3>
                       <div className="flex items-end justify-between gap-2.5 mt-0.5">
                         {termLabel && (
-                          <span className="text-[12.5px] font-medium text-[#b3b3b3] tracking-[0.01em]">{termLabel}</span>
+                          <span className="text-[13px] font-medium text-[#b3b3b3] tracking-[0.01em]">{termLabel}</span>
                         )}
                         <span className="inline-flex items-center gap-1 text-[12px] font-bold tracking-[0.02em] text-[#75ba78] whitespace-nowrap ml-auto">
                           View Gallery

@@ -362,7 +362,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-accent-green">
               <path d="M20 6L9 17l-5-5" />
             </svg>
-            <span className="font-display font-bold text-[11.5px] tracking-[0.12em] text-accent-green uppercase">Membership confirmed</span>
+            <span className="font-display font-bold text-[12px] tracking-[0.12em] text-accent-green uppercase">Membership confirmed</span>
           </div>
 
           <h1 className="relative z-10 font-display font-black text-[clamp(42px,6vw,76px)] leading-[0.94] tracking-[-0.03em] text-white">
@@ -408,7 +408,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
                 <p className="hidden sm:block text-[14px] leading-[1.55] text-[#c2c2c2] font-medium mb-5 max-w-[340px]">
                   Join as an ading and get paired with kuya &amp; ate mentors who guide you through your FSA experience.
                 </p>
-                <p className="sm:hidden text-[12.5px] leading-[1.5] text-[#c2c2c2] font-medium mb-3.5">
+                <p className="sm:hidden text-[13px] leading-[1.5] text-[#c2c2c2] font-medium mb-3.5">
                   Get paired with kuya &amp; ate mentors for your FSA experience.
                 </p>
                 <span className="inline-flex items-center gap-2 sm:gap-2.5 font-display text-[12px] sm:text-[13px] font-bold tracking-[0.01em] text-accent-green">
@@ -444,7 +444,7 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
                   <p className="hidden sm:block text-[14px] leading-[1.55] text-[#c2c2c2] font-medium mb-5 max-w-[340px]">
                     Step up as a kuya or ate to mentor incoming adings, share your experience, and lead your pamilya.
                   </p>
-                  <p className="sm:hidden text-[12.5px] leading-[1.5] text-[#c2c2c2] font-medium mb-3.5">
+                  <p className="sm:hidden text-[13px] leading-[1.5] text-[#c2c2c2] font-medium mb-3.5">
                     Mentor incoming adings and lead your pamilya.
                   </p>
                   <span className="inline-flex items-center gap-2 sm:gap-2.5 font-display text-[12px] sm:text-[13px] font-bold tracking-[0.01em] text-accent-green">

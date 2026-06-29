@@ -215,12 +215,12 @@ export default function MembershipClient({
               <div className="flex items-center gap-7 mt-9">
                 <div>
                   <div className="font-display font-extrabold text-[30px] text-white tracking-[-0.02em]">600+</div>
-                  <div className="text-[12.5px] text-[#7a7a7a] font-semibold tracking-[0.04em] mt-0.5">ACTIVE MEMBERS</div>
+                  <div className="text-[13px] text-[#7a7a7a] font-semibold tracking-[0.04em] mt-0.5">ACTIVE MEMBERS</div>
                 </div>
                 <span className="w-px h-10 bg-white/10" />
                 <div>
                   <div className="font-display font-extrabold text-[30px] text-white tracking-[-0.02em]">20+</div>
-                  <div className="text-[12.5px] text-[#7a7a7a] font-semibold tracking-[0.04em] mt-0.5">EVENTS A YEAR</div>
+                  <div className="text-[13px] text-[#7a7a7a] font-semibold tracking-[0.04em] mt-0.5">EVENTS A YEAR</div>
                 </div>
               </div>
             </div>
@@ -286,8 +286,8 @@ export default function MembershipClient({
                     {b.icon}
                   </div>
                   <div>
-                    <div className="text-[14.5px] font-bold text-white tracking-[-0.01em] mb-1">{b.title}</div>
-                    <div className="text-[12.5px] leading-[1.5] text-[#8c8c8c] font-medium">{b.desc}</div>
+                    <div className="text-[15px] font-bold text-white tracking-[-0.01em] mb-1">{b.title}</div>
+                    <div className="text-[13px] leading-[1.5] text-[#8c8c8c] font-medium">{b.desc}</div>
                   </div>
                 </div>
               ))}
@@ -306,7 +306,7 @@ export default function MembershipClient({
               </div>
               {/* only renders when early bird pricing is active */}
               {isEarlyBird && (
-                <span className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent-green/10 border border-accent-green/30 text-[10.5px] font-extrabold tracking-[0.07em] text-accent-green uppercase whitespace-nowrap">
+                <span className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent-green/10 border border-accent-green/30 text-[11px] font-extrabold tracking-[0.07em] text-accent-green uppercase whitespace-nowrap">
                   Early Bird
                 </span>
               )}
@@ -365,7 +365,7 @@ export default function MembershipClient({
                 <rect x="4" y="10" width="16" height="11" rx="2.5" />
                 <path d="M8 10V7a4 4 0 018 0v3" />
               </svg>
-              <span className="text-[11.5px] text-[#7a7a7a] font-medium text-center">
+              <span className="text-[12px] text-[#7a7a7a] font-medium text-center">
                 Secure payment powered by Stripe · officer code on next page
               </span>
             </div>
@@ -384,7 +384,7 @@ export default function MembershipClient({
               <div key={s.num} className="bg-[#101010] border border-white/[0.08] rounded-2xl p-6">
                 <div className="font-display font-black text-[18px] text-accent-green mb-4">{s.num}</div>
                 <div className="text-[16px] font-bold text-white tracking-[-0.01em] mb-2">{s.title}</div>
-                <div className="text-[13.5px] leading-[1.6] text-[#8c8c8c] font-medium">{s.desc}</div>
+                <div className="text-[14px] leading-[1.6] text-[#8c8c8c] font-medium">{s.desc}</div>
               </div>
             ))}
           </div>
@@ -404,7 +404,7 @@ export default function MembershipClient({
                 className="border border-white/[0.08] rounded-[14px] bg-[#101010] overflow-hidden cursor-pointer hover:border-white/[0.16] transition-colors"
               >
                 <div className="flex items-center justify-between gap-4 px-6 py-5">
-                  <span className="text-[15.5px] font-bold text-white tracking-[-0.01em]">{f.q}</span>
+                  <span className="text-[16px] font-bold text-white tracking-[-0.01em]">{f.q}</span>
                   <svg
                     width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9a9a9a" strokeWidth="2.2"
                     className="shrink-0 transition-transform duration-300 ease-in-out"

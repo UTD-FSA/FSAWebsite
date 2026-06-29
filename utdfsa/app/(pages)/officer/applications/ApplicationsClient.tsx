@@ -151,7 +151,7 @@ function statusBadge(status: Status) {
     rejected: 'Rejected',
   }
   return (
-    <span className={`text-[10.5px] font-bold tracking-[0.04em] px-2.5 py-0.5 rounded-full ${cls[status]}`}>
+    <span className={`text-[11px] font-bold tracking-[0.04em] px-2.5 py-0.5 rounded-full ${cls[status]}`}>
       {label[status]}
     </span>
   )
@@ -276,9 +276,9 @@ function ApplicationDetailModal({
               <h2 className="text-[20px] font-bold text-white leading-tight">
                 {m.first_name} {m.last_name}
               </h2>
-              <p className="text-[13.5px] text-[#8c8c8c] font-medium mt-0.5">{m.email}</p>
+              <p className="text-[14px] text-[#8c8c8c] font-medium mt-0.5">{m.email}</p>
               {(m.year || m.major) && (
-                <p className="text-[12.5px] text-text-muted font-medium mt-0.5">
+                <p className="text-[13px] text-text-muted font-medium mt-0.5">
                   {[m.year, m.major].filter(Boolean).join(' · ')}
                 </p>
               )}
@@ -311,10 +311,10 @@ function ApplicationDetailModal({
                 if (!av.days.length && !av.times) return null
                 return (
                   <div key={key} className="col-span-2">
-                    <dt className="text-[10.5px] font-bold text-text-muted uppercase tracking-[0.08em] mb-1.5">
+                    <dt className="text-[11px] font-bold text-text-muted uppercase tracking-[0.08em] mb-1.5">
                       {questionLabels[key]}
                     </dt>
-                    <dd className="text-[13.5px] text-[#d4d4d4]">
+                    <dd className="text-[14px] text-[#d4d4d4]">
                       {av.days.length > 0 && <p className="font-medium">{av.days.join(', ')}</p>}
                       {av.times && <p className="text-[#8c8c8c] mt-0.5">{av.times}</p>}
                     </dd>
@@ -331,10 +331,10 @@ function ApplicationDetailModal({
 
               return (
                 <div key={key} className={isWide ? 'col-span-2' : 'col-span-1'}>
-                  <dt className="text-[10.5px] font-bold text-text-muted uppercase tracking-[0.08em] mb-1.5">
+                  <dt className="text-[11px] font-bold text-text-muted uppercase tracking-[0.08em] mb-1.5">
                     {questionLabels[key]}
                   </dt>
-                  <dd className="text-[13.5px] text-[#d4d4d4] font-medium whitespace-pre-wrap break-words">{display}</dd>
+                  <dd className="text-[14px] text-[#d4d4d4] font-medium whitespace-pre-wrap break-words">{display}</dd>
                 </div>
               )
             })}
@@ -347,7 +347,7 @@ function ApplicationDetailModal({
             <div className="flex items-center justify-between gap-3">
               <button
                 onClick={onDelete}
-                className="text-[11.5px] font-semibold text-[#ef6f6f]/60 border border-[#ef6f6f]/25 hover:border-[#ef6f6f]/55 hover:text-[#ef6f6f]/90 rounded-[9px] px-2.5 py-1 transition-colors"
+                className="text-[12px] font-semibold text-[#ef6f6f]/60 border border-[#ef6f6f]/25 hover:border-[#ef6f6f]/55 hover:text-[#ef6f6f]/90 rounded-[9px] px-2.5 py-1 transition-colors"
               >
                 Delete
               </button>
@@ -389,7 +389,7 @@ function ApplicationDetailModal({
                 <div className="flex items-center gap-3">
                   <button
                     onClick={onDelete}
-                    className="text-[11.5px] font-semibold text-[#ef6f6f]/60 border border-[#ef6f6f]/25 hover:border-[#ef6f6f]/55 hover:text-[#ef6f6f]/90 rounded-[9px] px-2.5 py-1 transition-colors"
+                    className="text-[12px] font-semibold text-[#ef6f6f]/60 border border-[#ef6f6f]/25 hover:border-[#ef6f6f]/55 hover:text-[#ef6f6f]/90 rounded-[9px] px-2.5 py-1 transition-colors"
                   >
                     Delete
                   </button>
@@ -407,7 +407,7 @@ function ApplicationDetailModal({
               </div>
               {/* Row 2: Assign Pamilya dropdown */}
               <div className="flex items-center gap-2">
-                <label className="text-[11.5px] text-[#7e7e7e] font-semibold shrink-0">Assign Pamilya</label>
+                <label className="text-[12px] text-[#7e7e7e] font-semibold shrink-0">Assign Pamilya</label>
                 <select
                   value={(application as AdingApplication).members.pamilya ?? ''}
                   onChange={e => onPamilyaChange?.(application.id, e.target.value || null)}
@@ -419,7 +419,7 @@ function ApplicationDetailModal({
                   ))}
                 </select>
                 {pamilyaSaving === 'saving' && (
-                  <span className="text-[11.5px] text-text-muted font-medium">Saving…</span>
+                  <span className="text-[12px] text-text-muted font-medium">Saving…</span>
                 )}
                 {pamilyaSaving === 'saved' && (
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5fcf8f" strokeWidth={2.4}>
@@ -427,7 +427,7 @@ function ApplicationDetailModal({
                   </svg>
                 )}
                 {pamilyaSaving === 'error' && (
-                  <span className="text-[11.5px] text-[#ef6f6f] font-medium">Failed</span>
+                  <span className="text-[12px] text-[#ef6f6f] font-medium">Failed</span>
                 )}
               </div>
             </div>
@@ -449,12 +449,12 @@ function AdingCard({ app, onOpen, onDelete }: { app: AdingApplication; onOpen: (
     >
       <div className="p-5 flex flex-col h-full">
         <div className="flex items-start justify-between gap-2 mb-1.5">
-          <h3 className="font-bold text-[14.5px] text-white line-clamp-1 flex-1 min-w-0">
+          <h3 className="font-bold text-[15px] text-white line-clamp-1 flex-1 min-w-0">
             {m.first_name} {m.last_name}
           </h3>
           {statusBadge(app.status)}
         </div>
-        <p className="text-[12.5px] text-[#8c8c8c] font-medium line-clamp-1">{m.email}</p>
+        <p className="text-[13px] text-[#8c8c8c] font-medium line-clamp-1">{m.email}</p>
         <p className="text-[12px] text-text-muted font-medium line-clamp-1 mt-0.5">
           {[m.year, m.major].filter(Boolean).join(' · ')}
         </p>
@@ -462,10 +462,10 @@ function AdingCard({ app, onOpen, onDelete }: { app: AdingApplication; onOpen: (
           <p className="text-[12px] text-[#9747FF] mt-0.5 line-clamp-1 font-semibold">Pamilya: {m.pamilya}</p>
         )}
         <div className="mt-auto pt-3 border-t border-white/6 flex items-center justify-between">
-          <p className="text-[11.5px] text-[#5a5a5a] font-medium">Submitted {fmtDate(app.submitted_at)}</p>
+          <p className="text-[12px] text-[#5a5a5a] font-medium">Submitted {fmtDate(app.submitted_at)}</p>
           <button
             onClick={(e) => { e.stopPropagation(); onDelete() }}
-            className="text-[10.5px] font-semibold text-[#ef6f6f]/50 border border-[#ef6f6f]/20 hover:border-[#ef6f6f]/55 hover:text-[#ef6f6f]/80 rounded-[6px] px-2 py-0.5 transition-colors"
+            className="text-[11px] font-semibold text-[#ef6f6f]/50 border border-[#ef6f6f]/20 hover:border-[#ef6f6f]/55 hover:text-[#ef6f6f]/80 rounded-[6px] px-2 py-0.5 transition-colors"
           >
             Delete
           </button>
@@ -484,20 +484,20 @@ function KuyateCard({ app, onOpen, onDelete }: { app: KuyateApplication; onOpen:
     >
       <div className="p-5 flex flex-col h-full">
         <div className="flex items-start justify-between gap-2 mb-1.5">
-          <h3 className="font-bold text-[14.5px] text-white line-clamp-1 flex-1 min-w-0">
+          <h3 className="font-bold text-[15px] text-white line-clamp-1 flex-1 min-w-0">
             {m.first_name} {m.last_name}
           </h3>
           {statusBadge(app.status)}
         </div>
-        <p className="text-[12.5px] text-[#8c8c8c] font-medium line-clamp-1">{m.email}</p>
+        <p className="text-[13px] text-[#8c8c8c] font-medium line-clamp-1">{m.email}</p>
         <p className="text-[12px] text-text-muted font-medium line-clamp-1 mt-0.5">
           {[m.year, m.major].filter(Boolean).join(' · ')}
         </p>
         <div className="mt-auto pt-3 border-t border-white/6 flex items-center justify-between">
-          <p className="text-[11.5px] text-[#5a5a5a] font-medium">Submitted {fmtDate(app.submitted_at)}</p>
+          <p className="text-[12px] text-[#5a5a5a] font-medium">Submitted {fmtDate(app.submitted_at)}</p>
           <button
             onClick={(e) => { e.stopPropagation(); onDelete() }}
-            className="text-[10.5px] font-semibold text-[#ef6f6f]/50 border border-[#ef6f6f]/20 hover:border-[#ef6f6f]/55 hover:text-[#ef6f6f]/80 rounded-[6px] px-2 py-0.5 transition-colors"
+            className="text-[11px] font-semibold text-[#ef6f6f]/50 border border-[#ef6f6f]/20 hover:border-[#ef6f6f]/55 hover:text-[#ef6f6f]/80 rounded-[6px] px-2 py-0.5 transition-colors"
           >
             Delete
           </button>
@@ -846,7 +846,7 @@ export default function ApplicationsClient({
         {/* page header */}
         <div className="mb-8">
           <h1 className="font-display font-black text-[32px] text-white tracking-tight leading-[1.02] mb-2">Applications</h1>
-          <p className="text-[14.5px] text-[#8c8c8c] font-medium">
+          <p className="text-[15px] text-[#8c8c8c] font-medium">
             Review and update ading and kuyate applications.
           </p>
         </div>
@@ -1048,7 +1048,7 @@ export default function ApplicationsClient({
               <h2 className="text-[16px] font-bold text-white mb-2">
                 {pendingStatus.status === 'accepted' ? 'Confirm Acceptance' : 'Confirm Rejection'}
               </h2>
-              <p className="text-[13.5px] text-[#8c8c8c] font-medium mb-6 leading-relaxed">
+              <p className="text-[14px] text-[#8c8c8c] font-medium mb-6 leading-relaxed">
                 {pendingStatus.status === 'accepted'
                   ? `This will send an acceptance email to ${pendingStatus.applicantFirstName}. This email cannot be unsent. Are you sure?`
                   : `This will send a rejection email to ${pendingStatus.applicantFirstName}. This email cannot be unsent. Are you sure?`}
@@ -1088,7 +1088,7 @@ export default function ApplicationsClient({
               style={{ animation: 'modalIn 0.18s ease-out' }}
             >
               <h2 className="text-[16px] font-bold text-white mb-2">Already Reviewed</h2>
-              <p className="text-[13.5px] text-[#8c8c8c] font-medium mb-6 leading-relaxed">{kuyateConflict}</p>
+              <p className="text-[14px] text-[#8c8c8c] font-medium mb-6 leading-relaxed">{kuyateConflict}</p>
               <button
                 type="button"
                 onClick={() => setKuyateConflict(null)}
@@ -1115,7 +1115,7 @@ export default function ApplicationsClient({
                 </svg>
                 <h2 className="text-[16px] font-bold text-white">Delete Application</h2>
               </div>
-              <p className="text-[13.5px] text-[#8c8c8c] font-medium mb-2 leading-relaxed">
+              <p className="text-[14px] text-[#8c8c8c] font-medium mb-2 leading-relaxed">
                 This will permanently delete{' '}
                 <strong className="text-white">{deleteTarget.applicantName}</strong>
                 &apos;s {deleteTarget.type} application and reset their onboarding so they can reapply.
@@ -1123,17 +1123,17 @@ export default function ApplicationsClient({
               <p className="text-[13px] text-text-muted font-medium mb-5 leading-relaxed">
                 This action cannot be undone. The member will need to go through onboarding again to submit a new application.
               </p>
-              <p className="text-[10.5px] font-bold tracking-[0.07em] uppercase text-[#7e7e7e] mb-1">
+              <p className="text-[11px] font-bold tracking-[0.07em] uppercase text-[#7e7e7e] mb-1">
                 Type their full name to confirm
               </p>
-              <p className="text-[11.5px] text-[#5a5a5a] font-medium mb-2">&ldquo;{deleteTarget.applicantName}&rdquo;</p>
+              <p className="text-[12px] text-[#5a5a5a] font-medium mb-2">&ldquo;{deleteTarget.applicantName}&rdquo;</p>
               <input
                 type="text"
                 value={deleteConfirmInput}
                 onChange={(e) => setDeleteConfirmInput(e.target.value)}
                 placeholder="Type full name here"
                 autoFocus
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d0d0d] border border-white/10 text-[13.5px] text-white placeholder:text-[#5a5a5a] focus:outline-none focus:border-[#ef6f6f] focus:shadow-[0_0_0_3px_rgba(239,111,111,0.12)] transition-[border-color,box-shadow] font-[inherit] mb-4"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0d0d0d] border border-white/10 text-[14px] text-white placeholder:text-[#5a5a5a] focus:outline-none focus:border-[#ef6f6f] focus:shadow-[0_0_0_3px_rgba(239,111,111,0.12)] transition-[border-color,box-shadow] font-[inherit] mb-4"
               />
               {deleteError && (
                 <p className="text-[13px] text-[#ef6f6f] mb-3">{deleteError}</p>

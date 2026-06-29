@@ -99,7 +99,7 @@ export default function BasicInfoClient({ initial }: Props) {
         {/* badge */}
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent-green/10 border border-accent-green/30 mb-6">
           <span className="w-[7px] h-[7px] rounded-full bg-accent-green shrink-0" />
-          <span className="font-display font-bold text-[10.5px] tracking-[0.12em] text-accent-green uppercase">No pamilya — that&apos;s okay</span>
+          <span className="font-display font-bold text-[11px] tracking-[0.12em] text-accent-green uppercase">No pamilya — that&apos;s okay</span>
         </div>
 
         <h1 className="font-display font-black text-[clamp(36px,5vw,62px)] leading-[0.94] tracking-[-0.03em] text-white mb-5">

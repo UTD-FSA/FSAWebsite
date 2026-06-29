@@ -18,7 +18,7 @@ function PassFail({ pass, label }: { pass: boolean; label?: string }) {
   return (
     <span className="inline-flex items-center gap-1.5">
       {label !== undefined && (
-        <span className="font-semibold text-[13.5px] text-[#d4d4d4]">{label}</span>
+        <span className="font-semibold text-[14px] text-[#d4d4d4]">{label}</span>
       )}
       {pass ? (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5fcf8f" strokeWidth={2.4}>
@@ -113,7 +113,7 @@ export default function GoodphilClient({ members }: { members: GoodphilEligibili
             <h1 className="font-display font-black text-[32px] text-white tracking-tight leading-[1.02] mb-2">
               Goodphil Eligibility
             </h1>
-            <p className="text-[14.5px] text-[#8c8c8c] font-medium">
+            <p className="text-[15px] text-[#8c8c8c] font-medium">
               Requirements: 3 total meetings (including Risk Management) + 6 points
             </p>
           </div>
@@ -174,13 +174,13 @@ export default function GoodphilClient({ members }: { members: GoodphilEligibili
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/8">
-                <th className="text-left px-5 py-4 text-[10.5px] font-bold tracking-[0.1em] uppercase text-[#7e7e7e]">Name</th>
-                <th className="text-left px-5 py-4 text-[10.5px] font-bold tracking-[0.1em] uppercase text-[#7e7e7e]">Email</th>
-                <th className="text-left px-5 py-4 text-[10.5px] font-bold tracking-[0.1em] uppercase text-[#7e7e7e]">Phone</th>
-                <th className="text-center px-5 py-4 text-[10.5px] font-bold tracking-[0.1em] uppercase text-[#7e7e7e]">Meetings ≥ 3</th>
-                <th className="text-center px-5 py-4 text-[10.5px] font-bold tracking-[0.1em] uppercase text-[#7e7e7e]">Risk Mgmt</th>
-                <th className="text-center px-5 py-4 text-[10.5px] font-bold tracking-[0.1em] uppercase text-[#7e7e7e]">Points ≥ 6</th>
-                <th className="text-center px-5 py-4 text-[10.5px] font-bold tracking-[0.1em] uppercase text-[#7e7e7e]">Eligible</th>
+                <th className="text-left px-5 py-4 text-[11px] font-bold tracking-[0.1em] uppercase text-[#7e7e7e]">Name</th>
+                <th className="text-left px-5 py-4 text-[11px] font-bold tracking-[0.1em] uppercase text-[#7e7e7e]">Email</th>
+                <th className="text-left px-5 py-4 text-[11px] font-bold tracking-[0.1em] uppercase text-[#7e7e7e]">Phone</th>
+                <th className="text-center px-5 py-4 text-[11px] font-bold tracking-[0.1em] uppercase text-[#7e7e7e]">Meetings ≥ 3</th>
+                <th className="text-center px-5 py-4 text-[11px] font-bold tracking-[0.1em] uppercase text-[#7e7e7e]">Risk Mgmt</th>
+                <th className="text-center px-5 py-4 text-[11px] font-bold tracking-[0.1em] uppercase text-[#7e7e7e]">Points ≥ 6</th>
+                <th className="text-center px-5 py-4 text-[11px] font-bold tracking-[0.1em] uppercase text-[#7e7e7e]">Eligible</th>
               </tr>
             </thead>
             <tbody>

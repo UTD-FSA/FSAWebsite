@@ -296,7 +296,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
             <h1 className="font-display font-black text-[32px] text-white tracking-tight leading-[1.02] mb-2">
               Gallery Management
             </h1>
-            <p className="text-[14.5px] text-[#8c8c8c] font-medium">Create and manage photo archives.</p>
+            <p className="text-[15px] text-[#8c8c8c] font-medium">Create and manage photo archives.</p>
           </div>
           <button
             onClick={() => setModalOpen(true)}
@@ -313,7 +313,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
         <div className="flex items-center gap-3 mb-5">
           <span className="font-display font-bold text-[12px] tracking-[0.16em] text-[#9a9a9a] uppercase">Existing Galleries</span>
           <span className="h-px flex-1 bg-white/7" />
-          <span className="text-[12.5px] text-text-muted font-medium">{galleries.length} archive{galleries.length !== 1 ? 's' : ''}</span>
+          <span className="text-[13px] text-text-muted font-medium">{galleries.length} archive{galleries.length !== 1 ? 's' : ''}</span>
         </div>
 
         {/* gallery list */}
@@ -338,16 +338,16 @@ export default function OfficerGalleryClient({ galleries }: Props) {
 
                 {/* info */}
                 <div className="flex-1 min-w-0 sm:self-center">
-                  <h2 className="font-bold text-[15.5px] text-white truncate leading-snug">{gallery.title}</h2>
+                  <h2 className="font-bold text-[16px] text-white truncate leading-snug">{gallery.title}</h2>
                   {/* only renders when at least one of semester/year is set — do not remove this condition */}
                   {(gallery.semester || gallery.year) && (
-                    <p className="text-[12.5px] text-[#8c8c8c] font-medium mt-0.5">
+                    <p className="text-[13px] text-[#8c8c8c] font-medium mt-0.5">
                       {[gallery.semester, gallery.year].filter(Boolean).join(' ')}
                     </p>
                   )}
                   {/* only renders when the gallery has a description — do not remove this condition */}
                   {gallery.description && (
-                    <p className="text-[12.5px] text-text-muted font-medium mt-1 line-clamp-1">{gallery.description}</p>
+                    <p className="text-[13px] text-text-muted font-medium mt-1 line-clamp-1">{gallery.description}</p>
                   )}
                 </div>
 
@@ -694,7 +694,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                     href={editForm.google_photos_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 mt-2 text-[12.5px] text-[#5fa8e8] font-semibold hover:text-[#8ec5f5] transition-colors"
+                    className="inline-flex items-center gap-1 mt-2 text-[13px] text-[#5fa8e8] font-semibold hover:text-[#8ec5f5] transition-colors"
                   >
                     View Album
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
@@ -749,7 +749,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
               <div className="flex items-center justify-between gap-4 pt-4 border-t border-white/7">
                 <div>
                   <div className="text-sm font-semibold text-[#e8e8e8]">Published</div>
-                  <div className="text-[12.5px] text-[#7e7e7e] font-medium mt-0.5">Show this archive on the public Gallery page</div>
+                  <div className="text-[13px] text-[#7e7e7e] font-medium mt-0.5">Show this archive on the public Gallery page</div>
                 </div>
                 <label className="relative cursor-pointer select-none flex-shrink-0">
                   <input

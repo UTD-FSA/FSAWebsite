@@ -127,7 +127,7 @@ export default function UpcomingEventsSection({ events }: Props) {
                 <div className="text-[15px] font-bold tracking-[-0.01em] mb-1.5 truncate" style={{ color: '#fff' }}>
                   {event.name}
                 </div>
-                <div className="text-[12.5px] font-medium" style={{ color: '#7a7a7a' }}>
+                <div className="text-[13px] font-medium" style={{ color: '#7a7a7a' }}>
                   {fmtTime(event.event_date)}
                 </div>
               </button>
@@ -224,7 +224,7 @@ export default function UpcomingEventsSection({ events }: Props) {
                     <rect x="3" y="4.5" width="18" height="16" rx="2.5" />
                     <path d="M3 9h18M8 2.5v4M16 2.5v4" />
                   </svg>
-                  <span className="text-[14.5px] font-medium" style={{ color: '#cfcfcf' }}>{fmtModalDate(event.event_date)}</span>
+                  <span className="text-[15px] font-medium" style={{ color: '#cfcfcf' }}>{fmtModalDate(event.event_date)}</span>
                 </div>
 
                 {event.location && (
@@ -233,12 +233,12 @@ export default function UpcomingEventsSection({ events }: Props) {
                       <path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z" />
                       <circle cx="12" cy="10" r="2.4" />
                     </svg>
-                    <span className="text-[14.5px] font-medium" style={{ color: '#cfcfcf' }}>{event.location}</span>
+                    <span className="text-[15px] font-medium" style={{ color: '#cfcfcf' }}>{event.location}</span>
                   </div>
                 )}
 
                 {event.description && (
-                  <p className="text-[14.5px] leading-relaxed" style={{ color: '#a8a8a8', marginBottom: '22px' }}>
+                  <p className="text-[15px] leading-relaxed" style={{ color: '#a8a8a8', marginBottom: '22px' }}>
                     {event.description}
                   </p>
                 )}
@@ -292,14 +292,14 @@ export default function UpcomingEventsSection({ events }: Props) {
                   alreadyRegistered ? (
                     <button
                       onClick={() => setShowAlreadyRegistered(true)}
-                      className="w-full text-center text-[14.5px] font-bold tracking-[0.01em] rounded-[13px] transition-opacity hover:opacity-75"
+                      className="w-full text-center text-[15px] font-bold tracking-[0.01em] rounded-[13px] transition-opacity hover:opacity-75"
                       style={{ padding: '16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#75ba78', cursor: 'pointer' }}
                     >
                       ✓ Already Registered
                     </button>
                   ) : registrationClosed ? (
                     <div
-                      className="w-full text-center text-[14.5px] font-bold tracking-[0.01em] rounded-[13px]"
+                      className="w-full text-center text-[15px] font-bold tracking-[0.01em] rounded-[13px]"
                       style={{ padding: '16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#7a7a7a' }}
                     >
                       Registration Closed
@@ -354,7 +354,7 @@ export default function UpcomingEventsSection({ events }: Props) {
             className="rounded-2xl p-7"
           >
             <h2 className="text-[17px] font-bold text-white mb-2">Already registered</h2>
-            <p className="text-[13.5px] font-medium leading-relaxed mb-6" style={{ color: '#8c8c8c' }}>
+            <p className="text-[14px] font-medium leading-relaxed mb-6" style={{ color: '#8c8c8c' }}>
               You already have a ticket for this event. Members are limited to one ticket per paid event.
             </p>
             <button

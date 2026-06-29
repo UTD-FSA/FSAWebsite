@@ -69,7 +69,7 @@ export default function Footer() {
               </a>
             ))}
           </div>
-          <p className="font-display font-semibold text-[9.4px] text-white text-right leading-relaxed">
+          <p className="font-display font-semibold text-[9px] text-white text-right leading-relaxed">
             &ldquo;WHO&rsquo;S GOT THAT GOOD D?&rdquo; &ldquo;WE GOT THAT GOOD D!&rdquo;<br />
             &ldquo;ONE, TWO, THREE! GIMME A U-T-D!&rdquo;
           </p>

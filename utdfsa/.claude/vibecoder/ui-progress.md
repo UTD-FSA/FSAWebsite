@@ -22,8 +22,8 @@ Branch: `vibecoder/ui`
 - [x] 16. Respect Mobile Safe Area Insets — added viewport-fit:cover export in layout.tsx; navbar gets paddingTop:env(safe-area-inset-top) so bg extends through notch; mobile panel offset updated to calc(5rem+env(safe-area-inset-top))
 - [x] 17. Build a Smart Sticky Header — hide-on-scroll already implemented (hides after 80px scroll-down, reveals on 25px scroll-up); added isScrolled state → subtle bottom border (rgba(255,255,255,0.06)) when y>10px; no layout shift (sticky not fixed)
 - [x] 18. Balance Content Density and Whitespace — N/A: density is well-calibrated; profile py-12, events pt-14/pb-20, membership FAQ py-12, cards gap-3.5–gap-6; officer data-heavy pages use tighter density appropriately
-- [ ] 19. Use Container Queries for Components
-- [ ] 20. Untangle Z-Index Stacking Issues
+- [x] 19. Use Container Queries for Components — N/A: all reusable components (Modal, EventCard, etc.) are used in full-width contexts only; no sidebar/narrow container usage patterns found
+- [x] 20. Untangle Z-Index Stacking Issues — stack is clean: z-10/20 (page content), z-50 (dropdowns), z-[60] (navbar), z-[300] (modals); no conflicts or clipping found
 - [ ] 21. Establish a Modular Type Scale
 - [ ] 22. Add Fluid Responsive Typography
 - [ ] 23. Optimize Reading Line Length

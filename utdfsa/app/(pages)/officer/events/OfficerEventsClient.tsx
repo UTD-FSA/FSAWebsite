@@ -207,7 +207,7 @@ function PillToggle({
     <div className="flex items-center justify-between gap-4">
       <div>
         <div className="text-sm font-semibold text-[#e8e8e8]">{label}</div>
-        {sublabel && <div className="text-[12.5px] text-[#7e7e7e] font-medium mt-0.5">{sublabel}</div>}
+        {sublabel && <div className="text-[13px] text-[#7e7e7e] font-medium mt-0.5">{sublabel}</div>}
       </div>
       <label className="relative cursor-pointer select-none flex-shrink-0">
         <input
@@ -337,7 +337,7 @@ function EventForm({
           <div className="border-t border-white/7 pt-5">
             <div className="flex flex-col gap-1 mb-4">
               <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#9a9a9a]">Ticketing</p>
-              <p className="text-[12.5px] text-text-muted font-medium">
+              <p className="text-[13px] text-text-muted font-medium">
                 Members are limited to one ticket. Non-members can buy multiple.
               </p>
             </div>
@@ -363,7 +363,7 @@ function EventForm({
             <div className="flex items-center justify-between gap-4">
               <div>
                 <div className="text-sm font-semibold text-[#e8e8e8]">Early Bird Pricing</div>
-                <div className="text-[12.5px] text-[#7e7e7e] font-medium mt-0.5">
+                <div className="text-[13px] text-[#7e7e7e] font-medium mt-0.5">
                   Early bird prices are shown until the deadline, then regular prices kick in automatically — no action needed.
                 </div>
               </div>
@@ -404,11 +404,11 @@ function EventForm({
                 {form.eb_deadline && (
                   <div className="col-span-2">
                     {ebExpired ? (
-                      <p className="text-[12.5px] text-[#ffb347] bg-[rgba(255,170,50,0.08)] border border-[rgba(255,170,50,0.25)] rounded-xl px-4 py-2.5">
+                      <p className="text-[13px] text-[#ffb347] bg-[rgba(255,170,50,0.08)] border border-[rgba(255,170,50,0.25)] rounded-xl px-4 py-2.5">
                         ⚠️ Early bird ended {fmtDate(form.eb_deadline)} — attendees now see regular prices.
                       </p>
                     ) : (
-                      <p className="text-[12.5px] text-[#5fcf8f] bg-[rgba(95,207,143,0.08)] border border-[rgba(95,207,143,0.22)] rounded-xl px-4 py-2.5">
+                      <p className="text-[13px] text-[#5fcf8f] bg-[rgba(95,207,143,0.08)] border border-[rgba(95,207,143,0.22)] rounded-xl px-4 py-2.5">
                         ✓ Early bird active until {fmtDate(form.eb_deadline)}.
                       </p>
                     )}
@@ -426,7 +426,7 @@ function EventForm({
           <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#9a9a9a] mb-1">Attendance</p>
           {hasPoints(form.event_type) ? (
             <>
-              <p className="text-[12.5px] text-text-muted font-medium mb-4">
+              <p className="text-[13px] text-text-muted font-medium mb-4">
                 {isHybrid(form.event_type)
                   ? 'Members earn goodphil points by scanning the attendance QR in addition to buying a ticket.'
                   : 'Members scan the attendance QR code to earn goodphil points. Open/close the QR in the edit panel after saving.'}
@@ -439,7 +439,7 @@ function EventForm({
               </div>
             </>
           ) : (
-            <p className="text-[12.5px] text-text-muted font-medium">
+            <p className="text-[13px] text-text-muted font-medium">
               Attendance is tracked via QR code. Open/close the QR in the edit panel after saving.
               No goodphil points are awarded for this event type.
             </p>
@@ -558,10 +558,10 @@ function AttendanceQR({ event, onUpdate }: { event: Event; onUpdate: (e: Event) 
             </svg>
           </div>
           <div>
-            <div className="text-[14.5px] font-bold text-white">Attendance QR</div>
+            <div className="text-[15px] font-bold text-white">Attendance QR</div>
             <div className="flex items-center gap-1.5 mt-1">
               <span className={`w-[7px] h-[7px] rounded-full ${isOpen ? 'bg-[#5fcf8f]' : 'bg-[#6e6e6e]'}`} />
-              <span className={`text-[12.5px] font-semibold ${isOpen ? 'text-[#5fcf8f]' : 'text-[#8c8c8c]'}`}>
+              <span className={`text-[13px] font-semibold ${isOpen ? 'text-[#5fcf8f]' : 'text-[#8c8c8c]'}`}>
                 {isOpen ? 'QR Open' : 'QR Closed'}
               </span>
             </div>
@@ -926,7 +926,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
             <h1 className="font-display font-black text-[32px] text-white tracking-tight leading-[1.02] mb-2">
               Event Management
             </h1>
-            <p className="text-[14.5px] text-[#8c8c8c] font-medium">
+            <p className="text-[15px] text-[#8c8c8c] font-medium">
               Parties use ticket QR scanning. Meetings use attendance QR.
             </p>
           </div>
@@ -964,7 +964,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
         <div className="flex items-center gap-3 mb-5">
           <span className="font-display font-bold text-[12px] tracking-[0.16em] text-[#9a9a9a] uppercase">Existing Events</span>
           <span className="h-px flex-1 bg-white/7" />
-          <span className="text-[12.5px] text-text-muted font-medium">{events.length} event{events.length !== 1 ? 's' : ''}</span>
+          <span className="text-[13px] text-text-muted font-medium">{events.length} event{events.length !== 1 ? 's' : ''}</span>
         </div>
 
         {/* event list */}
@@ -992,7 +992,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2.5 flex-wrap mb-2">
                           <h3 className="font-bold text-[17px] text-white tracking-[-0.01em]">{event.name}</h3>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-bold tracking-[0.05em] uppercase ${typeBadgeCls(event.event_type)}`}>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-[0.05em] uppercase ${typeBadgeCls(event.event_type)}`}>
                             {event.event_type}
                           </span>
                         </div>
@@ -1017,7 +1017,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
                       </div>
 
                       <div className="flex sm:flex-col items-start sm:items-end gap-2 sm:flex-shrink-0">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11.5px] font-bold ${
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-bold ${
                           event.is_visible
                             ? 'bg-[rgba(95,207,143,0.12)] border border-[rgba(95,207,143,0.28)] text-[#5fcf8f]'
                             : 'bg-white/5 border border-white/12 text-[#8c8c8c]'
@@ -1034,7 +1034,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
 
                         <button
                           onClick={() => setEditingId(isEditing ? null : event.id)}
-                          className="bg-transparent border-none text-[#5fa8e8] text-[13.5px] font-bold cursor-pointer hover:text-[#8ec5f5] transition-colors p-2 -m-2 min-h-[44px] flex items-center">
+                          className="bg-transparent border-none text-[#5fa8e8] text-[14px] font-bold cursor-pointer hover:text-[#8ec5f5] transition-colors p-2 -m-2 min-h-[44px] flex items-center">
                           {isEditing ? 'Close' : 'Edit'}
                         </button>
                       </div>
