@@ -34,7 +34,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#0f0f0f]">
+    <div className="min-h-screen flex bg-background">
 
       {/* LEFT: photo panel — hidden on mobile */}
       <div className="hidden lg:block lg:flex-[0_0_60%] relative overflow-hidden">
@@ -93,7 +93,7 @@ export default function LoginPage() {
       {/* RIGHT: form panel */}
       <div
         className="w-full lg:flex-[0_0_40%] flex items-center justify-center p-6 lg:p-12 min-h-screen"
-        style={{ background: '#0d0d0d', borderLeft: '1px solid rgba(255,255,255,0.08)' }}
+        style={{ background: 'var(--background)', borderLeft: '1px solid var(--color-border-subtle)' }}
       >
         <div className="w-full max-w-[340px] flex flex-col">
 
@@ -123,7 +123,7 @@ export default function LoginPage() {
           </h1>
 
           {/* Subtext */}
-          <p className="text-[15px] font-medium leading-[1.55] mb-8 text-center" style={{ color: '#8c8c8c' }}>
+          <p className="text-[15px] font-medium leading-[1.55] mb-8 text-center" style={{ color: 'var(--color-text-muted)' }}>
             Sign in to access your FSA membership, events, and more.
           </p>
 
@@ -148,23 +148,23 @@ export default function LoginPage() {
 
           {/* Divider */}
           <div className="flex items-center gap-[14px] my-6">
-            <span className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.09)' }} />
+            <span className="h-px flex-1" style={{ background: 'var(--color-border-subtle)' }} />
             <span
               className="text-[12px] font-semibold tracking-[0.08em] uppercase"
-              style={{ color: '#5e5e5e' }}
+              style={{ color: 'var(--color-text-faint)' }}
             >
               or
             </span>
-            <span className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.09)' }} />
+            <span className="h-px flex-1" style={{ background: 'var(--color-border-subtle)' }} />
           </div>
 
           {/* Helper text */}
-          <p className="text-[13px] font-medium leading-[1.55] text-center" style={{ color: '#7a7a7a' }}>
+          <p className="text-[13px] font-medium leading-[1.55] text-center" style={{ color: 'var(--color-text-dim)' }}>
             New here? Signing in for the first time will automatically create your account.
           </p>
 
           {/* Terms */}
-          <p className="text-[12px] font-medium leading-[1.5] text-center mt-9" style={{ color: '#5a5a5a' }}>
+          <p className="text-[12px] font-medium leading-[1.5] text-center mt-9" style={{ color: 'var(--color-text-faint)' }}>
             By signing in you agree to UTD FSA&apos;s terms of membership.
           </p>
 

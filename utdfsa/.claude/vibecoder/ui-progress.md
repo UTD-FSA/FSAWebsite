@@ -4,7 +4,7 @@ Branch: `vibecoder/ui`
 
 ## Prompts
 
-- [ ] 1. Establish a Design Token System
+- [x] 1. Establish a Design Token System — expanded globals.css to 3-tier system (primitive/semantic/component); extracted event type colors from 3 files into utils/eventTypes.ts; added text/surface/border semantic tokens; updated FullCalendar overrides to use CSS vars
 - [ ] 2. Build a Semantic Color System
 - [ ] 3. Define a Consistent Spacing Scale
 - [ ] 4. Create an Elevation Shadow System

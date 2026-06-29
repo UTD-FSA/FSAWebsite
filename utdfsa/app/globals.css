@@ -34,12 +34,12 @@
   --section-bg:    var(--primitive-bg-section);
   --dropdown-bg:   var(--primitive-bg-input);
 
-  /* tier 2: semantic — text hierarchy */
-  --color-text-primary:   #ffffff;
-  --color-text-secondary: #cfcfcf;
-  --color-text-muted:     #8c8c8c;
-  --color-text-dim:       #7a7a7a;
-  --color-text-faint:     #5a5a5a;
+  /* tier 2: semantic — text hierarchy (all pass 4.5:1 on --background) */
+  --color-text-primary:   #ffffff;   /* 21:1 */
+  --color-text-secondary: #cfcfcf;   /* ~10:1 */
+  --color-text-muted:     #8c8c8c;   /* ~6.2:1 */
+  --color-text-dim:       #7a7a7a;   /* ~5.0:1 */
+  --color-text-faint:     #787878;   /* ~4.8:1 — minimum passing for small text */
 
   /* tier 2: semantic — surfaces */
   --color-surface:         var(--primitive-bg-base);

@@ -60,7 +60,7 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
       <h1 className="font-display text-2xl font-bold text-white mb-1">Attendance History</h1>
-      <p className="text-sm mb-8" style={{ color: 'rgba(255,255,255,0.45)' }}>
+      <p className="text-sm mb-8" style={{ color: 'var(--color-text-dim)' }}>
         Track your points and Goodphil eligibility.
       </p>
 
@@ -68,22 +68,22 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
       <div
         className="rounded-2xl p-6 mb-8"
         style={{
-          background: '#1a1a1a',
-          border: '1px solid rgba(255,255,255,0.07)',
+          background: 'var(--color-surface-raised)',
+          border: '1px solid var(--color-border-subtle)',
         }}
       >
         {/* Header row: big points number + eligibility badge */}
         <div className="flex items-start justify-between mb-6">
           <div>
             <p className="font-display text-5xl font-bold text-white leading-none">{points}</p>
-            <p className="text-xs mt-1.5" style={{ color: 'rgba(255,255,255,0.4)' }}>Total Points</p>
+            <p className="text-xs mt-1.5" style={{ color: 'var(--color-text-dim)' }}>Total Points</p>
           </div>
           <span
             className="text-xs font-semibold px-3 py-1.5 rounded-full mt-1"
             style={
               isEligible
-                ? { background: 'rgba(117,186,120,0.15)', color: '#75ba78' }
-                : { background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.4)' }
+                ? { background: 'rgba(117,186,120,0.15)', color: 'var(--accent-green)' }
+                : { background: 'rgba(255,255,255,0.06)', color: 'var(--color-text-dim)' }
             }
           >
             {isEligible ? '✓ Goodphil Eligible' : 'Requirements not yet met'}
@@ -93,26 +93,26 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
         {/* Progress bar 1 — Goodphil Points (6 required) */}
         <div className="mb-5">
           <div className="flex items-center justify-between mb-1.5">
-            <p className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.65)' }}>
+            <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
               Goodphil Points
             </p>
             {points >= 6 ? (
-              <span className="text-xs font-semibold" style={{ color: '#75ba78' }}>✓ Requirement Met</span>
+              <span className="text-xs font-semibold" style={{ color: 'var(--accent-green)' }}>✓ Requirement Met</span>
             ) : (
-              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
                 {points} / 6 required
               </span>
             )}
           </div>
           <div
             className="h-2 rounded-full overflow-hidden"
-            style={{ background: 'rgba(255,255,255,0.08)' }}
+            style={{ background: 'var(--color-border-subtle)' }}
           >
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{
                 width: `${pointsProgress}%`,
-                background: points >= 6 ? '#75ba78' : 'rgba(117,186,120,0.65)',
+                background: points >= 6 ? 'var(--accent-green)' : 'rgba(117,186,120,0.65)',
               }}
             />
           </div>
@@ -121,20 +121,20 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
         {/* Progress bar 2 — Meetings (3 required) */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <p className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.65)' }}>
+            <p className="text-xs font-medium" style={{ color: 'var(--color-text-secondary)' }}>
               Meetings Attended
             </p>
             {meetingCount >= 3 ? (
-              <span className="text-xs font-semibold" style={{ color: '#75ba78' }}>✓ Requirement Met</span>
+              <span className="text-xs font-semibold" style={{ color: 'var(--accent-green)' }}>✓ Requirement Met</span>
             ) : (
-              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+              <span className="text-xs" style={{ color: 'var(--color-text-dim)' }}>
                 {meetingCount} / 3 required
               </span>
             )}
           </div>
           <div
             className="h-2 rounded-full overflow-hidden"
-            style={{ background: 'rgba(255,255,255,0.08)' }}
+            style={{ background: 'var(--color-border-subtle)' }}
           >
             <div
               className="h-full rounded-full transition-all duration-700"
@@ -144,7 +144,7 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
               }}
             />
           </div>
-          <p className="text-xs mt-1.5" style={riskMgmtCount > 0 ? { color: '#75ba78' } : { color: '#ffd166' }}>
+          <p className="text-xs mt-1.5" style={riskMgmtCount > 0 ? { color: 'var(--accent-green)' } : { color: 'var(--accent-gold)' }}>
             {riskMgmtCount > 0
               ? '✓ Risk Management attended'
               : '⚠ Risk Management not yet attended'}
@@ -155,24 +155,24 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
       {/* ── Attendance list ───────────────────────────────────────── */}
       <p
         className="text-xs font-semibold uppercase tracking-[0.12em] mb-4"
-        style={{ color: 'rgba(255,255,255,0.28)' }}
+        style={{ color: 'var(--color-text-muted)' }}
       >
         Attendance Log
       </p>
 
       {attendanceRecords.length === 0 ? (
         <div className="text-center py-16">
-          <p className="text-lg font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <p className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text-dim)' }}>
             No attendance records yet
           </p>
-          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.25)' }}>
+          <p className="text-sm" style={{ color: 'var(--color-text-faint)' }}>
             Attend an event to start building your record.
           </p>
         </div>
       ) : (
         <div
           className="rounded-2xl overflow-hidden"
-          style={{ border: '1px solid rgba(255,255,255,0.07)' }}
+          style={{ border: '1px solid var(--color-border-subtle)' }}
         >
           {attendanceRecords.map((record, idx) => {
             const event = resolveEvent(record.events)
@@ -199,7 +199,7 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
                   <p className="text-sm font-medium text-white truncate">
                     {event?.name ?? 'Unknown Event'}
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-dim)' }}>
                     {event?.event_type ?? ''}
                   </p>
                 </div>
@@ -210,11 +210,11 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
                     {event?.event_date ? fmtDate(event.event_date) : '—'}
                   </p>
                   {event?.points && event.points > 0 ? (
-                    <p className="text-xs font-semibold mt-0.5" style={{ color: '#75ba78' }}>
+                    <p className="text-xs font-semibold mt-0.5" style={{ color: 'var(--accent-green)' }}>
                       +{event.points} pts
                     </p>
                   ) : (
-                    <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.2)' }}>—</p>
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-faint)' }}>—</p>
                   )}
                 </div>
               </div>
