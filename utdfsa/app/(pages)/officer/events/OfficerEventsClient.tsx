@@ -991,7 +991,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2.5 flex-wrap mb-2">
-                          <h3 className="font-bold text-[17px] text-white tracking-[-0.01em]">{event.name}</h3>
+                          <h3 className="font-bold text-[17px] text-white tracking-[-0.01em] line-clamp-2">{event.name}</h3>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-[0.05em] uppercase ${typeBadgeCls(event.event_type)}`}>
                             {event.event_type}
                           </span>
