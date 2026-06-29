@@ -215,11 +215,11 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
           </div>
 
           {/* only renders when the API returned a validation or server error — do not remove this condition */}
-          {error && <p className="font-sans text-sm text-red-400">{error}</p>}
+          {error && <p role="alert" className="font-sans text-sm text-red-400">{error}</p>}
 
           {/* only renders for ~1.2 s after a successful save, before the router redirect fires — do not remove this condition */}
           {success && (
-            <p className="font-sans text-sm text-green-400">
+            <p role="status" className="font-sans text-sm text-green-400">
               Profile updated! Redirecting...
             </p>
           )}
