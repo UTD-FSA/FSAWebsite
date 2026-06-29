@@ -6,6 +6,7 @@
 //        events may be returned as an object or single-element array due to supabase join behavior
 'use client'
 
+import { useEffect, useState } from 'react'
 import { getEventTypeColor } from '@/utils/eventTypes'
 
 type EventInfo = {
@@ -53,6 +54,10 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
   // clamp progress to 100% so bars don't overflow when requirements are exceeded
   const pointsProgress  = Math.min((points / 6) * 100, 100)
   const meetingsProgress = Math.min((meetingCount / 3) * 100, 100)
+
+  // trigger CSS transition from 0 → target width on mount
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   // goodphil eligibility: 6+ points, 3+ meetings, and risk management attended at least once
   const isEligible = points >= 6 && meetingCount >= 3 && riskMgmtCount > 0
@@ -111,7 +116,7 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{
-                width: `${pointsProgress}%`,
+                width: mounted ? `${pointsProgress}%` : '0%',
                 background: points >= 6 ? 'var(--accent-green)' : 'rgba(117,186,120,0.65)',
               }}
             />
@@ -139,7 +144,7 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
             <div
               className="h-full rounded-full transition-all duration-700"
               style={{
-                width: `${meetingsProgress}%`,
+                width: mounted ? `${meetingsProgress}%` : '0%',
                 background: meetingCount >= 3 ? '#75ba78' : '#5a96ff',
               }}
             />
