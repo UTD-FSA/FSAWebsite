@@ -227,7 +227,7 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-accent-green text-[#0e0e0e] font-display font-black uppercase tracking-widest py-3.5 rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity mt-2"
+            className="w-full bg-accent-green text-[#0e0e0e] font-display font-black uppercase tracking-widest py-3.5 rounded-lg hover:opacity-90 active:scale-[0.98] disabled:opacity-50 transition-all mt-2"
           >
             {/* only shows "Saving..." while the API call is in flight — do not remove this condition */}
             {loading ? 'Saving...' : 'Save Changes'}

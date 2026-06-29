@@ -559,7 +559,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full sm:w-auto sm:ml-auto min-h-[44px] bg-[#9747FF] hover:bg-[#a85eff] disabled:opacity-50 text-white rounded-xl px-4 py-2.5 text-sm font-bold border-none cursor-pointer transition-colors"
+                  className="w-full sm:w-auto sm:ml-auto min-h-[44px] bg-[#9747FF] hover:bg-[#a85eff] active:scale-[0.98] disabled:opacity-50 text-white rounded-xl px-4 py-2.5 text-sm font-bold border-none cursor-pointer transition-all"
                 >
                   {/* only shows "Saving…" while the upload+insert API call is in flight — do not remove this condition */}
                   {submitting ? 'Saving…' : 'Create Archive'}
@@ -785,7 +785,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                   <button
                     type="submit"
                     disabled={editSubmitting}
-                    className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 rounded-xl border-none bg-[#9747FF] hover:bg-[#a85eff] disabled:opacity-50 text-white font-bold text-sm transition-colors"
+                    className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 rounded-xl border-none bg-[#9747FF] hover:bg-[#a85eff] active:scale-[0.98] disabled:opacity-50 text-white font-bold text-sm transition-all"
                   >
                     {editSubmitting ? 'Saving…' : 'Save Changes'}
                   </button>

@@ -482,7 +482,7 @@ function EventForm({
             Cancel
           </button>
           <button type="submit" disabled={saving}
-            className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 rounded-xl border-none bg-[#9747FF] hover:bg-[#a85eff] disabled:opacity-50 text-white font-bold text-sm transition-colors">
+            className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 rounded-xl border-none bg-[#9747FF] hover:bg-[#a85eff] active:scale-[0.98] disabled:opacity-50 text-white font-bold text-sm transition-all">
             {saving ? 'Saving…' : submitLabel}
           </button>
         </div>

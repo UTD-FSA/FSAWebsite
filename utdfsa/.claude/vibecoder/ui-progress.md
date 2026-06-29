@@ -59,7 +59,7 @@ Branch: `vibecoder/ui`
 - [x] 53. Build Fully Accessible Modals — added role=dialog+aria-modal=true+aria-label prop+focus-on-open to shared Modal component; tabIndex=-1+outline-none enables programmatic focus; Escape key dismiss was already implemented; all 7 modal usages get these semantics automatically
 - [x] 54. Don't Rely on Color Alone — N/A: all status indicators use color+text: application badges have statusLabel map (Pending/Accepted/Rejected); QR scan shows emoji+text+bg color; attendance/success states use emoji+text; no color-only patterns found
 - [x] 55. Add a Skip-To-Content Link — added sr-only skip link in layout.tsx (becomes visible on focus: fixed top-4 left-4 z-400 accent-green bg); children wrapped in div#main-content tabIndex=-1 outline-none as focus target; activates on first Tab keypress on any page
-- [ ] 56. Fix Page Titles and Language
+- [x] 56. Fix Page Titles and Language — added title template to root layout (default + %s | UTD FSA); exported typed Metadata from events/about/membership/archives/pamilyas pages; lang=en already set on html element
 - [ ] 57. Add Small Purposeful Micro-Interactions
 - [ ] 58. Standardize Animation Timing and Easing
 - [ ] 59. Implement Smooth Page Transitions
