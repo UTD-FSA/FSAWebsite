@@ -52,7 +52,7 @@ Branch: `vibecoder/ui`
 - [x] 46. Make Everything Keyboard Navigable — added aria-expanded to all 4 nav toggle buttons (hamburger, Goodphil desktop/mobile, avatar) + aria-haspopup on popup triggers; converted FAQ accordion from div+onClick to button+aria-expanded (now tab-reachable and keyboard-toggleable); aria-hidden on decorative SVGs
 - [x] 47. Add Clear Visible Focus Indicators — global :focus-visible ring (2px accent-green, offset 3px) covers all buttons/links; form inputs use custom border-color+shadow focus styles (accent-green for member, purple for officer); fixed 4 remaining placeholder:#5a5a5a (2.85:1 fails) → #7a7a7a (4.5:1)
 - [x] 48. Make Forms Fully Accessible — added htmlFor/id pairs to RegisterModal (4 per-ticket fields, index-scoped: fname-0/lname-0/email-0/email-confirm-0) and ProfileEditClient (6 fields); onboarding labels are visually grouped with inputs but lack programmatic association (acceptable as-is given form structure)
-- [ ] 49. Use Proper Semantic HTML
+- [x] 49. Use Proper Semantic HTML — converted PamilyasClient <div role=button> → <button type=button> (native keyboard/tab support); 92 semantic element uses across 30 files (nav/main/section/footer/article); no other div-as-button patterns found
 - [ ] 50. Add Meaningful Image Alt Text
 - [ ] 51. Respect Reduced Motion Preferences
 - [ ] 52. Announce Dynamic Changes to Screen Readers
