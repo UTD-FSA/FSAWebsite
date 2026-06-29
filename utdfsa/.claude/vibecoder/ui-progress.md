@@ -32,7 +32,7 @@ Branch: `vibecoder/ui`
 - [x] 26. Fix Semantic Heading Structure — homepage was the only missing h1 (hero logo is an img, not a heading); added sr-only h1 in hero section; WHO ARE WE/MISSION STATEMENT correctly h2; attend page has 6 h1s but each is a conditional early-return (only one renders); other pages confirmed correct
 - [x] 27. Handle Text Overflow Gracefully — added line-clamp-2 to officer events list h3 (event.name inside flex-1 min-w-0 was unguarded); orders, attendance, gallery, applications, UpcomingEventsSection all already use truncate/line-clamp on dynamic text
 - [x] 28. Format Numbers, Dates, and Currency — upgraded fmt() from `$${toFixed(2)}` to Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}) in EventsPageClient, UpcomingEventsSection, RegisterModal; date helpers already use toLocaleDateString with America/Chicago timezone
-- [ ] 29. Add Refined Typographic Details
+- [x] 29. Add Refined Typographic Details — added text-rendering:optimizeLegibility to body (kerning+ligatures); text-wrap:balance on h1-h4 globally (prevents widow words in headings; graceful fallback); html already has antialiased; JSX uses &apos;/&ldquo; entities correctly
 - [ ] 30. Standardize Text Casing and Labels
 - [ ] 31. Run a Full Performance Audit
 - [ ] 32. Shrink the JavaScript Bundle
