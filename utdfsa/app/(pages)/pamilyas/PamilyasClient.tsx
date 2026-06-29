@@ -232,7 +232,7 @@ function FormCard({
     </>
   )
 
-  const cls = 'relative aspect-[4/5] rounded-[27px] overflow-hidden block hover:scale-[1.02] hover:brightness-110 transition-all duration-200 cursor-pointer'
+  const cls = 'relative aspect-[4/5] rounded-[27px] overflow-hidden block hover:scale-[1.02] hover:brightness-110 transition-all duration-200 cursor-pointer bg-transparent border-0 p-0 w-full'
 
   // FIX 4: external link (protection form) opens in new tab
   if (externalHref) {
@@ -247,9 +247,9 @@ function FormCard({
   }
   // FIX 5: popup trigger — card is always clickable
   return (
-    <div role="button" className={cls} onClick={onClick}>
+    <button type="button" className={cls} onClick={onClick}>
       {inner}
-    </div>
+    </button>
   )
 }
 
