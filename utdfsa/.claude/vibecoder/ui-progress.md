@@ -83,8 +83,8 @@ Branch: `vibecoder/ui`
 - [x] 77. Build a Toast Notification System — N/A: feedback is fully covered by existing patterns — inline error messages, loading button text, URL-param Stripe success banners, optimistic UI updates (officer events), inline save indicators (pamilya assignment), QR scan overlay, page refresh showing new content (gallery); no centralized toast gap found
 - [x] 78. Handle Loading, Empty, Error, Success States — added loading.tsx skeletons for officer/events and officer/gallery (only two missing); all client list views already have empty states; global error.tsx exists; success handled via redirect/banner/optimistic UI
 - [x] 79. Add Graceful Error Boundaries — added scoped error.tsx for member (Try Again + My Profile) and officer (Try Again + Officer Home, purple accent) route groups; global error.tsx catches public page errors; all log to console; no raw error details exposed to users
-- [ ] 80. Confirm Destructive and Irreversible Actions
-- [ ] 81. Add Undo for Reversible Actions
+- [x] 80. Confirm Destructive and Irreversible Actions — replaced OfficerGalleryClient confirm() with inline confirmingDelete state (shows 'Delete [title]?' + Yes delete/Cancel); DeleteEventModal requires typing event name to confirm; ApplicationsClient has a modal delete confirmation — all three destructive actions now properly guarded
+- [x] 81. Add Undo for Reversible Actions — N/A: delete actions all have confirmation modals (better than undo for DB+S3 ops); status changes are optimistic and immediately re-clickable (officer clicks correct status — no undo gap); no toast infrastructure to surface undo window anyway
 - [ ] 82. Handle Offline and Network Errors
 - [ ] 83. Show Progress for Long Operations
 - [ ] 84. Improve Perceived Performance Everywhere
