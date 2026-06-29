@@ -173,6 +173,12 @@ h1, h2, h3, h4 {
   text-wrap: balance;
 }
 
+/* stop all CSS animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee { animation: none; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
 /* keyboard focus ring — visible only for keyboard nav, suppressed for mouse */
 :focus-visible {
   outline: 2px solid var(--accent-green);
