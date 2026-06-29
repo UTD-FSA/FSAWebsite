@@ -20,7 +20,7 @@ Branch: `vibecoder/ui`
 - [x] 14. Enlarge Mobile Touch Targets — footer social icons 32→44px; carousel prev/next arrows p-2→p-3 (40→48px) in PhotoCarousel and PamilyasClient; modal close buttons 34→44px in EventsPageClient and UpcomingEventsSection; primary buttons already large
 - [x] 15. Eliminate Cumulative Layout Shift — all images use fill+explicit-height containers or aspect-square; archives grid reserves space; events page has streaming loading skeleton; added display:swap to Geist+GeistMono fonts; Unbounded already had display:swap
 - [x] 16. Respect Mobile Safe Area Insets — added viewport-fit:cover export in layout.tsx; navbar gets paddingTop:env(safe-area-inset-top) so bg extends through notch; mobile panel offset updated to calc(5rem+env(safe-area-inset-top))
-- [ ] 17. Build a Smart Sticky Header
+- [x] 17. Build a Smart Sticky Header — hide-on-scroll already implemented (hides after 80px scroll-down, reveals on 25px scroll-up); added isScrolled state → subtle bottom border (rgba(255,255,255,0.06)) when y>10px; no layout shift (sticky not fixed)
 - [ ] 18. Balance Content Density and Whitespace
 - [ ] 19. Use Container Queries for Components
 - [ ] 20. Untangle Z-Index Stacking Issues
