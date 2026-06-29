@@ -68,7 +68,7 @@ export default async function Home() {
             <h2 className="font-display font-black text-[var(--font-size-heading)] text-white leading-none tracking-[-3.2px] mb-6 lg:mb-8">
               WHO ARE{'\n'}WE?
             </h2>
-            <p className="font-sans text-[16px] md:text-[20px] text-white/60 leading-relaxed">
+            <p className="font-sans text-[16px] md:text-[20px] text-white/60 leading-relaxed max-w-prose">
               UTD FSA is a student-led organization dedicated to bringing together students through Filipino culture, community, and connection. 
               Whether through social events, cultural programs, sports, or service initiatives, 
               FSA provides a welcoming space for students to build friendships, celebrate their heritage, and create lasting memories.
