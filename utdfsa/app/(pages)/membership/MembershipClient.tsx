@@ -7,7 +7,7 @@
 //        early-bird pricing is determined server-side by comparing now vs. earlyBirdDeadline
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 
 interface Props {
@@ -133,6 +133,20 @@ export default function MembershipClient({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [faqOpen, setFaqOpen] = useState([true, false, false, false])
+
+  const faqRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const el = faqRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        el.style.animation = 'fadeUp 0.7s cubic-bezier(0.25,0.46,0.45,0.94) both'
+        obs.disconnect()
+      }
+    }, { threshold: 0.15 })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
 
   // ── handlePayment ────────────────────────────────────────────
   // opens the stripe checkout page; on success stripe redirects back with ?success=true
@@ -391,7 +405,7 @@ export default function MembershipClient({
         </section>
 
         {/* ── FAQ ──────────────────────────────────────────── */}
-        <section className="px-6 md:px-14 pb-16">
+        <section ref={faqRef} className="px-6 md:px-14 pb-16" style={{ opacity: 0 }}>
           <div className="flex items-center gap-4 mb-7">
             <h2 className="font-display font-extrabold text-2xl tracking-[-0.02em] text-white whitespace-nowrap">Questions</h2>
             <span className="h-px flex-1 bg-white/[0.08]" />

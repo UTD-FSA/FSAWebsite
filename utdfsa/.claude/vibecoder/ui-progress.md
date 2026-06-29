@@ -64,7 +64,7 @@ Branch: `vibecoder/ui`
 - [x] 58. Standardize Animation Timing and Easing — added --ease-spring/smooth/standard CSS vars to :root documenting 3 easing curves; normalized duration-[180ms] → duration-150 in ArchivesClient filter pills + login button; 3 curves already consistent by context (spring=modal, smooth=scroll, standard=nav)
 - [x] 59. Implement Smooth Page Transitions — added @view-transition{navigation:auto} to globals.css; native browser crossfade on all page navigations; zero JS/deps; graceful degradation in older browsers; individual page entrance animations already in place
 - [x] 60. Animate Value and State Changes — AttendanceClient progress bars (points/meetings) now animate 0→target on mount via useState(false)/useEffect(setMounted); CSS transition-all duration-700 was already in place but never triggered; no other value-change animation gaps found
-- [ ] 61. Refine Hover and Focus Feedback
+- [x] 61. Refine Hover and Focus Feedback — N/A: full audit found no gaps; event/app cards have hover lift+border; gallery cards have scale+overlay reveal; filter pills have border-color hover; buttons have hover:opacity/brightness/bg; global :focus-visible ring (prompt 47) covers all interactive elements
 - [ ] 62. Add Tasteful Scroll-Triggered Animations
 - [ ] 63. Smooth the Loading-To-Content Transition
 - [ ] 64. Improve Drag-And-Drop Interface Affordances
