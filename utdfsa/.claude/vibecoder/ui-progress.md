@@ -26,7 +26,7 @@ Branch: `vibecoder/ui`
 - [x] 20. Untangle Z-Index Stacking Issues — stack is clean: z-10/20 (page content), z-50 (dropdowns), z-[60] (navbar), z-[300] (modals); no conflicts or clipping found
 - [x] 21. Establish a Modular Type Scale — eliminated all half-pixel sizes (9.4/10.5/11.5/12.5/13.5/14.5/15.5px) → rounded to 9/11/12/13/14/15/16px across 11 files; clean integer scale renders consistently at any DPR
 - [x] 22. Add Fluid Responsive Typography — added --font-size-hero (36→96px) and --font-size-heading (37→54px) clamp tokens; applied to homepage WHO ARE WE and MISSION STATEMENT h2s, replacing 3-4 stepped breakpoint classes with smooth scaling
-- [ ] 23. Optimize Reading Line Length
+- [x] 23. Optimize Reading Line Length — added max-w-prose (65ch) to WHO ARE WE body paragraph (was unconstrained → up to 1384px wide at desktop); privacy page uses max-w-[680px], about uses max-w-xl, all others already constrained; leading-relaxed (1.625) throughout
 - [ ] 24. Optimize Web Font Loading
 - [ ] 25. Tune Text Color and Contrast
 - [ ] 26. Fix Semantic Heading Structure
