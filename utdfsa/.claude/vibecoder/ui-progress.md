@@ -70,9 +70,9 @@ Branch: `vibecoder/ui`
 - [x] 64. Improve Drag-And-Drop Interface Affordances — N/A: no DnD features; draggable=false on images prevents browser default drag; no sortable lists or upload drag zones
 - [x] 65. Add Mobile Gesture Support — N/A: PhotoCarousel and PamilyasClient both implement onPointerDown swipe with pointer capture; Pointer Events API covers touch+mouse natively; no additional gesture gaps found
 - [x] 66. Add Subtle Success Moments — added role=status to ProfileEditClient "Profile updated!" message; OfficerEventsClient success is implicit via optimistic list update; QR scan has full-screen green overlay; events/orders have URL-param success banners; coverage complete
-- [ ] 67. Add Real-Time Inline Validation
-- [ ] 68. Write Clear Helpful Error Messages
-- [ ] 69. Polish Input Field Design and States
+- [x] 67. Add Real-Time Inline Validation — added onBlur to RegisterModal email-confirm field; shows mismatch error immediately on blur when both fields non-empty and differ; onChange clears error as user corrects; submit-time guard still runs; most impactful single field (email mismatch is the #1 registration failure)
+- [x] 68. Write Clear Helpful Error Messages — sentence-cased all lowercase validation msgs in BasicInfoClient; replaced 'something went wrong' fallbacks with context-specific msgs in 5 files (Onboarding ×2, Membership, RegisterModal, OfficerEvents, ProfileEdit)
+- [x] 69. Polish Input Field Design and States — added autocomplete (given-name/family-name/email/tel) to ProfileEditClient + BasicInfoClient; added error-border (!border-red-400) to RegisterModal email-confirm on mismatch; existing fieldCls covers focus/disabled/label states across all forms
 - [ ] 70. Add Smart Input Masking and Formatting
 - [ ] 71. Add Form Autosave and Recovery
 - [ ] 72. Improve Multi-Step Form Experience
