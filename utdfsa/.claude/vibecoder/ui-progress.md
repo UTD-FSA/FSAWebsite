@@ -67,7 +67,7 @@ Branch: `vibecoder/ui`
 - [x] 61. Refine Hover and Focus Feedback — N/A: full audit found no gaps; event/app cards have hover lift+border; gallery cards have scale+overlay reveal; filter pills have border-color hover; buttons have hover:opacity/brightness/bg; global :focus-visible ring (prompt 47) covers all interactive elements
 - [x] 62. Add Tasteful Scroll-Triggered Animations — MembershipClient FAQ section gets IntersectionObserver fadeUp (0.7s smooth ease, threshold 0.15, disconnects after firing); Events/About/Archives/Goodphil already had scroll animations; globals.css fadeUp keyframe reused throughout
 - [x] 63. Smooth the Loading-To-Content Transition — git commit "ui 63" contains role=alert work (misrouted, belongs to prompt 68); loading states audit: checkout/save buttons show "Saving…"/"Loading…" text while disabled; spinner pattern already in place; no skeleton flash issues found
-- [ ] 64. Improve Drag-And-Drop Interface Affordances
+- [x] 64. Improve Drag-And-Drop Interface Affordances — N/A: no DnD features; draggable=false on images prevents browser default drag; no sortable lists or upload drag zones
 - [ ] 65. Add Mobile Gesture Support
 - [ ] 66. Add Subtle Success Moments
 - [ ] 67. Add Real-Time Inline Validation
