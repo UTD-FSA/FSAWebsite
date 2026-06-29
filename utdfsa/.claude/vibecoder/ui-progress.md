@@ -21,7 +21,7 @@ Branch: `vibecoder/ui`
 - [x] 15. Eliminate Cumulative Layout Shift — all images use fill+explicit-height containers or aspect-square; archives grid reserves space; events page has streaming loading skeleton; added display:swap to Geist+GeistMono fonts; Unbounded already had display:swap
 - [x] 16. Respect Mobile Safe Area Insets — added viewport-fit:cover export in layout.tsx; navbar gets paddingTop:env(safe-area-inset-top) so bg extends through notch; mobile panel offset updated to calc(5rem+env(safe-area-inset-top))
 - [x] 17. Build a Smart Sticky Header — hide-on-scroll already implemented (hides after 80px scroll-down, reveals on 25px scroll-up); added isScrolled state → subtle bottom border (rgba(255,255,255,0.06)) when y>10px; no layout shift (sticky not fixed)
-- [ ] 18. Balance Content Density and Whitespace
+- [x] 18. Balance Content Density and Whitespace — N/A: density is well-calibrated; profile py-12, events pt-14/pb-20, membership FAQ py-12, cards gap-3.5–gap-6; officer data-heavy pages use tighter density appropriately
 - [ ] 19. Use Container Queries for Components
 - [ ] 20. Untangle Z-Index Stacking Issues
 - [ ] 21. Establish a Modular Type Scale
