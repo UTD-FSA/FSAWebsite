@@ -108,7 +108,7 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
           </div>
           <div
             className="h-2 rounded-full overflow-hidden"
-            style={{ background: '#070707' }}
+            style={{ background: '#0e0e0e' }}
           >
             <div
               className="h-full rounded-full transition-all duration-700"
@@ -136,7 +136,7 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
           </div>
           <div
             className="h-2 rounded-full overflow-hidden"
-            style={{ background: '#070707' }}
+            style={{ background: '#0e0e0e' }}
           >
             <div
               className="h-full rounded-full transition-all duration-700"
