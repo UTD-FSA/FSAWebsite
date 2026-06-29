@@ -207,7 +207,7 @@ export default function AttendanceClient({ member, attendanceRecords, meetingCou
 
                 {/* Date + points */}
                 <div className="text-right shrink-0">
-                  <p className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                  <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
                     {event?.event_date ? fmtDate(event.event_date) : '—'}
                   </p>
                   {event?.points && event.points > 0 ? (
