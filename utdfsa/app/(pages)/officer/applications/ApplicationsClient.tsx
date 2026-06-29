@@ -905,6 +905,9 @@ export default function ApplicationsClient({
               </button>
             </div>
 
+            {adingSearch.trim() && searchedAding.length > 0 && (
+              <p className="text-[12px] text-text-muted mb-3">{searchedAding.length} of {filteredAding.length} result{searchedAding.length !== 1 ? 's' : ''}</p>
+            )}
             {searchedAding.length === 0 ? (
               <p className="text-[#5e5e5e] text-sm py-14 text-center">No applications found.</p>
             ) : (
@@ -972,6 +975,9 @@ export default function ApplicationsClient({
               </button>
             </div>
 
+            {kuyateSearch.trim() && searchedKuyate.length > 0 && (
+              <p className="text-[12px] text-text-muted mb-3">{searchedKuyate.length} of {filteredKuyate.length} result{searchedKuyate.length !== 1 ? 's' : ''}</p>
+            )}
             {searchedKuyate.length === 0 ? (
               <p className="text-[#5e5e5e] text-sm py-14 text-center">No applications found.</p>
             ) : (
