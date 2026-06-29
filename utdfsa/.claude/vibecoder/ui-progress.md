@@ -58,7 +58,7 @@ Branch: `vibecoder/ui`
 - [x] 52. Announce Dynamic Changes to Screen Readers — added role=alert to QR scan result overlay (announces VALID TICKET/ALREADY CHECKED IN/INVALID immediately) and RegisterModal submit error; role=alert implies aria-live=assertive+atomic; no other untriggered dynamic content found
 - [x] 53. Build Fully Accessible Modals — added role=dialog+aria-modal=true+aria-label prop+focus-on-open to shared Modal component; tabIndex=-1+outline-none enables programmatic focus; Escape key dismiss was already implemented; all 7 modal usages get these semantics automatically
 - [x] 54. Don't Rely on Color Alone — N/A: all status indicators use color+text: application badges have statusLabel map (Pending/Accepted/Rejected); QR scan shows emoji+text+bg color; attendance/success states use emoji+text; no color-only patterns found
-- [ ] 55. Add a Skip-To-Content Link
+- [x] 55. Add a Skip-To-Content Link — added sr-only skip link in layout.tsx (becomes visible on focus: fixed top-4 left-4 z-400 accent-green bg); children wrapped in div#main-content tabIndex=-1 outline-none as focus target; activates on first Tab keypress on any page
 - [ ] 56. Fix Page Titles and Language
 - [ ] 57. Add Small Purposeful Micro-Interactions
 - [ ] 58. Standardize Animation Timing and Easing

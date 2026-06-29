@@ -1,3 +1,6 @@
+import type { Metadata } from 'next'
+export const metadata: Metadata = { title: 'Events' }
+
 import { createAdminClient, createUserClient } from '@/utils/supabase/server'
 import EventsPageClient from './EventsPageClient'
 import type { Event } from '@/types/database'

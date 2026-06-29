@@ -6,6 +6,8 @@
 // notes: admin client used here because gallery reads are public but RLS would
 //        block unauthenticated access; only is_published = true rows are shown
 // ─────────────────────────────────────────────────────────────
+import type { Metadata } from 'next'
+export const metadata: Metadata = { title: 'Archives' }
 export const revalidate = 3600
 
 import { createAdminClient } from '@/utils/supabase/server'

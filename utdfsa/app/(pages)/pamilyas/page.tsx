@@ -8,6 +8,9 @@
 // deps:  supabase (user client + admin client)
 // ──────────────────────────────────────────────────────────
 
+import type { Metadata } from 'next'
+export const metadata: Metadata = { title: 'Pamilyas' }
+
 // ── data fetching ─────────────────────────────────────────
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import PamilyasClient, { type MemberState } from './PamilyasClient'

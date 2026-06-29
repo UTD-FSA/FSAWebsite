@@ -7,6 +7,9 @@
 //        update social link hrefs and past officer data in AboutClient each semester
 // ─────────────────────────────────────────────────────────────
 
+import type { Metadata } from 'next'
+export const metadata: Metadata = { title: 'About Us' }
+
 import AboutClient from './AboutClient'
 
 export default function AboutPage() {

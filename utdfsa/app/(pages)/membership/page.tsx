@@ -5,6 +5,9 @@
 //        earlyBirdDeadline, membershipYear
 // notes: early-bird check compares server-side now vs. earlyBirdDeadline (a Date object);
 //        all prices in cents to avoid floating-point issues
+import type { Metadata } from 'next'
+export const metadata: Metadata = { title: 'Become a Member' }
+
 import { getSettings } from '@/lib/settings'
 import MembershipClient from './MembershipClient'
 
