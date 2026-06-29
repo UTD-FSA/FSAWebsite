@@ -193,16 +193,21 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
   async function handleNotInterested() {
     setLoading(true)
     setError(null)
-    // api: POST /api/onboarding/not-interested — marks onboarding_complete + member_type='not_interested'
-    const res = await fetch('/api/onboarding/not-interested', { method: 'POST' })
-    const data = await res.json()
-    if (!res.ok) {
-      setError(data.error ?? 'Something went wrong — please try again.')
+    try {
+      // api: POST /api/onboarding/not-interested — marks onboarding_complete + member_type='not_interested'
+      const res = await fetch('/api/onboarding/not-interested', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error ?? 'Something went wrong — please try again.')
+        setLoading(false)
+        return
+      }
+      // route: /onboarding/basic-info — collects name, phone, year, major, pamilya preference
+      router.push('/onboarding/basic-info')
+    } catch {
+      setError('Network error — please try again.')
       setLoading(false)
-      return
     }
-    // route: /onboarding/basic-info — collects name, phone, year, major, pamilya preference
-    router.push('/onboarding/basic-info')
   }
 
   function validateProfileForm(): string | null {
@@ -314,27 +319,32 @@ export default function OnboardingClient({ memberId, firstName, isKuyateOpen, in
       return
     }
 
-    // api: calls POST /api/onboarding/submit — saves profile + application data and marks onboarding complete — do not change this endpoint
-    const res = await fetch('/api/onboarding/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        memberType,
-        profileForm,
-        applicationForm: memberType === 'ading' ? adingForm : kuyateForm,
-      }),
-    })
+    try {
+      // api: calls POST /api/onboarding/submit — saves profile + application data and marks onboarding complete — do not change this endpoint
+      const res = await fetch('/api/onboarding/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          memberType,
+          profileForm,
+          applicationForm: memberType === 'ading' ? adingForm : kuyateForm,
+        }),
+      })
 
-    const data = await res.json()
+      const data = await res.json()
 
-    if (!res.ok) {
-      setError(data.error ?? 'Something went wrong — please try again.')
+      if (!res.ok) {
+        setError(data.error ?? 'Something went wrong — please try again.')
+        setLoading(false)
+        return
+      }
+
+      // route: /member/profile — member profile page shown after onboarding completes — do not change this path
+      router.push('/member/profile')
+    } catch {
+      setError('Network error — please try again.')
       setLoading(false)
-      return
     }
-
-    // route: /member/profile — member profile page shown after onboarding completes — do not change this path
-    router.push('/member/profile')
   }
 
   // ============================================================

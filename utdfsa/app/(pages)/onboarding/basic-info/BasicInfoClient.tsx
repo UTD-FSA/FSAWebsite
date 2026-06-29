@@ -62,23 +62,28 @@ export default function BasicInfoClient({ initial }: Props) {
     setLoading(true)
     setError(null)
 
-    // api: POST /api/onboarding/update-basic-info — saves profile fields, does not touch onboarding_complete
-    const res = await fetch('/api/onboarding/update-basic-info', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    })
+    try {
+      // api: POST /api/onboarding/update-basic-info — saves profile fields, does not touch onboarding_complete
+      const res = await fetch('/api/onboarding/update-basic-info', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
 
-    const data = await res.json()
+      const data = await res.json()
 
-    if (!res.ok) {
-      setError(data.error ?? 'Failed to save — please try again.')
+      if (!res.ok) {
+        setError(data.error ?? 'Failed to save — please try again.')
+        setLoading(false)
+        return
+      }
+
+      // route: /member/profile — final destination after basic info is saved
+      router.push('/member/profile')
+    } catch {
+      setError('Network error — please try again.')
       setLoading(false)
-      return
     }
-
-    // route: /member/profile — final destination after basic info is saved
-    router.push('/member/profile')
   }
 
   // ============================================================

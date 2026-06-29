@@ -154,17 +154,22 @@ export default function MembershipClient({
     setLoading(true)
     setError(null)
 
-    // api: calls POST /api/membership/checkout — creates a stripe checkout session and returns the redirect URL — do not change this endpoint
-    const res = await fetch('/api/membership/checkout', {
-      method: 'POST',
-    })
+    try {
+      // api: calls POST /api/membership/checkout — creates a stripe checkout session and returns the redirect URL — do not change this endpoint
+      const res = await fetch('/api/membership/checkout', {
+        method: 'POST',
+      })
 
-    const data = await res.json()
+      const data = await res.json()
 
-    if (data.url) {
-      window.location.href = data.url
-    } else {
-      setError(data.error ?? 'Unable to start checkout — please try again.')
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setError(data.error ?? 'Unable to start checkout — please try again.')
+        setLoading(false)
+      }
+    } catch {
+      setError('Network error — please try again.')
       setLoading(false)
     }
   }

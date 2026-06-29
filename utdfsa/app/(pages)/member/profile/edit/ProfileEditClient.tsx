@@ -83,24 +83,29 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
 
     setLoading(true)
 
-    // api: calls POST /api/member/update-profile — saves profile fields to the members table — do not change this endpoint
-    const res = await fetch('/api/member/update-profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    })
+    try {
+      // api: calls POST /api/member/update-profile — saves profile fields to the members table — do not change this endpoint
+      const res = await fetch('/api/member/update-profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
 
-    const data = await res.json()
+      const data = await res.json()
 
-    if (!res.ok) {
-      setError(data.error ?? 'Failed to save profile — please try again.')
+      if (!res.ok) {
+        setError(data.error ?? 'Failed to save profile — please try again.')
+        setLoading(false)
+        return
+      }
+
+      setSuccess(true)
+      // route: /member/profile — member profile view page — do not change this path
+      setTimeout(() => router.push('/member/profile'), 1200)
+    } catch {
+      setError('Network error — please try again.')
       setLoading(false)
-      return
     }
-
-    setSuccess(true)
-    // route: /member/profile — member profile view page — do not change this path
-    setTimeout(() => router.push('/member/profile'), 1200)
   }
 
   const fieldCls = 'w-full px-4 py-3 bg-[#141414] border border-white/10 rounded-xl text-sm text-white placeholder:text-[#7a7a7a] focus:outline-none focus:border-accent-green focus:bg-[#171717] transition-colors'
