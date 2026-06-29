@@ -89,7 +89,7 @@ Branch: `vibecoder/ui`
 - [x] 83. Show Progress for Long Operations — N/A: all long operations already show progress — gallery create/edit set submitting=true before imageCompression ('Saving…' on button), event cover upload shows 'Uploading…' overlay during compression+upload, event form save shows 'Saving…', onboarding submit shows loading state
 - [x] 84. Improve Perceived Performance Everywhere — replaced 6 bare <a> tags with Next.js <Link> across member/profile/page.tsx (edit, membership, 2× reapply) and both error boundaries (officer home, my profile); enables prefetch-on-hover; router.prefetch already added to edit/onboarding/basic-info clients; dns-prefetch on Stripe in layout
 - [x] 85. Add Contextual Help and Tooltips — added 'Members scan this at the event to log attendance.' subtitle to Attendance QR section; early bird already has 'prices switch automatically — no action needed'; hangout size has Small/Big labels; MBTI has 'Not sure / don't know' default; ticketing has per-field guidance
-- [ ] 86. Standardize Status and State Indicators
+- [x] 86. Standardize Status and State Indicators — converted orders payment badge and attendance eligibility badge from inline styles to Tailwind; now all 3 badge sites (applications, orders, attendance) share same pattern: text-[11px] font-bold tracking-[0.04em] px-2.5 py-0.5 rounded-full bg-rgba border text-color; unified green/gold/red token values
 - [ ] 87. Clarify Primary Navigation Structure
 - [ ] 88. Add a Command Palette
 - [ ] 89. Show Clear Active Location Indicators
