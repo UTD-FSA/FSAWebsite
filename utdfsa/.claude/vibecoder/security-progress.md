@@ -95,8 +95,8 @@
 - [x] 93. Store uploads outside webroot — N/A: all uploads go to AWS S3 (separate bucket), never to the local filesystem or public Next.js directory
 - [x] 94. Randomize stored filenames — N/A: applied in prompt 61; gallery keys use timestamp+random suffix; event cover key uses event UUID; no user-supplied filename ever reaches S3
 - [x] 95. Serve user files without execution — N/A: S3 serves files with content-type set at upload time; X-Content-Type-Options: nosniff applied globally in next.config.ts; files never served through Next.js handler
-- [ ] 96. Audit dependencies for known vulnerabilities
-- [ ] 97. Lock dependency versions with a lockfile
-- [ ] 98. Add Subresource Integrity to scripts
+- [x] 96. Audit dependencies for known vulnerabilities — ran npm audit fix; resolved 2 of 4 vulnerabilities (1 low @babel/core, 1 moderate js-yaml fixed); 2 remaining moderate (postcss XSS in next bundled postcss — fix requires downgrading Next.js to 9.3.3 which is a breaking change; not exploitable since app does not stringify user-controlled CSS)
+- [x] 97. Lock dependency versions — N/A: package-lock.json already committed and up to date; npm ci enforces exact pinned versions
+- [x] 98. Subresource Integrity — N/A: no third-party scripts/styles loaded from CDNs; all assets are self-hosted or served through next/image and next/font
 - [ ] 99. Log security events for monitoring
 - [ ] 100. Prevent log injection and forgery
