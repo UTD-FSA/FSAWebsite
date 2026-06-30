@@ -15,13 +15,13 @@
 - [x] 13. Set secure session cookie flags — N/A: Supabase SSR sets HttpOnly, Secure, SameSite=Lax on all auth cookies automatically
 - [x] 14. Add idle and absolute session timeouts — N/A: Supabase manages access token (1h) and refresh token lifetimes
 - [x] 15. Fully invalidate sessions on logout — changed signOut scope from local (default) to global; now invalidates all sessions across all devices
-- [ ] 16. Validate every JWT claim properly
-- [ ] 17. Block JWT algorithm confusion attacks
-- [ ] 18. Strengthen and rotate signing secrets
-- [ ] 19. Store auth tokens safely client-side
-- [ ] 20. Issue short-lived access tokens
-- [ ] 21. Rotate refresh tokens on use
-- [ ] 22. Build a token revocation mechanism
+- [x] 16. Validate every JWT claim properly — N/A: Supabase validates all JWT claims internally; app never manually verifies tokens
+- [x] 17. Block JWT algorithm confusion attacks — N/A: Supabase handles algorithm enforcement
+- [x] 18. Strengthen and rotate signing secrets — N/A: signing keys managed by Supabase; app secrets in env vars
+- [x] 19. Store auth tokens safely client-side — N/A: Supabase SSR uses HttpOnly cookies; no tokens in localStorage
+- [x] 20. Issue short-lived access tokens — N/A: Supabase issues 1h access tokens by default
+- [x] 21. Rotate refresh tokens on use — N/A: Supabase handles refresh token rotation
+- [x] 22. Build a token revocation mechanism — N/A: global signOut (prompt 15) now revokes all sessions via Supabase
 - [ ] 23. Enforce authorization on the server
 - [ ] 24. Fix insecure direct object references
 - [ ] 25. Implement role-based access control
