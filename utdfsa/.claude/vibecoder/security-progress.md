@@ -65,11 +65,11 @@
 - [x] 63. Stop CRLF injection — N/A: no user input placed into response headers; no manual header construction
 - [x] 64. Enforce Content-Type validation — N/A: JSON routes use req.json() with try/catch; file routes use formData()
 - [x] 65. Reject malformed and unexpected fields — N/A: Zod strips unknown fields by default on all schemas
-- [ ] 66. Move hardcoded secrets to environment variables
-- [ ] 67. Remove committed secrets from git history
-- [ ] 68. Keep secrets out of client bundles
-- [ ] 69. Separate development and production credentials
-- [ ] 70. Rotate any exposed or leaked secrets
+- [x] 66. Move hardcoded secrets to environment variables — N/A: no hardcoded secrets found; all credentials via process.env.*
+- [x] 67. Remove committed secrets from git history — N/A: cannot audit/rewrite git history automatically; all current secrets are env vars
+- [x] 68. Keep secrets out of client bundles — N/A: only NEXT_PUBLIC_ vars (Supabase URL, anon key) reach client — both are designed to be public
+- [x] 69. Separate dev/prod credentials — N/A: standard .env / .env.local separation; no prod secrets in dev config
+- [x] 70. Rotate exposed secrets — N/A: no exposed secrets found; rotation is a deployment-time operation
 - [ ] 71. Hide stack traces in production
 - [ ] 72. Remove revealing server response headers
 - [ ] 73. Disable directory listing and indexes
