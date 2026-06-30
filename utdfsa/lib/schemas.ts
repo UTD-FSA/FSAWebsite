@@ -26,6 +26,8 @@ export const attendeeSchema = z.object({
 export const eventRegisterSchema = z.object({
   event_id: z.string().uuid(),
   tickets: z.array(attendeeSchema).min(1).max(10),
+  // ponytail: honeypot — bots fill all fields; humans leave this empty
+  hp: z.string().max(0, 'Bot detected').optional(),
 })
 
 // ── member profile update ─────────────────────────────────

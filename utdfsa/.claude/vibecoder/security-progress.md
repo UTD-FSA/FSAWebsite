@@ -10,7 +10,7 @@
 - [x] 8. Add multi-factor authentication support — N/A: MFA via Supabase/Google account settings, not app code
 - [x] 9. Compare credentials in constant time — N/A: no credential comparison in app code
 - [x] 10. Harden the remember-me feature — N/A: no custom remember-me; Supabase manages persistent sessions
-- [ ] 11. Add bot protection to forms
+- [x] 11. Add bot protection to forms — added honeypot field (hp) to eventRegisterSchema; non-empty value rejected server-side
 - [ ] 12. Throttle password reset and verification emails
 - [ ] 13. Set secure session cookie flags
 - [ ] 14. Add idle and absolute session timeouts
