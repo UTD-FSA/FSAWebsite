@@ -31,5 +31,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Member not found' }, { status: 404 })
   }
 
-  return NextResponse.json(member)
+  return NextResponse.json(member, {
+    headers: { 'Cache-Control': 'no-store' },
+  })
 }

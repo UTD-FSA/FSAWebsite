@@ -49,7 +49,7 @@ export async function GET() {
 
   if (error) return NextResponse.json({ error: 'Failed to load events.' }, { status: 500 })
 
-  return NextResponse.json({ events })
+  return NextResponse.json({ events }, { headers: { 'Cache-Control': 'no-store' } })
 }
 
 // ── POST /api/officer/events ──────────────────────────────────────────────────
