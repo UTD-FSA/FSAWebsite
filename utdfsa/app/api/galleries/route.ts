@@ -13,6 +13,8 @@ import type { NextRequest } from 'next/server'
 
 // accepted mime types for the cover photo upload
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+// derive extension from MIME type — never trust the user-supplied filename extension
+const MIME_EXT: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' }
 // only official google photos domains are accepted to prevent open-redirect abuse
 const ALLOWED_GOOGLE_PHOTOS_HOSTS = ['photos.google.com', 'photos.app.goo.gl']
 
@@ -69,6 +71,12 @@ export async function POST(request: NextRequest) {
   const isOfficer = member.role === 'officer' || member.role === 'admin'
   if (!isOfficer) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  // reject before reading body if Content-Length already exceeds limit
+  const contentLength = Number(request.headers.get('content-length') ?? 0)
+  if (contentLength > 20 * 1024 * 1024 + 65536) { // 20MB + form field overhead
+    return NextResponse.json({ error: 'Request too large.' }, { status: 413 })
   }
 
   const formData = await request.formData()
@@ -138,7 +146,8 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const ext = coverFile.name.split('.').pop() ?? 'jpg'
+  // derive extension from MIME type — never trust the user-supplied filename
+  const ext = MIME_EXT[coverFile.type] ?? 'jpg'
   // timestamp + random suffix prevents key collisions across concurrent uploads
   const key = `covers/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
   const buffer = Buffer.from(await coverFile.arrayBuffer())

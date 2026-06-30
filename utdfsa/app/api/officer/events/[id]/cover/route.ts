@@ -41,6 +41,12 @@ export async function POST(req: Request, { params }: RouteContext) {
 
   const { id } = await params
 
+  // reject before reading body if Content-Length already exceeds limit
+  const contentLength = Number(req.headers.get('content-length') ?? 0)
+  if (contentLength > MAX_SIZE_BYTES + 65536) {
+    return NextResponse.json({ error: 'Request too large.' }, { status: 413 })
+  }
+
   let formData: FormData
   try {
     formData = await req.formData()

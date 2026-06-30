@@ -57,10 +57,10 @@
 - [x] 55. Block open redirect — fixed: ?next param now also rejects protocol-relative paths (//evil.com) that start with // 
 - [x] 56. Prevent clickjacking — N/A: X-Frame-Options: DENY already set in next.config.ts headers()
 - [x] 57. Validate OAuth redirect URIs — N/A: Supabase validates registered redirect URIs; ?next param validated in callback
-- [ ] 58. Validate input on the server
-- [ ] 59. Validate types, lengths, and formats
-- [ ] 60. Cap request body and payload size
-- [ ] 61. Block path traversal in file access
+- [x] 58. Validate input on the server — N/A: Zod schemas validate all inputs server-side on every route
+- [x] 59. Validate types, lengths, and formats — N/A: Zod enforces type, min/max length, enum values, and format on all fields
+- [x] 60. Cap request body and payload size — added Content-Length pre-check in gallery cover upload routes; rejects oversized requests before reading body
+- [x] 61. Block path traversal in file access — fixed gallery cover to derive S3 key extension from MIME type map (not user-supplied filename); eliminates path-traversal-style key injection
 - [ ] 62. Prevent server-side request forgery
 - [ ] 63. Stop HTTP header and CRLF injection
 - [ ] 64. Enforce strict Content-Type validation

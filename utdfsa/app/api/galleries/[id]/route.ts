@@ -11,6 +11,8 @@ import { NextResponse } from 'next/server'
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const ALLOWED_GOOGLE_PHOTOS_HOSTS = ['photos.google.com', 'photos.app.goo.gl']
+const MIME_EXT: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' }
+const MAX_COVER_BYTES = 20 * 1024 * 1024
 
 export async function DELETE(
   _req: Request,
@@ -126,7 +128,7 @@ export async function PATCH(
   }
 
   if (coverFile && coverFile.size > 0) {
-    if (coverFile.size > 20 * 1024 * 1024) {
+    if (coverFile.size > MAX_COVER_BYTES) {
       return NextResponse.json({ error: 'Image must be under 20MB.' }, { status: 400 })
     }
     if (!ALLOWED_IMAGE_TYPES.includes(coverFile.type)) {
@@ -135,7 +137,7 @@ export async function PATCH(
         { status: 400 }
       )
     }
-    const ext = coverFile.name.split('.').pop() ?? 'jpg'
+    const ext = MIME_EXT[coverFile.type] ?? 'jpg'
     const key = `covers/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
     const buffer = Buffer.from(await coverFile.arrayBuffer())
     let publicUrl: string
