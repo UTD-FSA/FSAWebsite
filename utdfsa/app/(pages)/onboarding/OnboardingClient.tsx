@@ -127,7 +127,8 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
   const [step, setStep] = useState<'pick' | 'ading' | 'kuyate' | 'profile' | 'submitted'>(initialType ? 'profile' : 'pick')
   const [memberType, setMemberType] = useState<MemberType | null>(initialType ?? null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [serverError, setServerError] = useState<string | null>(null)
 
   // basic profile fields — collected regardless of member type
   const [profileForm, setProfileForm] = useState({
@@ -200,49 +201,45 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
 
   async function handleNotInterested() {
     setLoading(true)
-    setError(null)
+    setServerError(null)
     try {
       // api: POST /api/onboarding/not-interested — marks onboarding_complete + member_type='not_interested'
       const res = await fetch('/api/onboarding/not-interested', { method: 'POST' })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error ?? 'Something went wrong — please try again.')
+        setServerError(data.error ?? 'Something went wrong — please try again.')
         setLoading(false)
         return
       }
       // route: /onboarding/basic-info — collects name, phone, year, major, pamilya preference
       router.push('/onboarding/basic-info')
     } catch {
-      setError('Network error — please try again.')
+      setServerError('Network error — please try again.')
       setLoading(false)
     }
   }
 
-  function validateProfileForm(): string | null {
-    if (!profileForm.first_name.trim())
-      return 'First Name is required'
-    if (!profileForm.last_name.trim())
-      return 'Last Name is required'
-    if (!profileForm.phone?.trim())
-      return 'Phone Number is required'
-    if (profileForm.phone.replace(/\D/g, '').length !== 10)
-      return 'Phone Number must be 10 digits — e.g. (214) 333-4444'
-    if (!profileForm.year)
-      return 'Year is required — please select an option'
-    if (!profileForm.major.trim())
-      return 'Major is required'
-    return null
+  function validateProfileForm(): Record<string, string> {
+    const errs: Record<string, string> = {}
+    if (!profileForm.first_name.trim()) errs.first_name = 'Required'
+    if (!profileForm.last_name.trim()) errs.last_name = 'Required'
+    if (!profileForm.phone?.trim()) errs.phone = 'Required'
+    else if (profileForm.phone.replace(/\D/g, '').length !== 10) errs.phone = 'Must be 10 digits — e.g. (214) 333-4444'
+    if (!profileForm.year) errs.year = 'Required'
+    if (!profileForm.major.trim()) errs.major = 'Required'
+    return errs
   }
 
   async function handleProfileSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setError(null)
+    setServerError(null)
 
-    const validationError = validateProfileForm()
-    if (validationError) {
-      setError(validationError)
+    const errs = validateProfileForm()
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs)
       return
     }
+    setFieldErrors({})
 
     // pre-fill ading phone from profile so the field arrives ready
     setAdingForm(p => ({ ...p, phone: profileForm.phone }))
@@ -250,85 +247,57 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
     setStep(memberType!)
   }
 
-  function validateAdingForm(): string | null {
-    if (!adingForm.instagram?.trim())
-      return 'Instagram handle is required'
-    if (!adingForm.phone?.trim())
-      return 'Phone Number is required'
-    if (adingForm.phone && adingForm.phone.replace(/\D/g, '').length !== 10)
-      return 'Phone Number must be 10 digits — e.g. (214) 333-4444'
-    if (!adingForm.birthday)
-      return 'Birthday is required'
-    const ageCheck = calcAge(adingForm.birthday)
-    if (ageCheck !== null && ageCheck < 16)
-      return 'You must be at least 16 years old to apply'
-    if (!adingForm.pronouns)
-      return 'Pronouns is required — please select an option'
-    if (!adingForm.activity_level)
-      return 'Activity Level is required — please select a value'
-    if (!adingForm.hangout_size_preference)
-      return 'Hangout Size Preference is required — please select a value'
-    if (!adingForm.availability?.days?.length)
-      return 'Availability is required — please select at least one day'
-    if (!adingForm.availability?.times?.trim())
-      return 'Please describe what times you are free on those days'
-    if (!adingForm.hobbies?.trim())
-      return 'Hobbies is required'
-    if (!adingForm.fave_music_genre?.trim())
-      return 'Favorite Music Genre is required'
-    if (!adingForm.fave_artist?.trim())
-      return 'Favorite Artist is required'
-    if (!adingForm.fave_food?.trim())
-      return 'Favorite Food is required'
-    if (!adingForm.fave_tv_show_movie?.trim())
-      return 'Favorite TV Show or Movie is required'
-    if (!adingForm.pam_vibe?.trim())
-      return 'Pamilya Vibe is required'
-    if (!adingForm.thoughts_on_drinking?.trim())
-      return 'Thoughts on Drinking is required'
-    if (!adingForm.dislikes?.trim())
-      return 'Dislikes is required'
-    if (!adingForm.pam_dealbreakers?.trim())
-      return 'Things You Cannot Have in a Pam is required'
-    if (!adingForm.pam_incompatibilities?.trim())
-      return 'Please share who you cannot be in a pamilya with, or enter N/A'
-    if (!adingForm.future_kuyate?.trim())
-      return 'Please share your future kuya/ate, or enter N/A'
-    return null
+  function validateAdingForm(): Record<string, string> {
+    const errs: Record<string, string> = {}
+    if (!adingForm.instagram?.trim()) errs.instagram = 'Required'
+    if (!adingForm.phone?.trim()) errs.phone = 'Required'
+    else if (adingForm.phone.replace(/\D/g, '').length !== 10) errs.phone = 'Must be 10 digits — e.g. (214) 333-4444'
+    if (!adingForm.birthday) errs.birthday = 'Required'
+    else {
+      const age = calcAge(adingForm.birthday)
+      if (age !== null && age < 16) errs.birthday = 'You must be at least 16 years old to apply'
+    }
+    if (!adingForm.pronouns) errs.pronouns = 'Required'
+    if (!adingForm.availability?.days?.length) errs.availability_days = 'Select at least one day'
+    if (!adingForm.availability?.times?.trim()) errs.availability_times = 'Required'
+    if (!adingForm.hobbies?.trim()) errs.hobbies = 'Required'
+    if (!adingForm.fave_music_genre?.trim()) errs.fave_music_genre = 'Required'
+    if (!adingForm.fave_artist?.trim()) errs.fave_artist = 'Required'
+    if (!adingForm.fave_food?.trim()) errs.fave_food = 'Required'
+    if (!adingForm.fave_tv_show_movie?.trim()) errs.fave_tv_show_movie = 'Required'
+    if (!adingForm.pam_vibe?.trim()) errs.pam_vibe = 'Required'
+    if (!adingForm.thoughts_on_drinking?.trim()) errs.thoughts_on_drinking = 'Required'
+    if (!adingForm.dislikes?.trim()) errs.dislikes = 'Required'
+    if (!adingForm.pam_dealbreakers?.trim()) errs.pam_dealbreakers = 'Required'
+    if (!adingForm.pam_incompatibilities?.trim()) errs.pam_incompatibilities = 'Required'
+    if (!adingForm.future_kuyate?.trim()) errs.future_kuyate = 'Required'
+    return errs
   }
 
-  function validateKuyateForm(): string | null {
-    if (!kuyateForm.instagram?.trim())
-      return 'Instagram handle is required'
-    if (!kuyateForm.pamilya_name?.trim())
-      return 'Pamilya Name is required — select a pamilya or I am unsure'
-    if (kuyateForm.wants_to_be_pam_head && !kuyateForm.pam_head_phone?.trim())
-      return 'Phone Number is required when applying for Pamilya Head'
-    if (kuyateForm.wants_to_be_pam_head && kuyateForm.pam_head_phone &&
-      kuyateForm.pam_head_phone.replace(/\D/g, '').length !== 10)
-      return 'Pamilya Head Phone Number must be 10 digits'
-    if (!kuyateForm.why_kuyate?.trim())
-      return 'Why do you want to be a Kuya/Ate is required'
-    if (kuyateForm.why_kuyate && kuyateForm.why_kuyate.trim().length < 50)
-      return 'Why do you want to be a Kuya/Ate must be at least 50 characters'
-    if (!kuyateForm.acknowledges_responsibilities)
-      return 'You must acknowledge your responsibilities before submitting'
-    return null
+  function validateKuyateForm(): Record<string, string> {
+    const errs: Record<string, string> = {}
+    if (!kuyateForm.instagram?.trim()) errs.instagram = 'Required'
+    if (!kuyateForm.pamilya_name?.trim()) errs.pamilya_name = 'Required'
+    if (kuyateForm.wants_to_be_pam_head && !kuyateForm.pam_head_phone?.trim()) errs.pam_head_phone = 'Required when applying for Pamilya Head'
+    else if (kuyateForm.wants_to_be_pam_head && kuyateForm.pam_head_phone &&
+      kuyateForm.pam_head_phone.replace(/\D/g, '').length !== 10) errs.pam_head_phone = 'Must be 10 digits'
+    if (!kuyateForm.why_kuyate?.trim()) errs.why_kuyate = 'Required'
+    else if (kuyateForm.why_kuyate.trim().length < 50) errs.why_kuyate = 'At least 50 characters required'
+    if (!kuyateForm.acknowledges_responsibilities) errs.acknowledges_responsibilities = 'You must acknowledge your responsibilities before submitting'
+    return errs
   }
 
   async function handleFinalSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setLoading(true)
-    setError(null)
+    setServerError(null)
 
-    const appValidationError = memberType === 'ading'
-      ? validateAdingForm()
-      : validateKuyateForm()
-    if (appValidationError) {
-      setError(appValidationError)
-      setLoading(false)
+    const errs = memberType === 'ading' ? validateAdingForm() : validateKuyateForm()
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs)
       return
     }
+    setFieldErrors({})
+    setLoading(true)
 
     try {
       // api: calls POST /api/onboarding/submit — saves profile + application data and marks onboarding complete — do not change this endpoint
@@ -345,15 +314,24 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
       const data = await res.json()
 
       if (!res.ok) {
-        const fieldError = data.details ? firstFieldError(data.details as Record<string, unknown>) : null
-        setError(fieldError ?? data.error ?? 'Something went wrong — please try again.')
+        const firstErr = data.details ? firstFieldError(data.details as Record<string, unknown>) : null
+        if (firstErr) {
+          const colonIdx = firstErr.indexOf(': ')
+          if (colonIdx > -1) {
+            setFieldErrors({ [firstErr.slice(0, colonIdx)]: firstErr.slice(colonIdx + 2) })
+          } else {
+            setServerError(firstErr)
+          }
+        } else {
+          setServerError(data.error ?? 'Something went wrong — please try again.')
+        }
         setLoading(false)
         return
       }
 
       setStep('submitted')
     } catch {
-      setError('Network error — please try again.')
+      setServerError('Network error — please try again.')
       setLoading(false)
     }
   }
@@ -509,8 +487,8 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
           )}
 
           {/* only renders when handleNotInterested returns an API error — do not remove this condition */}
-          {error && (
-            <p role="alert" className="relative z-10 font-sans text-sm text-red-400 mt-4">{error}</p>
+          {serverError && (
+            <p role="alert" className="relative z-10 font-sans text-sm text-red-400 mt-4">{serverError}</p>
           )}
 
         </div>
@@ -553,6 +531,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                   placeholder="Your preferred name"
                   required
                 />
+                {fieldErrors.first_name && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.first_name}</p>}
               </div>
               <div>
                 <label className={labelCls}>
@@ -565,6 +544,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                   className={fieldCls}
                   required
                 />
+                {fieldErrors.last_name && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.last_name}</p>}
               </div>
             </div>
 
@@ -581,6 +561,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 maxLength={14}
                 required
               />
+              {fieldErrors.phone && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.phone}</p>}
             </div>
 
             <div>
@@ -603,6 +584,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 </select>
                 <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#7a7a7a]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
               </div>
+              {fieldErrors.year && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.year}</p>}
             </div>
 
             <div>
@@ -617,11 +599,12 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 placeholder="e.g. Computer Science"
                 required
               />
+              {fieldErrors.major && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.major}</p>}
             </div>
 
-            {/* only renders when handleProfileSubmit finds a validation error — do not remove this condition */}
-            {error && (
-              <p role="alert" className="font-sans text-sm text-red-400">{error}</p>
+            {/* only renders when the API returned a server error — do not remove this condition */}
+            {serverError && (
+              <p role="alert" className="font-sans text-sm text-red-400">{serverError}</p>
             )}
 
             <button
@@ -703,6 +686,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 maxLength={51}
                 required
               />
+              {fieldErrors.instagram && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.instagram}</p>}
             </div>
 
             {/* phone — pre-filled from profile step */}
@@ -719,6 +703,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 maxLength={14}
                 required
               />
+              {fieldErrors.phone && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.phone}</p>}
             </div>
 
             {/* birthday — white calendar icon via CSS invert; warn if under 16 */}
@@ -740,6 +725,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                   heads up — members must be at least 16 to participate in the pamilya program
                 </p>
               )}
+              {fieldErrors.birthday && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.birthday}</p>}
             </div>
 
             {/* pronouns */}
@@ -761,6 +747,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 </select>
                 <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#7a7a7a]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
               </div>
+              {fieldErrors.pronouns && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.pronouns}</p>}
             </div>
 
             {/* — about you — */}
@@ -802,6 +789,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
               {adingForm.hobbies.length > 0 && (
                 <p className="font-sans text-xs text-[#7a7a7a] text-right mt-1">{adingForm.hobbies.length} / 300</p>
               )}
+              {fieldErrors.hobbies && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.hobbies}</p>}
             </div>
 
             {/* — interests — */}
@@ -823,6 +811,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 maxLength={100}
                 required
               />
+              {fieldErrors.fave_music_genre && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.fave_music_genre}</p>}
             </div>
 
             {/* fave artist */}
@@ -838,6 +827,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 maxLength={100}
                 required
               />
+              {fieldErrors.fave_artist && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.fave_artist}</p>}
             </div>
 
             {/* fave food */}
@@ -853,6 +843,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 maxLength={100}
                 required
               />
+              {fieldErrors.fave_food && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.fave_food}</p>}
             </div>
 
             {/* fave tv show / movie */}
@@ -868,6 +859,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 maxLength={200}
                 required
               />
+              {fieldErrors.fave_tv_show_movie && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.fave_tv_show_movie}</p>}
             </div>
 
             {/* — pam match — */}
@@ -892,6 +884,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
               {adingForm.pam_vibe.length > 0 && (
                 <p className="font-sans text-xs text-[#7a7a7a] text-right mt-1">{adingForm.pam_vibe.length} / 500</p>
               )}
+              {fieldErrors.pam_vibe && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.pam_vibe}</p>}
             </div>
 
             {/* hangout size preference — dots span full form width */}
@@ -938,6 +931,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                   </button>
                 ))}
               </div>
+              {fieldErrors.availability_days && <p role="alert" className="font-sans text-xs text-red-400 mb-2">{fieldErrors.availability_days}</p>}
               <label className={labelCls}>
                 What times are you usually free on those days? <span className="text-[#e8654f]">*</span>
               </label>
@@ -954,6 +948,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
               {adingForm.availability.times.length > 0 && (
                 <p className="font-sans text-xs text-[#7a7a7a] text-right mt-1">{adingForm.availability.times.length} / 200</p>
               )}
+              {fieldErrors.availability_times && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.availability_times}</p>}
             </div>
 
             {/* — compatibility — */}
@@ -978,6 +973,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
               {adingForm.thoughts_on_drinking.length > 0 && (
                 <p className="font-sans text-xs text-[#7a7a7a] text-right mt-1">{adingForm.thoughts_on_drinking.length} / 500</p>
               )}
+              {fieldErrors.thoughts_on_drinking && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.thoughts_on_drinking}</p>}
             </div>
 
             {/* dislikes */}
@@ -995,6 +991,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
               {adingForm.dislikes.length > 0 && (
                 <p className="font-sans text-xs text-[#7a7a7a] text-right mt-1">{adingForm.dislikes.length} / 500</p>
               )}
+              {fieldErrors.dislikes && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.dislikes}</p>}
             </div>
 
             {/* pam dealbreakers — own row, min-height matches hobbies */}
@@ -1013,6 +1010,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
               {adingForm.pam_dealbreakers.length > 0 && (
                 <p className="font-sans text-xs text-[#7a7a7a] text-right mt-1">{adingForm.pam_dealbreakers.length} / 500</p>
               )}
+              {fieldErrors.pam_dealbreakers && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.pam_dealbreakers}</p>}
             </div>
 
             {/* pam incompatibilities — own row, required */}
@@ -1031,6 +1029,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
               {adingForm.pam_incompatibilities.length > 0 && (
                 <p className="font-sans text-xs text-[#7a7a7a] text-right mt-1">{adingForm.pam_incompatibilities.length} / 500</p>
               )}
+              {fieldErrors.pam_incompatibilities && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.pam_incompatibilities}</p>}
             </div>
 
             {/* — wrap up — */}
@@ -1053,6 +1052,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 maxLength={100}
                 required
               />
+              {fieldErrors.future_kuyate && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.future_kuyate}</p>}
             </div>
 
             {/* mbti — dropdown of all 16 valid types */}
@@ -1134,9 +1134,9 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
               </label>
             </div>
 
-            {/* only renders when the submit API returns an error — do not remove this condition */}
-            {error && (
-              <p role="alert" className="font-sans text-sm text-red-400">{error}</p>
+            {/* only renders when the submit API returns a server error — do not remove this condition */}
+            {serverError && (
+              <p role="alert" className="font-sans text-sm text-red-400">{serverError}</p>
             )}
 
             {/* disabled until privacy policy is acknowledged */}
@@ -1213,6 +1213,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 maxLength={51}
                 required
               />
+              {fieldErrors.instagram && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.instagram}</p>}
             </div>
 
             <div className="h-px bg-white/[0.07]" />
@@ -1231,6 +1232,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 maxLength={100}
                 required
               />
+              {fieldErrors.pamilya_name && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.pamilya_name}</p>}
             </div>
 
             {/* pam head toggle — boolean, always has a value */}
@@ -1288,6 +1290,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 <p className="font-sans text-xs text-accent-green/70 mt-2">
                   Your number will be shared with the pam chair.
                 </p>
+                {fieldErrors.pam_head_phone && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.pam_head_phone}</p>}
               </div>
             )}
 
@@ -1311,6 +1314,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 )}
                 <span className="font-sans text-xs text-[#7a7a7a] ml-auto">{kuyateForm.why_kuyate.length} / 1000 characters</span>
               </div>
+              {fieldErrors.why_kuyate && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.why_kuyate}</p>}
             </div>
 
             {/* additional notes — optional */}
@@ -1354,6 +1358,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                   them to the best of my ability.
                 </span>
               </label>
+              {fieldErrors.acknowledges_responsibilities && <p role="alert" className="font-sans text-xs text-red-400 mt-2">{fieldErrors.acknowledges_responsibilities}</p>}
             </div>
 
             {/* privacy policy acknowledgment — blocks submission until checked */}
@@ -1386,9 +1391,9 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
               </label>
             </div>
 
-            {/* only renders when the submit API returns an error — do not remove this condition */}
-            {error && (
-              <p role="alert" className="font-sans text-sm text-red-400">{error}</p>
+            {/* only renders when the submit API returns a server error — do not remove this condition */}
+            {serverError && (
+              <p role="alert" className="font-sans text-sm text-red-400">{serverError}</p>
             )}
 
             {/* disabled until acknowledges_responsibilities and privacy policy are both checked */}

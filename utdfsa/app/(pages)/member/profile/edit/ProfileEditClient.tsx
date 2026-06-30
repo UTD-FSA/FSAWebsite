@@ -48,8 +48,8 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
   useEffect(() => { router.prefetch('/member/profile') }, [router])
   // true while the POST /api/member/update-profile request is in flight
   const [loading, setLoading] = useState(false)
-  // holds the error message from the api or null when no error
-  const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [serverError, setServerError] = useState<string | null>(null)
   // true for ~1.2 s after a successful save, before the router redirect fires
   const [success, setSuccess] = useState(false)
 
@@ -71,15 +71,18 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
   // ── handleSubmit ──────────────────────────────────────────────
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    setError(null)
+    setServerError(null)
 
-    if (!form.first_name.trim()) return setError('First Name is required')
-    if (!form.last_name.trim()) return setError('Last Name is required')
-    if (!form.contact_email.trim()) return setError('Contact Email is required')
-    if (!form.phone.trim()) return setError('Phone Number is required')
-    if (form.phone.replace(/\D/g, '').length !== 10) return setError('Phone Number must be 10 digits — e.g. (214) 333-4444')
-    if (!form.year) return setError('Year is required — please select an option')
-    if (!form.major.trim()) return setError('Major is required')
+    const errs: Record<string, string> = {}
+    if (!form.first_name.trim()) errs.first_name = 'Required'
+    if (!form.last_name.trim()) errs.last_name = 'Required'
+    if (!form.contact_email.trim()) errs.contact_email = 'Required'
+    if (!form.phone.trim()) errs.phone = 'Required'
+    else if (form.phone.replace(/\D/g, '').length !== 10) errs.phone = 'Must be 10 digits — e.g. (214) 333-4444'
+    if (!form.year) errs.year = 'Required'
+    if (!form.major.trim()) errs.major = 'Required'
+    if (Object.keys(errs).length > 0) { setFieldErrors(errs); return }
+    setFieldErrors({})
 
     setLoading(true)
 
@@ -94,7 +97,7 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error ?? 'Failed to save profile — please try again.')
+        setServerError(data.error ?? 'Failed to save profile — please try again.')
         setLoading(false)
         return
       }
@@ -103,7 +106,7 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
       // route: /member/profile — member profile view page — do not change this path
       setTimeout(() => router.push('/member/profile'), 1200)
     } catch {
-      setError('Network error — please try again.')
+      setServerError('Network error — please try again.')
       setLoading(false)
     }
   }
@@ -140,6 +143,7 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
                 className={fieldCls}
                 required
               />
+              {fieldErrors.first_name && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.first_name}</p>}
             </div>
             <div className="flex-1">
               <label htmlFor="last-name" className={labelCls}>Last Name <span className="text-[#e8654f]">*</span></label>
@@ -152,6 +156,7 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
                 className={fieldCls}
                 required
               />
+              {fieldErrors.last_name && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.last_name}</p>}
             </div>
           </div>
 
@@ -172,6 +177,7 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
               placeholder="your@email.com"
               required
             />
+            {fieldErrors.contact_email && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.contact_email}</p>}
           </div>
 
           <div>
@@ -187,6 +193,7 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
               maxLength={14}
               required
             />
+            {fieldErrors.phone && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.phone}</p>}
           </div>
 
           <div>
@@ -208,6 +215,7 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
               </select>
               <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#7a7a7a]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
             </div>
+            {fieldErrors.year && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.year}</p>}
           </div>
 
           <div>
@@ -221,10 +229,11 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
               placeholder="e.g. Computer Science"
               required
             />
+            {fieldErrors.major && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.major}</p>}
           </div>
 
-          {/* only renders when the API returned a validation or server error — do not remove this condition */}
-          {error && <p role="alert" className="font-sans text-sm text-red-400">{error}</p>}
+          {/* only renders when the API returned a server error — do not remove this condition */}
+          {serverError && <p role="alert" className="font-sans text-sm text-red-400">{serverError}</p>}
 
           {/* only renders for ~1.2 s after a successful save, before the router redirect fires — do not remove this condition */}
           {success && (
