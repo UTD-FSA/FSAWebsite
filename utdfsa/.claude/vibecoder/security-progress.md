@@ -14,7 +14,7 @@
 - [x] 12. Throttle password reset and verification emails — N/A: no user-triggered email endpoints; emails only sent by Stripe webhook after confirmed payment
 - [x] 13. Set secure session cookie flags — N/A: Supabase SSR sets HttpOnly, Secure, SameSite=Lax on all auth cookies automatically
 - [x] 14. Add idle and absolute session timeouts — N/A: Supabase manages access token (1h) and refresh token lifetimes
-- [ ] 15. Fully invalidate sessions on logout
+- [x] 15. Fully invalidate sessions on logout — changed signOut scope from local (default) to global; now invalidates all sessions across all devices
 - [ ] 16. Validate every JWT claim properly
 - [ ] 17. Block JWT algorithm confusion attacks
 - [ ] 18. Strengthen and rotate signing secrets

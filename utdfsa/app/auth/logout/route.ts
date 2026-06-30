@@ -19,8 +19,8 @@ export async function GET(request: Request) {
   const { origin } = new URL(request.url)
   const supabase = await createUserClient()
 
-  // clears the supabase session cookies — redirect happens regardless of error
-  await supabase.auth.signOut()
+  // global scope invalidates all sessions across all devices, not just this browser
+  await supabase.auth.signOut({ scope: 'global' })
 
   const response = NextResponse.redirect(`${origin}/login`)
   return response
