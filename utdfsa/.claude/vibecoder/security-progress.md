@@ -32,16 +32,16 @@
 - [x] 30. Add function-level permission checks — N/A: each endpoint has its own auth+role check independent of others
 - [x] 31. Block mass assignment of fields — N/A: Zod schemas enumerate exact allowed fields; no model.assign() pattern
 - [x] 32. Re-verify access on each request — N/A: getUser() called on every request; no caching of auth decisions
-- [ ] 33. Use parameterized database queries
-- [ ] 34. Prevent NoSQL query injection
-- [ ] 35. Block operating system command injection
-- [ ] 36. Close ORM-level injection vectors
-- [ ] 37. Sanitize inputs used in LDAP
-- [ ] 38. Escape identifiers in dynamic queries
-- [ ] 39. Validate and bound user regex
-- [ ] 40. Prevent prototype pollution in objects
-- [ ] 41. Disable XML external entity parsing
-- [ ] 42. Prevent formula injection in exports
+- [x] 33. Use parameterized database queries — N/A: Supabase ORM uses parameterized queries exclusively; no raw SQL
+- [x] 34. Prevent NoSQL query injection — N/A: PostgreSQL via Supabase, not NoSQL
+- [x] 35. Block OS command injection — N/A: no shell commands or child_process usage in codebase
+- [x] 36. Close ORM-level injection vectors — N/A: no raw() or unsafe fragments; all queries use typed ORM methods
+- [x] 37. Sanitize LDAP inputs — N/A: no LDAP usage
+- [x] 38. Escape identifiers in dynamic queries — N/A: no dynamic table/column names from user input
+- [x] 39. Validate and bound user regex — N/A: phone regex /^\+?[\d\s\-\(\)]{7,15}$/ and MBTI regex /^[EI][NS][TF][JP]$/i are simple linear-time patterns with no catastrophic backtracking
+- [x] 40. Prevent prototype pollution — N/A: Zod validates all inputs; officer/events PATCH destructures body but passes result through Zod before use
+- [x] 41. Disable XML external entity parsing — N/A: no XML parsing
+- [x] 42. Prevent formula injection in exports — N/A: no CSV/spreadsheet exports
 - [ ] 43. Encode output to stop XSS
 - [ ] 44. Sanitize user-submitted HTML content
 - [ ] 45. Add a Content Security Policy
