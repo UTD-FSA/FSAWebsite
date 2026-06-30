@@ -39,6 +39,16 @@ type MemberType = 'ading' | 'kuyate'
 const DAYS_OF_WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] as const
 const PRONOUNS_OPTIONS = ['He/Him', 'She/Her', 'They/Them', 'He/They', 'She/They', 'Any', 'Prefer not to say'] as const
 
+// extracts the first field-level error from a Zod .format() details object
+function firstFieldError(details: Record<string, unknown>): string | null {
+  for (const [key, val] of Object.entries(details)) {
+    if (key === '_errors') continue
+    const errs = (val as { _errors?: string[] })?._errors
+    if (errs?.length) return `${key}: ${errs[0]}`
+  }
+  return null
+}
+
 // today's date as YYYY-MM-DD for birthday max attribute
 const TODAY = new Date().toISOString().split('T')[0]
 
@@ -249,6 +259,9 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
       return 'Phone Number must be 10 digits — e.g. (214) 333-4444'
     if (!adingForm.birthday)
       return 'Birthday is required'
+    const ageCheck = calcAge(adingForm.birthday)
+    if (ageCheck !== null && ageCheck < 16)
+      return 'You must be at least 16 years old to apply'
     if (!adingForm.pronouns)
       return 'Pronouns is required — please select an option'
     if (!adingForm.activity_level)
@@ -332,7 +345,8 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error ?? 'Something went wrong — please try again.')
+        const fieldError = data.details ? firstFieldError(data.details as Record<string, unknown>) : null
+        setError(fieldError ?? data.error ?? 'Something went wrong — please try again.')
         setLoading(false)
         return
       }

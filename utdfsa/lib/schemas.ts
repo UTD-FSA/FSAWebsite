@@ -119,7 +119,7 @@ export const adingApplicationSchema = z.object({
 
   phone: phoneField.optional(),
 
-  // birthday: validates the date is parseable and the applicant is at least 13
+  // birthday: validates the date is parseable and the applicant is at least 16
   birthday: z.preprocess(
     nullIfEmpty,
     z.string()
@@ -131,8 +131,8 @@ export const adingApplicationSchema = z.object({
         const age = today.getFullYear() - d.getFullYear()
         const m = today.getMonth() - d.getMonth()
         const adj = (m < 0 || (m === 0 && today.getDate() < d.getDate())) ? age - 1 : age
-        return adj >= 13
-      }, 'must be at least 13 years old')
+        return adj >= 16
+      }, 'You must be at least 16 years old to apply')
       .nullable()
   ).optional(),
 
