@@ -22,16 +22,16 @@
 - [x] 20. Issue short-lived access tokens — N/A: Supabase issues 1h access tokens by default
 - [x] 21. Rotate refresh tokens on use — N/A: Supabase handles refresh token rotation
 - [x] 22. Build a token revocation mechanism — N/A: global signOut (prompt 15) now revokes all sessions via Supabase
-- [ ] 23. Enforce authorization on the server
-- [ ] 24. Fix insecure direct object references
-- [ ] 25. Implement role-based access control
-- [ ] 26. Apply a default-deny access policy
-- [ ] 27. Lock down all admin routes
-- [ ] 28. Close privilege escalation paths
-- [ ] 29. Isolate data between tenants
-- [ ] 30. Add function-level permission checks
-- [ ] 31. Block mass assignment of fields
-- [ ] 32. Re-verify access on each request
+- [x] 23. Enforce authorization on the server — N/A: every route calls supabase.auth.getUser() and checks role independently of middleware
+- [x] 24. Fix insecure direct object references — N/A: officers can manage any gallery/event (intentional shared team access); member data scoped by email
+- [x] 25. Implement role-based access control — N/A: RBAC implemented via officer/admin role check on every protected route
+- [x] 26. Apply a default-deny access policy — N/A: protected paths (MEMBER_ROUTES, OFFICER_ROUTES) default-deny via middleware; public paths intentionally open
+- [x] 27. Lock down all admin routes — N/A: all /api/officer/* require officer/admin role; verified on every request
+- [x] 28. Close privilege escalation paths — N/A: update-profile only allows name/phone/year/major; role field never exposed to user input
+- [x] 29. Isolate data between tenants — N/A: single-tenant org app
+- [x] 30. Add function-level permission checks — N/A: each endpoint has its own auth+role check independent of others
+- [x] 31. Block mass assignment of fields — N/A: Zod schemas enumerate exact allowed fields; no model.assign() pattern
+- [x] 32. Re-verify access on each request — N/A: getUser() called on every request; no caching of auth decisions
 - [ ] 33. Use parameterized database queries
 - [ ] 34. Prevent NoSQL query injection
 - [ ] 35. Block operating system command injection
