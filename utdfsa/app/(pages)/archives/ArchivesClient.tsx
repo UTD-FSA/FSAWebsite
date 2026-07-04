@@ -25,7 +25,6 @@ export default function ArchivesClient({ galleries }: Props) {
   const [displayFilter, setDisplayFilter] = useState('All')
   const [gridVisible, setGridVisible] = useState(true)
 
-  const labelRef   = useRef<HTMLParagraphElement>(null)
   const titleRef   = useRef<HTMLHeadingElement>(null)
   const subtitleRef = useRef<HTMLParagraphElement>(null)
   const filtersRef = useRef<HTMLDivElement>(null)
@@ -54,7 +53,6 @@ export default function ArchivesClient({ galleries }: Props) {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     const sequence = [
-      { ref: labelRef,    anim: 'archFadeIn 500ms ease-out both' },
       { ref: titleRef,    anim: 'archFadeUp24 700ms ease-out both' },
       { ref: subtitleRef, anim: 'archFadeUp16 600ms ease-out 150ms both' },
       { ref: filtersRef,  anim: 'archFadeUp12 500ms ease-out 250ms both' },
@@ -121,13 +119,6 @@ export default function ArchivesClient({ galleries }: Props) {
 
       {/* Page header */}
       <div className="px-6 sm:px-10 lg:px-14 pt-14 pb-8">
-        <p
-          ref={labelRef}
-          className="font-display font-bold text-[12px] tracking-[0.2em] text-text-muted uppercase mb-[18px]"
-          style={{ opacity: 0 }}
-        >
-          Photo Archive
-        </p>
         <h1
           ref={titleRef}
           className="font-display font-black leading-[0.96] tracking-[-0.02em] text-white"
@@ -156,18 +147,18 @@ export default function ArchivesClient({ galleries }: Props) {
             <button
               key={option}
               onClick={() => handleFilterChange(option)}
-              className="filter-pill px-4.5 py-2.5 rounded-[10px] text-[13px] font-bold tracking-[0.02em] transition-all duration-150 cursor-pointer"
+              className="filter-pill px-4.5 py-2.5 rounded-xl text-[13px] font-bold tracking-[0.02em] transition-all duration-150 cursor-pointer"
               style={{
-                background: active ? '#466a47' : 'rgba(255,255,255,0.03)',
-                color: active ? '#fff' : '#b8b8b8',
-                border: `1px solid ${active ? '#466a47' : 'rgba(255,255,255,0.13)'}`,
+                background: active ? '#75ba78' : 'rgba(255,255,255,0.03)',
+                color: active ? '#0e0e0e' : '#b8b8b8',
+                border: `1px solid ${active ? '#75ba78' : 'rgba(255,255,255,0.13)'}`,
               }}
             >
               {option}
             </button>
           )
         })}
-        <span className="ml-auto text-[13px] text-[#5e5e5e] font-medium">
+        <span className="ml-auto text-[13px] text-[#8c8c8c] font-medium">
           {filtered.length} {filtered.length === 1 ? 'gallery' : 'galleries'}
         </span>
       </div>
@@ -196,6 +187,7 @@ export default function ArchivesClient({ galleries }: Props) {
           >
             {filtered.map((gallery) => {
               const termLabel = [gallery.semester, gallery.year].filter(Boolean).join(' ')
+              const linked = !!gallery.google_photos_url
 
               const inner = (
                 <>
@@ -228,29 +220,46 @@ export default function ArchivesClient({ galleries }: Props) {
                         {termLabel && (
                           <span className="text-[13px] font-medium text-[#b3b3b3] tracking-[0.01em]">{termLabel}</span>
                         )}
-                        <span className="inline-flex items-center gap-1 text-[12px] font-bold tracking-[0.02em] text-[#75ba78] whitespace-nowrap ml-auto">
-                          View Gallery
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                            <path d="M5 12h14M13 6l6 6-6 6" />
-                          </svg>
-                        </span>
+                        {linked ? (
+                          <span className="inline-flex items-center gap-1 text-[12px] font-bold tracking-[0.02em] text-[#75ba78] whitespace-nowrap ml-auto">
+                            View Gallery
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                              <path d="M5 12h14M13 6l6 6-6 6" />
+                            </svg>
+                          </span>
+                        ) : (
+                          <span className="text-[12px] font-medium tracking-[0.01em] text-[#7a7a7a] whitespace-nowrap ml-auto">
+                            Album coming soon
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
                 </>
               )
 
-              const cardClass = 'gcard relative aspect-square rounded-lg overflow-hidden cursor-pointer bg-[#161616]'
+              // unlinked cards get no click affordance (no pointer, no hover-only reveal) — see .gcard:not(.gcard-linked) below
+              const cardClass = `gcard relative aspect-square rounded-lg overflow-hidden bg-[#161616]${linked ? ' gcard-linked cursor-pointer' : ''}`
 
               // route: gallery.google_photos_url — opens the Google Photos album in a new tab — do not change this path
-              return gallery.google_photos_url ? (
-                <Link key={gallery.id} href={gallery.google_photos_url} target="_blank" rel="noopener noreferrer" className={cardClass}>
+              return linked ? (
+                <Link key={gallery.id} href={gallery.google_photos_url!} target="_blank" rel="noopener noreferrer" className={cardClass}>
                   {inner}
                 </Link>
               ) : (
                 <div key={gallery.id} className={cardClass}>{inner}</div>
               )
             })}
+          </div>
+        )}
+        {filtered.length > 0 && (
+          <div className="flex justify-center pt-10">
+            <Link
+              href="/membership"
+              className="text-[14px] font-medium text-[#7a7a7a] hover:text-[#75ba78] transition-colors"
+            >
+              Want to be in the next album? Become a Member →
+            </Link>
           </div>
         )}
       </div>
@@ -279,12 +288,13 @@ export default function ArchivesClient({ galleries }: Props) {
           .gcard { opacity: 1 !important; transform: none !important; }
           .gcard, .gcard .g-photo, .gcard .g-reveal { transition: none !important; }
         }
-        .gcard .g-reveal { opacity: 0; transition: opacity .3s ease; }
-        .gcard:hover .g-reveal { opacity: 1; }
-        .gcard .g-photo { transition: transform .35s cubic-bezier(.2,.7,.2,1); }
-        .gcard:hover .g-photo { transform: scale(1.04); }
-        .gcard { transition: transform .3s cubic-bezier(.2,.7,.2,1); }
-        .gcard:hover { transform: scale(1.02); z-index: 3; }
+        .gcard-linked .g-reveal { opacity: 0; transition: opacity .3s ease; }
+        .gcard-linked:hover .g-reveal { opacity: 1; }
+        .gcard:not(.gcard-linked) .g-reveal { opacity: 1; }
+        .gcard-linked .g-photo { transition: transform .35s cubic-bezier(.2,.7,.2,1); }
+        .gcard-linked:hover .g-photo { transform: scale(1.04); }
+        .gcard-linked { transition: transform .3s cubic-bezier(.2,.7,.2,1); }
+        .gcard-linked:hover { transform: scale(1.02); z-index: 3; }
         .filter-pill:hover { border-color: rgba(255,255,255,0.34) !important; }
       `}</style>
     </div>

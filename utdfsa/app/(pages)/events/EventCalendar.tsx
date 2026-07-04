@@ -21,10 +21,10 @@ type CalEvent = {
 
 export default function EventCalendar({
   events,
-  onEventClick,
+  onEventClickAction,
 }: {
   events: CalEvent[]
-  onEventClick: (info: EventClickArg) => void
+  onEventClickAction: (info: EventClickArg) => void
 }) {
   return (
     <FullCalendar
@@ -32,11 +32,12 @@ export default function EventCalendar({
       initialView="dayGridMonth"
       height="auto"
       headerToolbar={HEADER}
+      dayMaxEvents={3}
       forceEventDuration={false}
       defaultAllDay={true}
       displayEventTime={false}
       events={events}
-      eventClick={onEventClick}
+      eventClick={onEventClickAction}
     />
   )
 }

@@ -312,7 +312,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
 
         {/* existing galleries header */}
         <div className="flex items-center gap-3 mb-5">
-          <span className="font-display font-bold text-[12px] tracking-[0.16em] text-[#9a9a9a] uppercase">Existing Galleries</span>
+          <span className="font-display font-bold text-[15px] text-white">Existing Galleries</span>
           <span className="h-px flex-1 bg-white/7" />
           <span className="text-[13px] text-text-muted font-medium">{galleries.length} archive{galleries.length !== 1 ? 's' : ''}</span>
         </div>
@@ -682,9 +682,10 @@ export default function OfficerGalleryClient({ galleries }: Props) {
 
               {/* Album Link */}
               <div>
-                <label className={labelCls}>Album Link</label>
+                <label className={labelCls}>Album Link <span className="text-[#ef6f6f]">*</span></label>
                 <input
                   type="url"
+                  required
                   value={editForm.google_photos_url}
                   onChange={e => setEditForm(f => ({ ...f, google_photos_url: e.target.value }))}
                   className={inputCls}

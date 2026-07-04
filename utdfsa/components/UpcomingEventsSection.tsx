@@ -19,7 +19,7 @@ function fmtModalDate(iso: string) {
 }
 
 function fmtWeekDay(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/Chicago' }).toUpperCase()
+  return new Date(iso).toLocaleDateString('en-US', { weekday: 'long', timeZone: 'America/Chicago' }).toUpperCase()
 }
 
 function fmtTime(iso: string) {
@@ -103,7 +103,8 @@ export default function UpcomingEventsSection({ events }: Props) {
         </div>
 
         {/* horizontal scrollable strip — matches "This Week" style on events page */}
-        <div className="tw-scroll flex gap-4 overflow-x-auto pb-4">
+        {/* fewer than 4 events (incl. "See More" card) reads as sparse left-aligned; center it instead */}
+        <div className={`tw-scroll flex gap-4 overflow-x-auto pb-4 ${events.length < 3 ? 'justify-center' : ''}`}>
           {events.map(event => {
             const badge = getBadge(event.event_type)
             return (
@@ -208,11 +209,11 @@ export default function UpcomingEventsSection({ events }: Props) {
                 </div>
 
                 {isEB && (
-                  <div className="flex items-center gap-2 mb-3 w-fit rounded-xl" style={{ padding: '10px 16px', background: 'rgba(232,184,75,0.1)', border: '1px solid rgba(232,184,75,0.18)' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#e8b84b">
+                  <div className="flex items-center gap-2 mb-3 w-fit rounded-xl" style={{ padding: '10px 16px', background: 'rgba(210,164,101,0.1)', border: '1px solid rgba(210,164,101,0.18)' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#d2a465">
                       <path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.6 6 20.2l1.3-6.6L2.5 9.4l6.6-.8z" />
                     </svg>
-                    <span className="text-[12px] font-bold tracking-[0.04em] uppercase" style={{ color: '#e8b84b' }}>Early Bird Pricing</span>
+                    <span className="text-[12px] font-bold tracking-[0.04em] uppercase" style={{ color: '#d2a465' }}>Early Bird Pricing</span>
                   </div>
                 )}
 
@@ -239,20 +240,20 @@ export default function UpcomingEventsSection({ events }: Props) {
                 )}
 
                 {event.description && (
-                  <p className="text-[15px] leading-relaxed" style={{ color: '#a8a8a8', marginBottom: '22px' }}>
+                  <p className="text-[15px] leading-relaxed" style={{ color: '#8c8c8c', marginBottom: '22px' }}>
                     {event.description}
                   </p>
                 )}
 
                 {event.registration_closes_at && !registrationClosed && (
-                  <p className="text-sm font-medium mb-5" style={{ color: '#ffd166' }}>
+                  <p className="text-sm font-medium mb-5" style={{ color: '#d2a465' }}>
                     Registration closes {fmtRegDeadline(event.registration_closes_at)}
                   </p>
                 )}
 
                 {!ticketed && hasPointsForType(event.event_type) && event.points != null && event.points > 0 && (
                   <div className="flex items-center gap-3 rounded-[14px] mb-6" style={{ padding: '15px 17px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#e8b84b" stroke="#e8b84b" strokeWidth="1">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="#d2a465" stroke="#d2a465" strokeWidth="1">
                       <path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 18.6 6 20.2l1.3-6.6L2.5 9.4l6.6-.8z" />
                     </svg>
                     <span className="text-[15px] font-bold tracking-[-0.01em]" style={{ color: '#fff' }}>+{event.points} Goodphil Points</span>

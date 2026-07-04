@@ -11,6 +11,8 @@ import SmoothImage from "@/components/SmoothImage"
 import PhotoCarousel from "@/components/PhotoCarousel"
 import HeroSection from "@/components/HeroSection"
 import UpcomingEventsSection from "@/components/UpcomingEventsSection"
+import MissionStatementSection from "@/components/MissionStatementSection"
+import WhoAreWeText from "@/components/WhoAreWeText"
 import { createAdminClient } from "@/utils/supabase/server"
 import type { Event } from "@/types/database"
 
@@ -65,17 +67,7 @@ export default async function Home() {
         <div className="max-w-[1512px] mx-auto flex flex-col px-4 sm:px-8 lg:px-16 py-12 lg:py-20 gap-8">
 
           {/* Title and description */}
-          <div className="w-full flex flex-col">
-            <h2 className="font-display font-black text-[37px] md:text-[54px] text-white leading-none tracking-[-3.2px] mb-6 lg:mb-8">
-              WHO ARE{'\n'}WE?
-            </h2>
-            <p className="font-sans text-[16px] md:text-[20px] text-white/60 leading-relaxed">
-              UTD FSA is a student-led organization dedicated to bringing together students through Filipino culture, community, and connection. 
-              Whether through social events, cultural programs, sports, or service initiatives, 
-              FSA provides a welcoming space for students to build friendships, celebrate their heritage, and create lasting memories.
-
-            </p>
-          </div>
+          <WhoAreWeText />
 
           {/* Photo carousel */}
           <div className="w-full flex items-center justify-center">
@@ -91,27 +83,7 @@ export default async function Home() {
       </div>
 
       {/* ── MISSION STATEMENT ─────────────────────────────────────── */}
-      <section className="bg-section-bg px-4 sm:px-8 lg:px-16 py-14 sm:py-20 lg:py-24 min-h-[400px] lg:min-h-[575px]">
-        <div className="max-w-[1241px] mx-auto text-center">
-          <h2 className="font-display font-black text-[36px] sm:text-[52px] lg:text-[64px] xl:text-[96px] text-white tracking-[-2px] sm:tracking-[-3px] lg:tracking-[-4.8px] leading-none mb-10 lg:mb-16">
-            MISSION STATEMENT
-          </h2>
-          <div className="font-sans text-[16px] sm:text-[18px] xl:text-[24px] text-white/60 leading-relaxed max-w-[1100px] mx-auto space-y-6">
-            <p>
-              The <span className="text-accent-green">Filipino Student Association</span> at the{' '}
-              <span className="text-accent-gold">University of Texas at Dallas</span> was founded in
-              2001, aiming to cultivate a community that empowers, uplift student voices, and celebrate
-              Filipino culture through service, leadership, and unity.
-            </p>
-            <p>
-              All students are welcomed, regardless of race, ethnicity, sexual orientation, religion, or
-              background. Through community outreach, social engagement, and cultural awareness, UTD FSA
-              strives to ensure pride in Filipino identity, whilst offering a space for students to
-              belong, grow, and lead towards a brighter future.
-            </p>
-          </div>
-        </div>
-      </section>
+      <MissionStatementSection />
 
       {/* ── UPCOMING EVENTS ───────────────────────────────────────── */}
       <UpcomingEventsSection events={(upcomingEvents ?? []) as Event[]} />

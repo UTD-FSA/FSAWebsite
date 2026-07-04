@@ -18,7 +18,7 @@ const EventCalendar = dynamic(() => import('./EventCalendar'), { ssr: false })
 import RegisterModal from './RegisterModal'
 import Modal from '@/components/Modal'
 import type { Event } from '@/types/database'
-import { getBadge } from '@/utils/eventTypes'
+import { getBadge, type EventTypeBadge } from '@/utils/eventTypes'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 // converts cents integer to dollar string (e.g. 1500 → "$15.00")
@@ -39,7 +39,7 @@ function fmtModalDate(iso: string) {
 }
 
 function fmtWeekDay(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/Chicago' }).toUpperCase()
+  return new Date(iso).toLocaleDateString('en-US', { weekday: 'long', timeZone: 'America/Chicago' }).toUpperCase()
 }
 
 function fmtTime(iso: string) {
@@ -66,7 +66,7 @@ const EVENTS_PER_PAGE = 12
 const SectionLabel = memo(function SectionLabel({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-3 mb-5">
-      <span className="font-display font-bold text-xs tracking-[0.18em] text-[#9a9a9a] uppercase whitespace-nowrap">{label}</span>
+      <span className="font-display font-bold text-[15px] text-white whitespace-nowrap">{label}</span>
       <span className="h-px flex-1" style={{ background: 'rgba(255,255,255,0.07)' }} />
     </div>
   )
@@ -134,7 +134,6 @@ export default function EventsPageClient({ events, isMember, member, registeredE
   const [contentState, setContentState] = useState({ page: 1, showPast: false, cardSetKey: 0 })
 
   // header entrance refs
-  const labelRef = useRef<HTMLParagraphElement>(null)
   const titleRef  = useRef<HTMLHeadingElement>(null)
   const descRef   = useRef<HTMLDivElement>(null)
   // calendar viewport-trigger ref
@@ -245,6 +244,16 @@ export default function EventsPageClient({ events, isMember, member, registeredE
     }
   }), [events])
 
+  // ── calendar legend — one badge per distinct event type present, derived from real data ──
+  const calendarLegend = useMemo(() => {
+    const seen = new Map<string, EventTypeBadge>()
+    for (const event of events) {
+      const key = event.event_type.toLowerCase()
+      if (!seen.has(key)) seen.set(key, getBadge(event.event_type))
+    }
+    return Array.from(seen.values())
+  }, [events])
+
   // ── this-week filter ──────────────────────────────────────
   const thisWeek = useMemo(() => {
     const weekEnd = new Date(now)
@@ -259,7 +268,6 @@ export default function EventsPageClient({ events, isMember, member, registeredE
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const sequence = [
-      { ref: labelRef, anim: 'evFadeIn 500ms ease-out both' },
       { ref: titleRef, anim: 'evFadeUp24 700ms ease-out both' },
       { ref: descRef,  anim: 'evFadeUp16 600ms ease-out 150ms both' },
     ]
@@ -303,13 +311,6 @@ export default function EventsPageClient({ events, isMember, member, registeredE
 
         {/* ── page header ──────────────────────────────────────────────────── */}
         <div className="pt-14 pb-10">
-          <p
-            ref={labelRef}
-            className="font-display font-bold text-xs tracking-[0.2em] uppercase mb-5"
-            style={{ color: '#6f6f6f', opacity: 0 }}
-          >
-            What&apos;s happening
-          </p>
           <h1
             ref={titleRef}
             className="font-display font-black leading-[0.96] tracking-[-0.02em] text-white"
@@ -608,7 +609,17 @@ export default function EventsPageClient({ events, isMember, member, registeredE
         {showCalendar && <div ref={calendarSectionRef} className="mt-12" style={{ opacity: 0 }}>
           <SectionLabel label="Event Calendar" />
           <div className="fc-dark rounded-[18px] overflow-hidden p-4" style={{ background: '#131313', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <EventCalendar events={calendarEvents} onEventClick={handleCalendarEventClick} />
+            {calendarLegend.length > 0 && (
+              <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mb-4 px-1">
+                {calendarLegend.map(badge => (
+                  <span key={badge.label} className="flex items-center gap-1.5 text-[12px] font-medium" style={{ color: '#9a9a9a' }}>
+                    <span className="w-2 h-2 rounded-full flex-none" style={{ background: badge.dot }} />
+                    {badge.label}
+                  </span>
+                ))}
+              </div>
+            )}
+            <EventCalendar events={calendarEvents} onEventClickAction={handleCalendarEventClick} />
           </div>
         </div>}
       </div>

@@ -161,14 +161,6 @@
 }
 
 /* hero entrance — translateY(-50%) kept in sync with -translate-y-1/2 on the elements */
-@keyframes heroSlideFromLeft {
-  from { opacity: 0; transform: translateY(-50%) translateX(-80px); }
-  to   { opacity: 1; transform: translateY(-50%) translateX(0); }
-}
-@keyframes heroSlideFromRight {
-  from { opacity: 0; transform: translateY(-50%) translateX(80px); }
-  to   { opacity: 1; transform: translateY(-50%) translateX(0); }
-}
 @keyframes heroFadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -180,6 +172,19 @@
 @keyframes slideFromRight {
   from { opacity: 0; transform: translateX(60px); }
   to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes videoCardIn {
+  from { opacity: 0; transform: translateY(15px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* spirit page — soft green glow pulse on "Comet pride shines the brightest", once on mount */
+@keyframes spiritGlowPulse {
+  0%, 100% { text-shadow: 0 0 0 rgba(117, 186, 120, 0); }
+  50%      { text-shadow: 0 0 14px rgba(117, 186, 120, 0.65); }
+}
+.spirit-glow {
+  animation: spiritGlowPulse 2.4s ease-in-out 1;
 }
 
 html {
@@ -325,6 +330,24 @@ input[type="datetime-local"]::-webkit-date-and-time-value {
 /* event-detail modal close button — base + hover feedback */
 .modal-close-btn { background: rgba(10,10,10,0.7); border: 1px solid rgba(255,255,255,0.16); color: #e0e0e0; }
 .modal-close-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.34); color: #fff; }
+
+/* pamilyas CTA — soft pulsing glow on the dues-reminder notice card */
+@keyframes pamilyaCtaPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(117,186,120,0.10), 0 0 14px 0 rgba(117,186,120,0.12); }
+  50%      { box-shadow: 0 0 0 3px rgba(117,186,120,0.10), 0 0 22px 4px rgba(117,186,120,0.22); }
+}
+.pamilya-cta-glow {
+  animation: pamilyaCtaPulse 3.6s ease-in-out infinite;
+}
+
+/* subtle "scroll down" nudge — exponential ease, no bounce/elastic per motion rules */
+@keyframes nudgeDown {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(4px); }
+}
+.nudge-down {
+  animation: nudgeDown 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
 
 /* scrollbar for this-week strip */
 .tw-scroll::-webkit-scrollbar { height: 8px; }

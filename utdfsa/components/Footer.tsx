@@ -69,8 +69,10 @@ export default function Footer() {
               </a>
             ))}
           </div>
-          <p className="font-display font-semibold text-[9px] text-white text-right leading-relaxed">
-            &ldquo;WHO&rsquo;S GOT THAT GOOD D?&rdquo; &ldquo;WE GOT THAT GOOD D!&rdquo;<br />
+          <p className="font-display font-semibold text-[10px] md:text-[9px] text-center md:text-right text-white leading-[1.7] md:leading-relaxed">
+            &ldquo;WHO&rsquo;S GOT THAT GOOD D?&rdquo;<br className="md:hidden" />
+            <span className="hidden md:inline"> </span>
+            &ldquo;WE GOT THAT GOOD D!&rdquo;<br />
             &ldquo;ONE, TWO, THREE! GIMME A U-T-D!&rdquo;
           </p>
         </div>

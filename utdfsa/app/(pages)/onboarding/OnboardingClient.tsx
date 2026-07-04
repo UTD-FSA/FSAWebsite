@@ -370,7 +370,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
           </h1>
 
           <p className="relative z-10 max-w-[560px] text-lg leading-[1.6] text-[#9a9a9a] font-medium mt-6">
-            You&rsquo;re officially part of the family! Before we get started, let us know which role fits you best.
+            You&rsquo;re officially part of the UTD FSA family! Before we get started, let us know which role fits you best.
           </p>
 
           {/* step hint */}
@@ -405,10 +405,10 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                   {isKuyateOpen ? 'ADING FORM' : 'APPLY AS ADING'}
                 </h2>
                 <p className="hidden sm:block text-[14px] leading-[1.55] text-[#c2c2c2] font-medium mb-5 max-w-[340px]">
-                  Join as an ading and get paired with kuya &amp; ate mentors who guide you through your FSA experience.
+                  Join as an ading and get paired with kuyates who will guide you through your UTD FSA experience.
                 </p>
                 <p className="sm:hidden text-[13px] leading-[1.5] text-[#c2c2c2] font-medium mb-3.5">
-                  Get paired with kuya &amp; ate mentors for your FSA experience.
+                  Get paired with kuyates for your UTD FSA experience.
                 </p>
                 <span className="inline-flex items-center gap-2 sm:gap-2.5 font-display text-[12px] sm:text-[13px] font-bold tracking-[0.01em] text-accent-green">
                   I&rsquo;m an ading
@@ -1474,7 +1474,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
 
           {/* subtext */}
           <p className="relative z-10 max-w-[480px] text-[17px] leading-[1.6] text-[#9a9a9a] font-medium mt-5">
-            Thanks, {firstName} — your {kindLabel.toLowerCase()}  application is in. The pamilya committee reviews every application and you&rsquo;ll hear about your placement before the next big event.
+            Thanks, {firstName} — your {kindLabel.toLowerCase()} {' '}application is in! The pamilya committee reviews every application and you&rsquo;ll hear about your placement before the next big event.
           </p>
 
           {/* what happens next */}

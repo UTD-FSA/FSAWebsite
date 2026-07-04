@@ -6,6 +6,14 @@ import SmoothImage from '@/components/SmoothImage'
 import { BlurInImg } from '@/components/SmoothImage'
 import Link from 'next/link'
 import AnimatedTitle from '@/components/AnimatedTitle'
+import BaybayinRule from '@/components/BaybayinRule'
+import QuickNavRail from '@/components/QuickNavRail'
+
+const PAMILYAS_NAV_ITEMS = [
+  { label: 'What Is a Pamilya', href: '#what-is-a-pamilya' },
+  { label: 'Meet',              href: '#meet' },
+  { label: 'Sign Up',           href: '#signup' },
+]
 
 export type MemberState = {
   isLoggedIn: boolean
@@ -34,26 +42,31 @@ type PosConfig = {
   opacity: number
 }
 
+// flanking idle opacity sits low (0.4–0.5) so hover-to-0.7 reads as an affordance
 const DESKTOP: PosConfig[] = [
-  { scale: 0.70, translateX: '-90%', zIndex: 30, opacity: 0.50 },
-  { scale: 0.85, translateX: '-55%', zIndex: 40, opacity: 0.75 },
-  { scale: 1.00, translateX: '0%',   zIndex: 50, opacity: 1.00 },
-  { scale: 0.85, translateX: '55%',  zIndex: 40, opacity: 0.75 },
-  { scale: 0.70, translateX: '90%',  zIndex: 30, opacity: 0.50 },
+  { scale: 0.70, translateX: '-90%', zIndex: 30, opacity: 0.40 },
+  { scale: 0.85, translateX: '-55%', zIndex: 40, opacity: 0.50 },
+  { scale: 1.03, translateX: '0%',   zIndex: 50, opacity: 1.00 },
+  { scale: 0.85, translateX: '55%',  zIndex: 40, opacity: 0.50 },
+  { scale: 0.70, translateX: '90%',  zIndex: 30, opacity: 0.40 },
 ]
 
 const MOBILE_POS: PosConfig[] = [
-  { scale: 0.65, translateX: '-85%', zIndex: 30, opacity: 0.50 },
-  { scale: 0.82, translateX: '-50%', zIndex: 40, opacity: 0.75 },
-  { scale: 1.00, translateX: '0%',   zIndex: 50, opacity: 1.00 },
-  { scale: 0.82, translateX: '50%',  zIndex: 40, opacity: 0.75 },
-  { scale: 0.65, translateX: '85%',  zIndex: 30, opacity: 0.50 },
+  { scale: 0.65, translateX: '-85%', zIndex: 30, opacity: 0.40 },
+  { scale: 0.82, translateX: '-50%', zIndex: 40, opacity: 0.50 },
+  { scale: 1.03, translateX: '0%',   zIndex: 50, opacity: 1.00 },
+  { scale: 0.82, translateX: '50%',  zIndex: 40, opacity: 0.50 },
+  { scale: 0.65, translateX: '85%',  zIndex: 30, opacity: 0.40 },
 ]
+
+const PAM_HOVER_OPACITY = 0.70
 
 function PamilyasCarousel() {
   const [current, setCurrent] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
   const [timerKey, setTimerKey] = useState(0)
+  // slide index of the flanking card currently hovered, so it can brighten toward PAM_HOVER_OPACITY
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -128,6 +141,8 @@ function PamilyasCarousel() {
           let offset = (slideIdx - current + total) % total
           if (offset > Math.floor(total / 2)) offset -= total
           const pos = positions[offset + 2]
+          const isCenter = offset === 0
+          const opacity = !isCenter && hoveredIdx === slideIdx ? PAM_HOVER_OPACITY : pos.opacity
 
           return (
             <div
@@ -141,11 +156,14 @@ function PamilyasCarousel() {
                 // FIX 2: rotate removed — cards stack flat
                 transform: `translateX(-50%) translateY(-50%) translateX(${pos.translateX}) scale(${pos.scale})`,
                 zIndex: pos.zIndex,
-                opacity: pos.opacity,
-                transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                opacity,
+                boxShadow: isCenter ? 'var(--shadow-card)' : 'none',
+                transition: 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
               }}
               className="rounded-2xl overflow-hidden bg-[#2a2a2a] cursor-pointer"
               onClick={offset < 0 ? () => { if (!suppressClick.current) prev() } : offset > 0 ? () => { if (!suppressClick.current) next() } : undefined}
+              onMouseEnter={!isCenter ? () => setHoveredIdx(slideIdx) : undefined}
+              onMouseLeave={!isCenter ? () => setHoveredIdx(null) : undefined}
             >
               <SmoothImage
                 src={slide.src}
@@ -204,12 +222,14 @@ function PamilyasCarousel() {
 function FormCard({
   photo,
   title,
+  caption,
   href,
   externalHref,
   onClick,
 }: {
   photo: string
   title: string
+  caption: string
   href?: string
   externalHref?: string
   onClick?: () => void
@@ -218,7 +238,7 @@ function FormCard({
     <>
       <SmoothImage
         src={photo}
-        alt={title}
+        alt=""
         fill
         className="object-cover object-top"
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -229,27 +249,55 @@ function FormCard({
       <span className="absolute inset-0 flex items-center justify-center text-center text-white font-display font-black text-xl uppercase tracking-wide px-4">
         {title}
       </span>
+      {/* delight: arrow nudges in on hover/focus — reads as an invitation, not just a label */}
+      <span
+        aria-hidden="true"
+        className="absolute bottom-5 right-5 flex items-center justify-center w-9 h-9 rounded-full bg-accent-green/90 text-[#0e0e0e] opacity-0 translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:translate-x-0 transition-all duration-200 ease-out"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </span>
     </>
   )
 
-  const cls = 'relative aspect-[4/5] rounded-[27px] overflow-hidden block hover:scale-[1.02] hover:brightness-110 transition-all duration-200 cursor-pointer bg-transparent border-0 p-0 w-full'
+  const cls = 'group relative aspect-[4/5] rounded-[27px] overflow-hidden block hover:scale-[1.02] hover:brightness-110 transition-all duration-200 cursor-pointer bg-transparent border-0 p-0 w-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-blue focus-visible:outline-offset-2'
+
+  // eligibility caption — surfaces who each form is for at the decision point itself,
+  // instead of requiring visitors to scroll back and recall role definitions
+  const captionEl = (
+    <p className="font-sans text-white/60 text-[13px] sm:text-sm leading-snug text-center mt-3">
+      {caption}
+    </p>
+  )
 
   // FIX 4: external link (protection form) opens in new tab
   if (externalHref) {
     return (
-      <a href={externalHref} target="_blank" rel="noopener noreferrer" className={cls}>
-        {inner}
-      </a>
+      <div>
+        <a href={externalHref} target="_blank" rel="noopener noreferrer" className={cls}>
+          {inner}
+        </a>
+        {captionEl}
+      </div>
     )
   }
   if (href) {
-    return <Link href={href} className={cls}>{inner}</Link>
+    return (
+      <div>
+        <Link href={href} className={cls}>{inner}</Link>
+        {captionEl}
+      </div>
+    )
   }
   // FIX 5: popup trigger — card is always clickable
   return (
-    <button type="button" className={cls} onClick={onClick}>
-      {inner}
-    </button>
+    <div>
+      <button type="button" className={cls} onClick={onClick}>
+        {inner}
+      </button>
+      {captionEl}
+    </div>
   )
 }
 
@@ -264,6 +312,22 @@ export default function PamilyasClient({
 }) {
   // FIX 5: popup state replaces the submitted badge
   const [popup, setPopup] = useState<{ title: string; message: string } | null>(null)
+
+  // Baybayin subheader — opacity fade-in as it scrolls into view (matches goodphil subpages)
+  const baybayinRef = useRef<HTMLDivElement>(null)
+  const [baybayinVisible, setBaybayinVisible] = useState(false)
+
+  useEffect(() => {
+    const el = baybayinRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return
+      setBaybayinVisible(true)
+      observer.disconnect()
+    }, { threshold: 0.3 })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
   // ── Card prop helpers ────────────────────────────────────────────────────────
 
@@ -351,6 +415,7 @@ export default function PamilyasClient({
 
   return (
     <main className="bg-section-bg text-white overflow-x-hidden">
+      <QuickNavRail mode="sections" ariaLabel="Pamilyas page sections" items={PAMILYAS_NAV_ITEMS} />
 
       {/* FIX 5: popup modal — renders when popup is not null */}
       {popup && (
@@ -448,18 +513,23 @@ export default function PamilyasClient({
           PAMILYAS
         </AnimatedTitle>
 
-  </section>
+      </section>
 
       {/* ── SECTION 2 — WHAT IS A PAMILYA? ───────────────────────── */}
-      <section>
+      <section id="what-is-a-pamilya" className="scroll-mt-20">
 
         <div className="bg-brand-bg py-10 px-4">
-          <h2 className="font-display font-black text-[clamp(18px,4.2vw,64px)] text-white text-center whitespace-nowrap">
+          <h2 className="font-display font-black text-[clamp(18px,4.2vw,64px)] text-white text-center whitespace-nowrap mb-4">
             WHAT IS A PAMILYA?
           </h2>
-          <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed text-center max-w-[1218px] mx-auto mt-8">
-            Pamilyas (&lsquo;pam&rsquo; for short), which is also the Tagalog word for family, are smaller &ldquo;families&rdquo;
-            within UTD FSA where members have an opportunity to foster friendships, guidance, and a place to belong.
+          <div ref={baybayinRef} className="mb-8" style={{ opacity: baybayinVisible ? 1 : 0, transition: 'opacity 900ms var(--ease-smooth)' }}>
+            <BaybayinRule word="ᜉᜋᜒᜎ᜔ᜌ" size="clamp(16px,2vw,27px)" />
+          </div>
+          <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed text-center max-w-[1218px] mx-auto">
+            <span className="font-bold text-accent-green">Pamilyas</span> (&lsquo;<span className="font-bold text-white">pam</span>&rsquo; for short), which is also <span className="font-bold text-accent-gold">the Tagalog word for{' '}
+            family</span>, are smaller groups
+            within <span className="font-bold text-white">UTD FSA</span> where members build lasting friendships, receive{' '}
+            guidance, and find <span className="font-bold text-accent-green">a place to belong.</span>
           </p>
         </div>
 
@@ -467,21 +537,40 @@ export default function PamilyasClient({
           <div className="max-w-[1218px] mx-auto px-8 pt-12 pb-6 text-center">
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed mb-8">
-              Each pam consists of Kuyas (older brothers), Ates (older sisters), and Adings (younger siblings).
-              By treating others like family, regardless of blood relation, pamilyas help members turn UTD FSA
+              Each <span className="font-bold text-white">pam</span> consists of <span className="font-bold text-accent-green">Kuyas</span> (older brothers), <span className="font-bold text-accent-green">Ates</span> (older sisters), and <span className="font-bold text-accent-green">Adings</span> (younger siblings).
+              By treating others like family, <span className="font-bold text-white">regardless of blood relation</span>, pamilyas help members turn UTD FSA
               into a second home throughout their college years.
             </p>
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed mb-8">
-              Each pamilya is different, consisting of different hobbies, interests, and people! The Pamilya Chair
+              Each pamilya is different, consisting of <span className="font-bold text-accent-gold">different hobbies, interests, and people!</span> The Pamilya Chair
               and UTD FSA Officer Board does their best to ensure that each ading is paired with a pam that best
               suits them, providing a positive experience in UTD FSA.
             </p>
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed">
-              The pamilya system is exclusive to UTD FSA members only &mdash; be sure to pay your dues before
-              filling out the Kuya/Ate OR Ading Form!
+              The pamilya system is <span className="font-bold text-white">exclusive to UTD FSA members only.</span>
             </p>
+
+            <a href="#signup" className="pamilya-cta-glow group inline-block mt-6 rounded-2xl border border-accent-green/30 bg-accent-green/10 px-6 py-4 sm:px-8 sm:py-5 transition-colors hover:bg-accent-green/15">
+              <p className="font-sans font-semibold text-white text-[clamp(16px,1.8vw,22px)] leading-snug text-center">
+                Please pay your dues before filling out the{' '}
+                <span className="relative inline-block">
+                  Kuya/Ate or Ading form
+                  <span
+                    aria-hidden="true"
+                    className="absolute left-0 -bottom-0.5 h-[2px] w-0 bg-accent-green transition-all duration-300 ease-out group-hover:w-full"
+                  />
+                </span>.
+              </p>
+              <svg
+                aria-hidden="true"
+                width="18" height="18" viewBox="0 0 24 24" fill="none"
+                className="mx-auto mt-2 text-accent-green nudge-down"
+              >
+                <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </a>
 
           </div>
         </div>
@@ -494,7 +583,7 @@ export default function PamilyasClient({
       </section>
 
       {/* ── SECTION 4 — MEET THE PAMILYAS (coming soon) ──────────── */}
-      <section>
+      <section id="meet" className="scroll-mt-20">
 
         <div className="bg-brand-bg py-10 px-4">
           <h2 className="font-display font-black text-[clamp(18px,4.2vw,64px)] text-white text-center whitespace-nowrap">
@@ -515,7 +604,7 @@ export default function PamilyasClient({
       </section>
 
       {/* ── SECTION 5 — WHERE DO I SIGN UP? ──────────────────────── */}
-      <section>
+      <section id="signup" className="scroll-mt-20">
 
         <div className="bg-brand-bg py-10 px-4">
           <h2 className="font-display font-black text-[clamp(18px,4.2vw,64px)] text-white text-center whitespace-nowrap">
@@ -534,6 +623,7 @@ export default function PamilyasClient({
             <FormCard
               photo="/kuyate-form.png"
               title="KUYA/ATE FORM"
+              caption="Ready to lead a pamilya? Start here."
               href={kuyate.href}
               onClick={kuyate.onClick}
             />
@@ -541,6 +631,7 @@ export default function PamilyasClient({
             <FormCard
               photo="/ading-form.png"
               title="ADING FORM"
+              caption="New to FSA and looking for guidance? Start here."
               href={ading.href}
               onClick={ading.onClick}
             />
@@ -548,6 +639,7 @@ export default function PamilyasClient({
             <FormCard
               photo="/protect-form.png"
               title="PAMILYA PROTECTION FORM"
+              caption="Reporting a pamilya concern? Click here."
               href={protection.href}
               externalHref={protection.externalHref}
             />

@@ -9,6 +9,13 @@
 
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
+import QuickNavRail from '@/components/QuickNavRail'
+
+const MEMBERSHIP_NAV_ITEMS = [
+  { label: 'What You Get', href: '#what-you-get' },
+  { label: 'How It Works', href: '#how-it-works' },
+  { label: 'Questions',    href: '#faq' },
+]
 
 interface Props {
   displayPrice: number
@@ -183,23 +190,24 @@ export default function MembershipClient({
   const steps = [
     {
       num: '01',
-      title: 'Pay your dues',
+      title: 'Pay Your Dues',
       desc: `Check out securely through Stripe — membership covers the full ${membershipYear} school year.`,
     },
     {
       num: '02',
-      title: 'Make your account',
-      desc: 'Set up your member profile so you can be sorted and start tracking points right away.',
+      title: 'Fill Out Forms',
+      desc: 'Set up your profile & fill out the Ading/Kuyate forms so you can be sorted right away.',
     },
     {
       num: '03',
-      title: 'Show up',
-      desc: 'Scan in at events to earn points, meet your pamilya, and become part of the family.',
+      title: 'Show Up',
+      desc: 'Scan in at events to earn points, bond with your pamilya, and participate in Goodphil!',
     },
   ]
 
   return (
     <main className="bg-brand-bg min-h-screen text-white overflow-x-hidden">
+      <QuickNavRail mode="sections" ariaLabel="Membership page sections" items={MEMBERSHIP_NAV_ITEMS} />
       <div className="max-w-[1280px] mx-auto">
 
         {/* ── HERO ─────────────────────────────────────────── */}
@@ -227,7 +235,7 @@ export default function MembershipClient({
               </h1>
 
               <p className="max-w-[440px] text-lg leading-[1.65] text-[#9a9a9a] font-medium mt-6">
-                Join UTD FSA and unlock member pricing on every event, your pamilya placement, points tracking, and a whole community waiting to call you family.
+                Join UTD FSA and unlock member pricing on every event, your pamilya placement, Goodphil eligibility tracking, and a whole community waiting to welcome you to the family!
               </p>
 
               {/* stats — "12 pamilyas" omitted per design spec */}
@@ -290,11 +298,11 @@ export default function MembershipClient({
         </section>
 
         {/* ── BENEFITS + PRICING ──────────────────────────── */}
-        <section className="px-6 md:px-14 pb-7 grid md:grid-cols-[1.15fr_0.85fr] gap-6 items-stretch">
+        <section id="what-you-get" className="px-6 md:px-14 pb-7 grid md:grid-cols-[1.15fr_0.85fr] gap-6 items-stretch scroll-mt-20">
 
           {/* benefits panel */}
           <div className="bg-[#101010] border border-white/[0.08] rounded-[20px] p-7 md:p-9">
-            <h2 className="font-display font-extrabold text-2xl tracking-[-0.02em] text-white mb-6">What you get</h2>
+            <h2 className="font-display font-extrabold text-2xl tracking-[-0.02em] text-white mb-6">What You Get ...</h2>
             <div className="grid sm:grid-cols-2 gap-3.5">
               {BENEFITS.map(b => (
                 <div
@@ -374,7 +382,7 @@ export default function MembershipClient({
             <button
               onClick={handlePayment}
               disabled={loading}
-              className="mt-auto w-full py-4 rounded-[14px] bg-accent-green text-[#08130a] font-display font-extrabold text-[15px] tracking-[0.01em] cursor-pointer hover:brightness-[1.08] hover:shadow-[0_16px_38px_-14px_rgba(147,208,123,0.4)] active:scale-[0.98] disabled:opacity-50 transition-all duration-200"
+              className="mt-auto w-full py-4 rounded-[14px] bg-accent-green text-[#08130a] font-display font-extrabold text-[15px] tracking-[0.01em] cursor-pointer hover:brightness-[1.08] active:scale-[0.98] disabled:opacity-50 transition-all duration-200"
             >
               {loading ? 'Redirecting to payment...' : `Pay ${formatPrice(displayPrice)}`}
             </button>
@@ -393,7 +401,7 @@ export default function MembershipClient({
         </section>
 
         {/* ── HOW IT WORKS ─────────────────────────────────── */}
-        <section className="px-6 md:px-14 py-12">
+        <section id="how-it-works" className="px-6 md:px-14 py-12 scroll-mt-20">
           <div className="flex items-center gap-4 mb-8">
             <h2 className="font-display font-extrabold text-2xl tracking-[-0.02em] text-white whitespace-nowrap">How it works</h2>
             <span className="h-px flex-1 bg-white/[0.08]" />
@@ -410,7 +418,7 @@ export default function MembershipClient({
         </section>
 
         {/* ── FAQ ──────────────────────────────────────────── */}
-        <section ref={faqRef} className="px-6 md:px-14 pb-16" style={{ opacity: 0 }}>
+        <section id="faq" ref={faqRef} className="px-6 md:px-14 pb-16 scroll-mt-20" style={{ opacity: 0 }}>
           <div className="flex items-center gap-4 mb-7">
             <h2 className="font-display font-extrabold text-2xl tracking-[-0.02em] text-white whitespace-nowrap">Questions</h2>
             <span className="h-px flex-1 bg-white/[0.08]" />

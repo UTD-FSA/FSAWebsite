@@ -8,6 +8,9 @@
 
 import { useEffect, useRef } from 'react'
 
+// tracks mounted Modal instances so Escape only closes the top-most one when modals are stacked
+const modalStack: symbol[] = []
+
 interface ModalProps {
   onClose: () => void
   size?: 'sm' | 'md' | 'lg'
@@ -25,11 +28,24 @@ const sizeClass = {
 
 export default function Modal({ onClose, size = 'md', scrollable = true, panelClassName, label, children }: ModalProps) {
   const panelRef = useRef<HTMLDivElement>(null)
+  const idRef = useRef(Symbol('modal'))
 
-  // close modal on escape key press; re-registers if onClose reference changes
+  // register this instance's position in the stack once on mount — separate from the
+  // keydown effect below so an onClose identity change never double-pushes
+  useEffect(() => {
+    const id = idRef.current
+    modalStack.push(id)
+    return () => {
+      const i = modalStack.indexOf(id)
+      if (i !== -1) modalStack.splice(i, 1)
+    }
+  }, [])
+
+  // close modal on escape key press, but only if this is the top-most mounted modal —
+  // otherwise one Escape would close every stacked modal at once
   useEffect(() => {
     function handleKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape' && modalStack[modalStack.length - 1] === idRef.current) onClose()
     }
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)

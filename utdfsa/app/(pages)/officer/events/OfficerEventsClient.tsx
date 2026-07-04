@@ -15,6 +15,7 @@ import type { Event } from '@/types/database'
 import Image from 'next/image'
 import DeleteEventModal from './DeleteEventModal'
 import imageCompression from 'browser-image-compression'
+import { getBadge } from '@/utils/eventTypes'
 
 // ============================================================
 // LOGIC — do not modify this section
@@ -177,17 +178,6 @@ function formToPayload(f: EventFormData) {
 const inputCls = 'w-full px-3.5 py-3 rounded-xl bg-[#0d0d0d] border border-white/10 text-white text-sm placeholder:text-[#7a7a7a] focus:outline-none focus:border-[#9747FF] focus:shadow-[0_0_0_3px_rgba(151,71,255,0.18)] transition-[border-color,box-shadow] font-[inherit]'
 const selectCls = `${inputCls} officer-select appearance-none cursor-pointer pr-10`
 const labelCls = 'block text-[11px] font-bold tracking-[0.07em] uppercase text-[#7e7e7e] mb-2'
-
-function typeBadgeCls(type: string) {
-  switch (type.toLowerCase()) {
-    case 'party':           return 'bg-[rgba(255,85,36,0.13)] text-[#ff8a63] border border-[rgba(255,85,36,0.3)]'
-    case 'general meeting': return 'bg-[rgba(95,168,232,0.13)] text-[#5fa8e8] border border-[rgba(95,168,232,0.3)]'
-    case 'risk management': return 'bg-[rgba(255,170,50,0.13)] text-[#ffb347] border border-[rgba(255,170,50,0.3)]'
-    case 'gp event':        return 'bg-[rgba(95,207,143,0.13)] text-[#5fcf8f] border border-[rgba(95,207,143,0.3)]'
-    case 'regular event':   return 'bg-white/5 text-[#9a9a9a] border border-white/12'
-    default:                return 'bg-[rgba(151,71,255,0.13)] text-[#c4a3ff] border border-[rgba(151,71,255,0.3)]'
-  }
-}
 
 // ── pill toggle ───────────────────────────────────────────────────────────────
 
@@ -971,7 +961,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
 
         {/* existing events header */}
         <div className="flex items-center gap-3 mb-5">
-          <span className="font-display font-bold text-[12px] tracking-[0.16em] text-[#9a9a9a] uppercase">Existing Events</span>
+          <span className="font-display font-bold text-[15px] text-white">Existing Events</span>
           <span className="h-px flex-1 bg-white/7" />
           <span className="text-[13px] text-text-muted font-medium">{events.length} event{events.length !== 1 ? 's' : ''}</span>
         </div>
@@ -985,6 +975,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
               const ticketed = isTicketed(event.event_type)
               const showQR = hasAttendanceQR(event.event_type)
               const isEditing = editingId === event.id
+              const badge = getBadge(event.event_type)
 
               return (
                 <div
@@ -1001,8 +992,11 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2.5 flex-wrap mb-2">
                           <h3 className="font-bold text-[17px] text-white tracking-[-0.01em] line-clamp-2">{event.name}</h3>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-[0.05em] uppercase ${typeBadgeCls(event.event_type)}`}>
-                            {event.event_type}
+                          <span
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-[0.05em] uppercase"
+                            style={{ color: badge.text, background: badge.bg, border: `1px solid ${badge.border}` }}
+                          >
+                            {badge.label}
                           </span>
                         </div>
 

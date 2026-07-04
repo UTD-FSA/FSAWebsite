@@ -26,21 +26,24 @@ type PosConfig = {
 }
 
 // Five fan positions: index 0 = far-left (-2), index 2 = active center, index 4 = far-right (+2)
+// flanking idle opacity sits low (0.4–0.5) so hover-to-0.7 reads as an affordance
 const DESKTOP: PosConfig[] = [
-  { scale: 0.70, translateX: '-90%', zIndex: 5,  opacity: 0.50 },
-  { scale: 0.85, translateX: '-55%', zIndex: 10, opacity: 0.75 },
-  { scale: 1.00, translateX: '0%',   zIndex: 20, opacity: 1.00 },
-  { scale: 0.85, translateX: '55%',  zIndex: 10, opacity: 0.75 },
-  { scale: 0.70, translateX: '90%',  zIndex: 5,  opacity: 0.50 },
+  { scale: 0.70, translateX: '-90%', zIndex: 5,  opacity: 0.40 },
+  { scale: 0.85, translateX: '-55%', zIndex: 10, opacity: 0.50 },
+  { scale: 1.03, translateX: '0%',   zIndex: 20, opacity: 1.00 },
+  { scale: 0.85, translateX: '55%',  zIndex: 10, opacity: 0.50 },
+  { scale: 0.70, translateX: '90%',  zIndex: 5,  opacity: 0.40 },
 ]
 
 const MOBILE: PosConfig[] = [
-  { scale: 0.65, translateX: '-85%', zIndex: 5,  opacity: 0.50 },
-  { scale: 0.82, translateX: '-50%', zIndex: 10, opacity: 0.75 },
-  { scale: 1.00, translateX: '0%',   zIndex: 20, opacity: 1.00 },
-  { scale: 0.82, translateX: '50%',  zIndex: 10, opacity: 0.75 },
-  { scale: 0.65, translateX: '85%',  zIndex: 5,  opacity: 0.50 },
+  { scale: 0.65, translateX: '-85%', zIndex: 5,  opacity: 0.40 },
+  { scale: 0.82, translateX: '-50%', zIndex: 10, opacity: 0.50 },
+  { scale: 1.03, translateX: '0%',   zIndex: 20, opacity: 1.00 },
+  { scale: 0.82, translateX: '50%',  zIndex: 10, opacity: 0.50 },
+  { scale: 0.65, translateX: '85%',  zIndex: 5,  opacity: 0.40 },
 ]
+
+const HOVER_OPACITY = 0.70
 
 export default function PhotoCarousel() {
   // index of the currently centered slide (0–4)
@@ -49,6 +52,8 @@ export default function PhotoCarousel() {
   const [isMobile, setIsMobile] = useState(false)
   // incrementing this key restarts the auto-advance useEffect (manual-nav debounce)
   const [timerKey, setTimerKey] = useState(0)
+  // slide index of the flanking card currently hovered, so it can brighten toward HOVER_OPACITY
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
 
   // responsive breakpoint detection: sets isMobile on mount and on every window resize
   useEffect(() => {
@@ -127,6 +132,8 @@ export default function PhotoCarousel() {
           let offset = (slideIdx - current + total) % total
           if (offset > Math.floor(total / 2)) offset -= total
           const pos = positions[offset + 2] // -2→[0], -1→[1], 0→[2], +1→[3], +2→[4]
+          const isCenter = offset === 0
+          const opacity = !isCenter && hoveredIdx === slideIdx ? HOVER_OPACITY : pos.opacity
 
           return (
             <div
@@ -140,12 +147,15 @@ export default function PhotoCarousel() {
                 // Center on anchor, apply fan offset, then scale + rotate in place
                 transform: `translateX(-50%) translateY(-50%) translateX(${pos.translateX}) scale(${pos.scale})`,
                 zIndex: pos.zIndex,
-                opacity: pos.opacity,
-                transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                opacity,
+                boxShadow: isCenter ? 'var(--shadow-card)' : 'none',
+                transition: 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
               }}
               className="rounded-2xl overflow-hidden bg-[#2a2a2a] cursor-pointer"
               // Clicking a side card navigates in that direction
               onClick={offset < 0 ? () => { if (!suppressClick.current) prev() } : offset > 0 ? () => { if (!suppressClick.current) next() } : undefined}
+              onMouseEnter={!isCenter ? () => setHoveredIdx(slideIdx) : undefined}
+              onMouseLeave={!isCenter ? () => setHoveredIdx(null) : undefined}
             >
               <SmoothImage
                 src={slide.src}

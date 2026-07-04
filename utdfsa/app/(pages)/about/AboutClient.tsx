@@ -11,12 +11,25 @@
 import { useState, useRef, useEffect } from 'react'
 import SmoothImage from '@/components/SmoothImage'
 import AnimatedTitle from '@/components/AnimatedTitle'
+import BaybayinRule from '@/components/BaybayinRule'
+import QuickNavRail from '@/components/QuickNavRail'
+
+const ABOUT_NAV_ITEMS = [
+  { label: 'Officers', href: '#officers' },
+  { label: 'Contact',  href: '#contact' },
+  { label: 'Connect',  href: '#connect' },
+  { label: 'Past Boards', href: '#past-boards' },
+]
 
 // ── officer data ──────────────────────────────────────────────
 // update position/name entries each year; add new year block to PAST_OFFICERS
-const OFFICERS_2025_2026 = [
+// leadership (President, VP) render in their own dedicated row above the rest of the board
+const OFFICERS_LEADERSHIP = [
   { position: 'President',           name: 'Genna Ibarra' },
   { position: 'Vice President',      name: 'Simon Choi' },
+]
+
+const OFFICERS_2025_2026 = [
   { position: 'Secretary',           name: 'Kevalin Staats' },
   { position: 'Treasurer',           name: 'Tristan Casillan' },
   { position: 'Board Advisor',       name: 'Leo dos Remedios' },
@@ -185,6 +198,16 @@ const SOCIALS = [
   },
 ]
 
+// two-letter initials for the placeholder avatar — first + last name initial
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/)
+  return ((parts[0]?.[0] ?? '') + (parts[parts.length - 1]?.[0] ?? '')).toUpperCase()
+}
+
+// cycles through the existing tonal surface stack so avatars aren't one flat identical tile,
+// without introducing a new color outside the design system
+const AVATAR_TONES = ['#1e1e1e', '#262626', '#1a1a1a']
+
 export default function AboutClient() {
   // tracks which past-officer accordion row is expanded; empty string = all collapsed
   const [openYear, setOpenYear] = useState<string>('')
@@ -211,7 +234,7 @@ export default function AboutClient() {
     const TITLE_LEAD_MS = 150
     const mountTime = Date.now()
 
-    const cards = Array.from(grid.children) as HTMLElement[]
+    const cards = Array.from(grid.querySelectorAll<HTMLElement>('[data-officer-card]'))
     const animated = new Set<HTMLElement>()
     // offsetTop values are stable after layout; compute once at mount
     const minOffsetTop = Math.min(...cards.map(c => c.offsetTop))
@@ -219,7 +242,6 @@ export default function AboutClient() {
 
     title.style.opacity = '0'
     cards.forEach(c => { c.style.opacity = '0' })
-
     const observer = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (!e.isIntersecting) return
@@ -259,6 +281,7 @@ export default function AboutClient() {
 
   return (
     <main className="bg-brand-bg text-white overflow-x-hidden">
+      <QuickNavRail mode="sections" ariaLabel="About page sections" items={ABOUT_NAV_ITEMS} />
 
       {/* ── SECTION 1 — WHO WE ARE ──────────────────────────────────── */}
       {/* hero height: compact on mobile, taller on desktop */}
@@ -289,10 +312,13 @@ export default function AboutClient() {
             <AnimatedTitle
               as="h1"
               animation="fadeUp"
-              className="font-display font-black text-white mb-8"
+              className="font-display font-black text-white mb-3"
               style={{ fontSize: 'clamp(36px, 5.5vw, 80px)', letterSpacing: '-0.02em' }}
             >
               ABOUT US
+            </AnimatedTitle>
+            <AnimatedTitle as="div" animation="fadeUp" delay={80} className="mb-8">
+              <BaybayinRule word="ᜆᜓᜅ᜔ᜃᜓᜎ᜔" size="clamp(14px,2.2vw,32px)" onPhoto />
             </AnimatedTitle>
             <AnimatedTitle
               as="p"
@@ -313,7 +339,7 @@ export default function AboutClient() {
       </section>
 
       {/* ── SECTION 2 — OFFICER BOARD ───────────────────────────────── */}
-      <section className="py-16 px-6 bg-section-bg">
+      <section id="officers" className="py-16 px-6 bg-section-bg scroll-mt-20">
         <div className="max-w-6xl mx-auto">
           <h2
             ref={boardTitleRef}
@@ -322,42 +348,74 @@ export default function AboutClient() {
           >
             2026-2027 OFFICER BOARD
           </h2>
-          <div ref={boardGridRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {OFFICERS_2025_2026.map(({ position, name }) => (
-              <div
-                key={`${position}-${name}`}
-                className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden hover:brightness-110 transition-all duration-200"
-              >
-                {/* replace this div with Next.js Image when officer photos are available:
-                    <SmoothImage src="/officers/[name].jpg" alt="[Name]" fill
-                      className="object-cover object-top" /> */}
-                <div className="relative w-full aspect-square bg-[#1e1e1e] flex items-center justify-center overflow-hidden">
-                  <svg
-                    viewBox="0 0 80 80"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="w-12 h-12 text-gray-600"
+          <div ref={boardGridRef} className="flex flex-col gap-6">
+            {/* leadership row — President + VP always share their own row, 2-up at every breakpoint */}
+            <div className="grid grid-cols-2 gap-6 max-w-xl mx-auto w-full">
+              {OFFICERS_LEADERSHIP.map(({ position, name }, i) => (
+                <div
+                  key={`${position}-${name}`}
+                  data-officer-card
+                  className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden hover:brightness-110 transition-all duration-200"
+                >
+                  {/* replace this div with Next.js Image when officer photos are available:
+                      <SmoothImage src="/officers/[name].jpg" alt="[Name]" fill
+                        className="object-cover object-top" /> */}
+                  <div
+                    className="relative w-full aspect-square flex items-center justify-center overflow-hidden"
+                    style={{ background: AVATAR_TONES[i % AVATAR_TONES.length] }}
                   >
-                    <circle cx="40" cy="28" r="16" fill="currentColor" />
-                    <path d="M8 72c0-17.673 14.327-32 32-32s32 14.327 32 32" fill="currentColor" />
-                  </svg>
+                    <span className="font-display font-bold text-white/70 text-3xl tracking-wide">
+                      {initials(name)}
+                    </span>
+                  </div>
+                  <div className="px-4 py-3">
+                    <p className="font-sans font-bold text-white text-sm leading-snug mb-0.5">
+                      {name}
+                    </p>
+                    <p className="font-sans text-white/55 text-[13px] leading-snug">
+                      {position}
+                    </p>
+                  </div>
                 </div>
-                <div className="px-4 py-3">
-                  <p className="font-sans text-white/45 text-[11px] uppercase tracking-widest mb-1 leading-snug">
-                    {position}
-                  </p>
-                  <p className="font-sans font-bold text-white text-sm leading-snug">
-                    {name}
-                  </p>
+              ))}
+            </div>
+
+            {/* remaining officer board — normal responsive grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {OFFICERS_2025_2026.map(({ position, name }, i) => (
+                <div
+                  key={`${position}-${name}`}
+                  data-officer-card
+                  className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden hover:brightness-110 transition-all duration-200"
+                >
+                  {/* replace this div with Next.js Image when officer photos are available:
+                      <SmoothImage src="/officers/[name].jpg" alt="[Name]" fill
+                        className="object-cover object-top" /> */}
+                  <div
+                    className="relative w-full aspect-square flex items-center justify-center overflow-hidden"
+                    style={{ background: AVATAR_TONES[i % AVATAR_TONES.length] }}
+                  >
+                    <span className="font-display font-bold text-white/70 text-3xl tracking-wide">
+                      {initials(name)}
+                    </span>
+                  </div>
+                  <div className="px-4 py-3">
+                    <p className="font-sans font-bold text-white text-sm leading-snug mb-0.5">
+                      {name}
+                    </p>
+                    <p className="font-sans text-white/55 text-[13px] leading-snug">
+                      {position}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── SECTION 3 — CONTACT US ──────────────────────────────────── */}
-      <section className="py-16 px-6 bg-brand-bg">
+      <section id="contact" className="py-16 px-6 bg-brand-bg scroll-mt-20">
         <div className="max-w-xl mx-auto text-center">
           <h2
             className="font-display font-black text-white mb-6"
@@ -376,7 +434,7 @@ export default function AboutClient() {
             href="https://instagram.com/fsautd"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2.5 px-7 py-3 border border-white/30 rounded-full text-white font-sans font-semibold text-sm tracking-wide hover:border-white/60 hover:bg-white/5 transition-all duration-200"
+            className="inline-flex items-center gap-2.5 px-7 py-3 rounded-full bg-accent-green text-[#08130a] font-sans font-bold text-sm tracking-wide hover:brightness-[1.08] active:scale-[0.98] transition-all duration-200"
           >
             <InstagramIcon className="w-4 h-4" />
             @fsautd
@@ -385,7 +443,7 @@ export default function AboutClient() {
       </section>
 
       {/* ── SECTION 4 — CONNECT WITH US ─────────────────────────────── */}
-      <section className="py-16 px-6 bg-section-bg">
+      <section id="connect" className="py-16 px-6 bg-section-bg scroll-mt-20">
         <div className="max-w-4xl mx-auto text-center">
           <h2
             className="font-display font-black text-white mb-10"
@@ -411,7 +469,7 @@ export default function AboutClient() {
       </section>
 
       {/* ── SECTION 5 — PAST OFFICERS ───────────────────────────────── */}
-      <section className="py-16 px-6 bg-brand-bg">
+      <section id="past-boards" className="py-16 px-6 bg-brand-bg scroll-mt-20">
         <div className="max-w-4xl mx-auto">
           <h2
             className="font-display font-black text-white text-center mb-10"
@@ -427,6 +485,9 @@ export default function AboutClient() {
               return (
                 <div key={year}>
                   <button
+                    id={`past-officers-trigger-${year}`}
+                    aria-expanded={isOpen}
+                    aria-controls={`past-officers-panel-${year}`}
                     className={`w-full flex items-center justify-between py-4 px-6 bg-[#1a1a1a] border border-white/10 text-left hover:bg-[#222] transition-colors duration-200 ${isOpen ? 'rounded-t-xl' : 'rounded-xl'}`}
                     onClick={() => toggleYear(year)}
                   >
@@ -436,13 +497,18 @@ export default function AboutClient() {
                     />
                   </button>
                   {isOpen && (
-                    <div className="bg-[#161616] border border-t-0 border-white/10 rounded-b-xl px-6 py-2">
+                    <div
+                      id={`past-officers-panel-${year}`}
+                      role="region"
+                      aria-labelledby={`past-officers-trigger-${year}`}
+                      className="bg-[#161616] border border-t-0 border-white/10 rounded-b-xl px-6 py-2"
+                    >
                       {officers.map(({ position, names }, i) => (
                         <div
                           key={`${year}-${position}`}
-                          className={`flex gap-6 py-3 ${i < officers.length - 1 ? 'border-b border-white/10' : ''}`}
+                          className={`flex flex-col sm:flex-row gap-1 sm:gap-6 py-3 ${i < officers.length - 1 ? 'border-b border-white/10' : ''}`}
                         >
-                          <span className="font-sans text-[11px] uppercase tracking-widest text-white/40 w-52 flex-shrink-0 pt-0.5">
+                          <span className="font-sans text-[11px] uppercase tracking-widest text-white/60 sm:w-52 sm:flex-shrink-0 sm:pt-0.5">
                             {position}
                           </span>
                           <span className="font-sans text-sm text-white">{names}</span>

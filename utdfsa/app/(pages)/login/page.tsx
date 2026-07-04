@@ -173,7 +173,6 @@ export default function LoginPage() {
 
       <style>{`
         .google-btn:hover {
-          box-shadow: 0 10px 30px -10px rgba(255,255,255,0.25);
           transform: translateY(-1px);
         }
       `}</style>

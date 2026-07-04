@@ -144,7 +144,7 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
     'w-full rounded-lg px-3 py-2 text-sm transition-colors',
     'focus:outline-none focus:ring-1',
     'text-white bg-[#1e1e1e] border border-white/[0.12]',
-    'placeholder:text-white/30 focus:ring-[#2b5f2e] focus:border-[#2b5f2e]',
+    'placeholder:text-white/30 focus:ring-[#75ba78] focus:border-[#75ba78]',
     'disabled:opacity-50 disabled:cursor-not-allowed',
   ].join(' ')
 
@@ -154,17 +154,18 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="w-full rounded-[13px] text-white font-bold text-[15px] tracking-[0.01em] transition-all"
+        className="w-full rounded-[13px] font-bold text-[15px] tracking-[0.01em] transition-all"
         style={{
           padding: '16px',
-          background: '#2b5f2e',
+          background: '#75ba78',
+          color: '#0e0e0e',
         }}
         onMouseEnter={e => {
-          (e.currentTarget as HTMLButtonElement).style.background = '#347b38'
-          ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 14px 34px -12px rgba(77, 119, 79, 0.75)'
+          (e.currentTarget as HTMLButtonElement).style.background = '#8bcf8e'
+          ;(e.currentTarget as HTMLButtonElement).style.boxShadow = '0 14px 34px -12px rgba(117, 186, 120, 0.75)'
         }}
         onMouseLeave={e => {
-          (e.currentTarget as HTMLButtonElement).style.background = '#2b5f2e'
+          (e.currentTarget as HTMLButtonElement).style.background = '#75ba78'
           ;(e.currentTarget as HTMLButtonElement).style.boxShadow = 'none'
         }}
       >
@@ -363,12 +364,12 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
                   <label className="flex items-start gap-3 cursor-pointer">
                     <div
                       className={`w-[18px] h-[18px] shrink-0 rounded-[4px] border-2 flex items-center justify-center transition-all mt-0.5 flex-none ${
-                        privacyAck ? 'border-[#2b5f2e]' : 'border-white/20 hover:border-white/40'
+                        privacyAck ? 'border-[#75ba78]' : 'border-white/20 hover:border-white/40'
                       }`}
-                      style={{ background: privacyAck ? '#2b5f2e' : '#1e1e1e' }}
+                      style={{ background: privacyAck ? '#75ba78' : '#1e1e1e' }}
                     >
                       {privacyAck && (
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0e0e0e" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M20 6L9 17l-5-5" />
                         </svg>
                       )}
@@ -407,8 +408,8 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
               <button
                 type="submit"
                 disabled={loading || (!isMember && !privacyAck)}
-                className="w-full text-white font-bold py-4 rounded-[13px] text-[15px] tracking-[0.01em] hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-60"
-                style={{ background: '#2b5f2e' }}
+                className="w-full text-[#0e0e0e] font-bold py-4 rounded-[13px] text-[15px] tracking-[0.01em] hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-60"
+                style={{ background: '#75ba78' }}
               >
                 {/* only shows "Processing…" while the checkout API call is in flight — do not remove this condition */}
                 {loading

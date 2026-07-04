@@ -7,7 +7,7 @@
 //        the three google fonts are registered as CSS custom properties via @theme
 // ─────────────────────────────────────────────────────────────
 import type { Metadata, Viewport } from "next"
-import { Geist, Geist_Mono, Unbounded } from "next/font/google"
+import { Geist, Geist_Mono, Unbounded, Noto_Sans_Tagalog } from "next/font/google"
 import "./globals.css"
 import Navbar from "@/components/Navbar"
 import Footer from "@/components/Footer"
@@ -21,6 +21,12 @@ const unbounded = Unbounded({
   variable: "--font-unbounded",
   subsets: ["latin"],
   weight: ["600", "700", "900"],
+  display: "swap",
+})
+const notoTagalog = Noto_Sans_Tagalog({
+  variable: "--font-tagalog",
+  subsets: ["tagalog"],
+  weight: "400",
   display: "swap",
 })
 
@@ -62,7 +68,7 @@ export default async function RootLayout({
 
   const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${unbounded.variable} h-full antialiased`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${unbounded.variable} ${notoTagalog.variable} h-full antialiased`}>
       <head>
         {supabaseOrigin && <link rel="preconnect" href={supabaseOrigin} />}
         <link rel="preconnect" href="https://api.stripe.com" />
