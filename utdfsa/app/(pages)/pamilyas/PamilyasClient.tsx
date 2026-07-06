@@ -5,7 +5,7 @@ import Modal from '@/components/Modal'
 import SmoothImage from '@/components/SmoothImage'
 import { BlurInImg } from '@/components/SmoothImage'
 import Link from 'next/link'
-import AnimatedTitle from '@/components/AnimatedTitle'
+import AnimatedLetters from '@/components/AnimatedLetters'
 import BaybayinRule from '@/components/BaybayinRule'
 import QuickNavRail from '@/components/QuickNavRail'
 import { useRevealOnScroll, useStaggeredReveal } from '@/lib/useRevealOnScroll'
@@ -495,9 +495,12 @@ export default function PamilyasClient({
             sizes="100vw"
           />
           <div className="absolute inset-0 bg-black/40" />
-          <AnimatedTitle as="h1" animation="slideFromRight" className="absolute bottom-4 left-4 font-display font-black text-5xl text-white leading-none z-10">
-            PAMILYAS
-          </AnimatedTitle>
+          <AnimatedLetters
+            as="h1"
+            text="PAMILYAS"
+            className="absolute bottom-4 left-4 font-display font-black text-5xl text-white leading-none z-10"
+            style={{ letterSpacing: '-0.03em' }}
+          />
         </div>
       </div>
 
@@ -543,18 +546,17 @@ export default function PamilyasClient({
         </div>
 
         {/* PAMILYAS title */}
-        <AnimatedTitle
+        <AnimatedLetters
           as="h1"
-          animation="slideFromRight"
+          text="PAMILYAS"
           className="absolute font-display font-black text-white leading-none text-right z-10"
           style={{
             bottom: '100px',
             right: '80px',
             fontSize: 'clamp(60px, 8.5vw, 128px)',
+            letterSpacing: '-0.03em',
           }}
-        >
-          PAMILYAS
-        </AnimatedTitle>
+        />
 
       </section>
 

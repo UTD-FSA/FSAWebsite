@@ -15,7 +15,7 @@
 
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import SmoothImage from '@/components/SmoothImage'
 import AnimatedTitle from '@/components/AnimatedTitle'
 import BaybayinRule from '@/components/BaybayinRule'
@@ -23,13 +23,23 @@ import GoodphilNavRail from '@/components/GoodphilNavRail'
 import { useRevealOnScroll, useStaggeredReveal } from '@/lib/useRevealOnScroll'
 
 export default function SportsPage() {
-  // Baybayin subheader — opacity fade-in as it scrolls into view
-  const baybayinRef = useRef<HTMLDivElement>(null)
-  const baybayinVisible = useRevealOnScroll(baybayinRef, 0.3)
+  // Right-column reveal (the two captain CTA cards) — ref sits on that
+  // column itself, not the whole Section-2 <section>. The section also
+  // contains the heading + long paragraph, so on mobile's short hero
+  // (h-[40vh]) a big chunk of that tall section is already on screen at
+  // load, tripping the 30%-of-element threshold before the user scrolls —
+  // even though the CTA cards are still stacked below the fold. Targeting
+  // the column directly means it only reveals once it's actually in view.
+  const headingRef = useRef<HTMLDivElement>(null)
+  const headingVisible = useRevealOnScroll(headingRef, 0.3)
 
-  // description paragraph — slides up 10px while fading in on scroll into view
-  const paraRef = useRef<HTMLParagraphElement>(null)
-  const paraVisible = useRevealOnScroll(paraRef, 0.3)
+  // title (h2) + Baybayin fire on page load instead of on scroll — only the
+  // paragraph/CTA cards below stay scroll-triggered via headingVisible
+  const [titleVisible, setTitleVisible] = useState(false)
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setTitleVisible(true))
+    return () => cancelAnimationFrame(raf)
+  }, [])
 
   // sports card grid — row-staggered scroll-triggered fade-up (same pattern as
   // About's officer board), now with the shared never-blank + reduced-motion guard
@@ -51,12 +61,6 @@ export default function SportsPage() {
     },
     0.4,
   )
-
-  // leadership CTA cards — simple fade-in when scrolled into view
-  const leadershipRef1 = useRef<HTMLDivElement>(null)
-  const leadership1Visible = useRevealOnScroll(leadershipRef1, 0.3)
-  const leadershipRef2 = useRef<HTMLDivElement>(null)
-  const leadership2Visible = useRevealOnScroll(leadershipRef2, 0.3)
 
   return (
     <main className="bg-section-bg text-white overflow-x-clip">
@@ -117,10 +121,19 @@ export default function SportsPage() {
 
         {/* heading + Baybayin stay centered, matching the Cultural/Modern/Spirit convention */}
         <div className="max-w-3xl mx-auto text-center mb-10 md:mb-12">
-          <h2 className="font-display font-black text-white mb-4" style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', letterSpacing: '-0.01em' }}>
+          <h2
+            className="font-display font-black text-white mb-4"
+            style={{
+              fontSize: 'clamp(28px, 3.5vw, 44px)',
+              letterSpacing: '-0.01em',
+              opacity: titleVisible ? 1 : 0,
+              transform: titleVisible ? 'translateY(0)' : 'translateY(10px)',
+              transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
+            }}
+          >
             WHAT IS UTD FSA SPORTS?
           </h2>
-          <div ref={baybayinRef} style={{ opacity: baybayinVisible ? 1 : 0, transition: 'opacity 900ms var(--ease-smooth)' }}>
+          <div style={{ opacity: titleVisible ? 1 : 0, transition: 'opacity 900ms var(--ease-smooth)', transitionDelay: titleVisible ? '160ms' : '0ms' }}>
             <BaybayinRule word="ᜉᜎᜃᜐᜈ᜔" size="clamp(16px,2vw,27px)" />
           </div>
         </div>
@@ -130,13 +143,13 @@ export default function SportsPage() {
             two captain CTA cards (Sports has no team photo collage) */}
         <div className="max-w-[1400px] mx-auto grid lg:grid-cols-[1fr_460px] gap-10 lg:gap-16 items-start">
           <p
-            ref={paraRef}
             className="font-sans leading-relaxed text-white/60 text-left"
             style={{
               fontSize: 'clamp(16px, 1.9vw, 29px)',
-              opacity: paraVisible ? 1 : 0,
-              transform: paraVisible ? 'translateY(0)' : 'translateY(10px)',
+              opacity: titleVisible ? 1 : 0,
+              transform: titleVisible ? 'translateY(0)' : 'translateY(10px)',
               transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
+              transitionDelay: titleVisible ? '510ms' : '0ms',
             }}
           >
             <span className="font-bold text-white">UTD FSA Sports</span>
@@ -144,16 +157,18 @@ export default function SportsPage() {
             From first-time players to seasoned competitors, <span className="font-bold text-accent-green">there's a place for everyone.</span> You'll build friendships, challenge yourself, and experience the excitement of representing UTD alongside your FSA family. Whether you're <span className="font-bold text-accent-gold">chasing a championship or trying a new sport with friends</span>, it's all about teamwork, sportsmanship, and <span className="font-bold text-accent-green">creating lasting memories both on and off the court.</span>
           </p>
 
-          <div className="flex flex-col gap-6 mx-auto lg:mx-0 w-full max-w-[460px]">
+          <div ref={headingRef} className="flex flex-col gap-6 mx-auto lg:mx-0 w-full max-w-[460px]">
 
-            {/* primary cta — captain interest form */}
+            {/* primary cta — captain interest form; triggers alongside the
+                paragraph (same headingVisible trigger, same 320ms delay) */}
             <div
-              ref={leadershipRef1}
               className="relative border border-white/20 rounded-[22px] px-8 py-10 text-center overflow-hidden"
               style={{
                 background: 'linear-gradient(180deg, #191919 0%, #111111 100%)',
-                opacity: leadership1Visible ? 1 : 0,
-                transition: 'opacity 700ms var(--ease-smooth)',
+                opacity: headingVisible ? 1 : 0,
+                transform: headingVisible ? 'translateY(0)' : 'translateY(10px)',
+                transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
+                transitionDelay: headingVisible ? '320ms' : '0ms',
               }}
             >
               <h3
@@ -180,14 +195,16 @@ export default function SportsPage() {
               </a>
             </div>
 
-            {/* secondary cta — book a captain meeting */}
+            {/* secondary cta — book a captain meeting; same trigger + delay as
+                the primary CTA and the paragraph above */}
             <div
-              ref={leadershipRef2}
               className="border border-white/20 rounded-[22px] px-8 py-10 text-center flex flex-col items-center"
               style={{
                 background: 'linear-gradient(180deg, #191919 0%, #111111 100%)',
-                opacity: leadership2Visible ? 1 : 0,
-                transition: 'opacity 700ms var(--ease-smooth)',
+                opacity: headingVisible ? 1 : 0,
+                transform: headingVisible ? 'translateY(0)' : 'translateY(10px)',
+                transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
+                transitionDelay: headingVisible ? '320ms' : '0ms',
               }}
             >
               <h3
@@ -243,7 +260,6 @@ export default function SportsPage() {
               </div>
               <div className="px-5 pt-[18px] pb-[22px]">
                 <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Men&apos;s Basketball</h3>
-                <p className="text-[#8a8a8a] font-medium" style={{ fontSize: '13.5px', lineHeight: '1.55' }}>Full-court, no easy buckets. The bracket that draws the biggest crowd every year.</p>
               </div>
             </div>
 
@@ -261,7 +277,6 @@ export default function SportsPage() {
               </div>
               <div className="px-5 pt-[18px] pb-[22px]">
                 <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Women&apos;s Basketball</h3>
-                <p className="text-[#8a8a8a] font-medium" style={{ fontSize: '13.5px', lineHeight: '1.55' }}>Fast breaks and tight defense. Consistently one of the closest brackets at Goodphil.</p>
               </div>
             </div>
 
@@ -279,7 +294,6 @@ export default function SportsPage() {
               </div>
               <div className="px-5 pt-[18px] pb-[22px]">
                 <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Men&apos;s Volleyball</h3>
-                <p className="text-[#8a8a8a] font-medium" style={{ fontSize: '13.5px', lineHeight: '1.55' }}>Six on a side, points won at the net. Rewards teams that actually practice together.</p>
               </div>
             </div>
 
@@ -297,7 +311,6 @@ export default function SportsPage() {
               </div>
               <div className="px-5 pt-[18px] pb-[22px]">
                 <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Women&apos;s Volleyball</h3>
-                <p className="text-[#8a8a8a] font-medium" style={{ fontSize: '13.5px', lineHeight: '1.55' }}>Long rallies, louder sidelines. Usually the last court still going in the gym.</p>
               </div>
             </div>
 
@@ -315,7 +328,6 @@ export default function SportsPage() {
               </div>
               <div className="px-5 pt-[18px] pb-[22px]">
                 <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Coed Volleyball</h3>
-                <p className="text-[#8a8a8a] font-medium" style={{ fontSize: '13.5px', lineHeight: '1.55' }}>Mixed rosters, no separate bracket. First-timers and veterans share the same side of the net.</p>
               </div>
             </div>
 
@@ -333,7 +345,6 @@ export default function SportsPage() {
               </div>
               <div className="px-5 pt-[18px] pb-[22px]">
                 <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Men&apos;s Flag Football</h3>
-                <p className="text-[#8a8a8a] font-medium" style={{ fontSize: '13.5px', lineHeight: '1.55' }}>No pads, no excuses. Playbooks get drawn up in the group chat the week before.</p>
               </div>
             </div>
 
@@ -351,7 +362,6 @@ export default function SportsPage() {
               </div>
               <div className="px-5 pt-[18px] pb-[22px]">
                 <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Coed Soccer</h3>
-                <p className="text-[#8a8a8a] font-medium" style={{ fontSize: '13.5px', lineHeight: '1.55' }}>Full pitch, mixed roster. The one bracket where cleats actually matter.</p>
               </div>
             </div>
 
@@ -369,7 +379,6 @@ export default function SportsPage() {
               </div>
               <div className="px-5 pt-[18px] pb-[22px]">
                 <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Ultimate Frisbee</h3>
-                <p className="text-[#8a8a8a] font-medium" style={{ fontSize: '13.5px', lineHeight: '1.55' }}>Self-officiated, no refs. Whoever calls the foul best usually wins the argument.</p>
               </div>
             </div>
 
@@ -379,8 +388,7 @@ export default function SportsPage() {
                 <span className="text-6xl">❓</span>
               </div>
               <div className="px-5 pt-[18px] pb-[22px]">
-                <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Super Secret Special Sport</h3>
-                <p className="text-[#8a8a8a] font-medium" style={{ fontSize: '13.5px', lineHeight: '1.55' }}>Announced day-of, every year. Not even the host school always knows in advance.</p>
+                <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Wildcard Sport: TBD</h3>
               </div>
             </div>
 

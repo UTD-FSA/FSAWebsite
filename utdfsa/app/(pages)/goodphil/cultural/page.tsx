@@ -9,7 +9,7 @@
 
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import SmoothImage from '@/components/SmoothImage'
 import AnimatedTitle from '@/components/AnimatedTitle'
 import BaybayinRule from '@/components/BaybayinRule'
@@ -17,13 +17,23 @@ import GoodphilNavRail from '@/components/GoodphilNavRail'
 import { useRevealOnScroll, useStaggeredReveal } from '@/lib/useRevealOnScroll'
 
 export default function CulturalPage() {
-  // Baybayin subheader — opacity fade-in as it scrolls into view
-  const baybayinRef = useRef<HTMLDivElement>(null)
-  const baybayinVisible = useRevealOnScroll(baybayinRef, 0.3)
+  // Right-column reveal (photo collage + logo badge + Instagram CTA pill) —
+  // ref sits on that column itself, not the whole Section-2 <section>. The
+  // section also contains the heading + long paragraph, so on mobile's short
+  // hero (h-[40vh]) a big chunk of that tall section is already on screen at
+  // load, tripping the 30%-of-element threshold before the user scrolls —
+  // even though the photo group is still stacked below the fold. Targeting
+  // the column directly means it only reveals once it's actually in view.
+  const headingRef = useRef<HTMLDivElement>(null)
+  const headingVisible = useRevealOnScroll(headingRef, 0.3)
 
-  // description paragraph — slides up 10px while fading in on scroll into view
-  const paraRef = useRef<HTMLParagraphElement>(null)
-  const paraVisible = useRevealOnScroll(paraRef, 0.3)
+  // title (h2) + Baybayin fire on page load instead of on scroll — only the
+  // paragraph/photos/CTA below stay scroll-triggered via headingVisible
+  const [titleVisible, setTitleVisible] = useState(false)
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setTitleVisible(true))
+    return () => cancelAnimationFrame(raf)
+  }, [])
 
   // past-performances video vault — each card animates independently as it individually
   // scrolls into view (mirrors the officer board card pattern in AboutClient.tsx),
@@ -93,10 +103,19 @@ export default function CulturalPage() {
 
         {/* heading + Baybayin stay centered, matching the Sports/Spirit/Modern convention */}
         <div className="max-w-3xl mx-auto text-center mb-10 md:mb-12">
-          <h2 className="font-display font-black text-white mb-4" style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', letterSpacing: '-0.01em' }}>
+          <h2
+            className="font-display font-black text-white mb-4"
+            style={{
+              fontSize: 'clamp(28px, 3.5vw, 44px)',
+              letterSpacing: '-0.01em',
+              opacity: titleVisible ? 1 : 0,
+              transform: titleVisible ? 'translateY(0)' : 'translateY(10px)',
+              transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
+            }}
+          >
             WHAT IS UTD PAMANA?
           </h2>
-          <div ref={baybayinRef} style={{ opacity: baybayinVisible ? 1 : 0, transition: 'opacity 900ms var(--ease-smooth)' }}>
+          <div style={{ opacity: titleVisible ? 1 : 0, transition: 'opacity 900ms var(--ease-smooth)', transitionDelay: titleVisible ? '160ms' : '0ms' }}>
             <BaybayinRule word="ᜃᜓᜎ᜔ᜆᜓᜍ" size="clamp(16px,2vw,27px)" />
           </div>
         </div>
@@ -110,20 +129,20 @@ export default function CulturalPage() {
             on wide monitors, more room for the photos to read at size). */}
         <div className="max-w-[1400px] mx-auto grid lg:grid-cols-[1fr_460px] gap-10 lg:gap-16 items-start">
           <p
-            ref={paraRef}
             className="font-sans leading-relaxed text-white/60 text-left"
             style={{
               fontSize: 'clamp(16px, 1.9vw, 29px)',
-              opacity: paraVisible ? 1 : 0,
-              transform: paraVisible ? 'translateY(0)' : 'translateY(10px)',
+              opacity: titleVisible ? 1 : 0,
+              transform: titleVisible ? 'translateY(0)' : 'translateY(10px)',
               transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
+              transitionDelay: titleVisible ? '510ms' : '0ms',
             }}
           >
             <span className="font-bold text-white">UTD Pamana</span>
             , the Tagalog word for <span className="font-bold italic text-accent-green">&ldquo;legacy&rdquo; or &ldquo;inheritance,&rdquo;</span> represents the traditions and stories passed down from generation to generation. As UTD FSA&apos;s cultural dance team, Pamana honors Filipino heritage through performances <span className="font-bold text-accent-gold">inspired by the country&rsquo;s rich history, music, and traditions.</span> Every fall, the team spends <span className="font-bold text-white">2–3 months</span> rehearsing before taking the stage at Isang Mahal, where they perform alongside cultural dance teams from Filipino Student Associations across Texas. They also proudly represent UTD FSA at Goodphil, <span className="font-bold text-accent-green">carrying on a legacy</span> that continues to inspire every new generation of dancers.
           </p>
 
-          <div className="flex flex-col items-center lg:items-stretch gap-7 mx-auto lg:mx-0 w-full max-w-[460px]">
+          <div ref={headingRef} className="flex flex-col items-center lg:items-stretch gap-7 mx-auto lg:mx-0 w-full max-w-[460px]">
             {/* staggered 3-photo collage: one tall portrait on the left, two
                 stacked squares on the right offset downward — a considered
                 composition instead of a single flat thumbnail */}
@@ -132,7 +151,14 @@ export default function CulturalPage() {
                   can overhang the photo's bottom edge; the image itself is
                   clipped by an inner layer */}
               <div className="relative flex-1 aspect-[3/4]">
-                <div className="absolute inset-0 rounded-2xl overflow-hidden">
+                <div
+                  className="absolute inset-0 rounded-2xl overflow-hidden"
+                  style={{
+                    clipPath: headingVisible ? 'inset(0 0 0% 0)' : 'inset(0 0 100% 0)',
+                    transition: 'clip-path 700ms var(--ease-smooth)',
+                    transitionDelay: headingVisible ? '320ms' : '0ms',
+                  }}
+                >
                   <SmoothImage
                     src="/cult-1.jpg"
                     alt="UTD Pamana performing at Goodphil"
@@ -143,8 +169,18 @@ export default function CulturalPage() {
                   />
                 </div>
                 {/* Pamana logo badge — overlaps the photo's bottom-left corner, cut out
-                    from the section background so it reads as a floating identity stamp */}
-                <div className="absolute -bottom-5 left-4 w-14 h-14 rounded-full overflow-hidden border-4 border-section-bg bg-section-bg">
+                    from the section background so it reads as a floating identity stamp;
+                    stamps in just after the photo above finishes unraveling (320ms delay
+                    + 700ms duration = settles ~1020ms) */}
+                <div
+                  className="absolute -bottom-5 left-4 w-14 h-14 rounded-full overflow-hidden border-4 border-section-bg bg-section-bg"
+                  style={{
+                    opacity: headingVisible ? 1 : 0,
+                    transform: headingVisible ? 'scale(1)' : 'scale(0.6)',
+                    transition: 'opacity 500ms var(--ease-smooth), transform 500ms var(--ease-smooth)',
+                    transitionDelay: headingVisible ? '1120ms' : '0ms',
+                  }}
+                >
                   <SmoothImage
                     src="/cultural-logo.svg"
                     alt="UTD Pamana logo"
@@ -157,7 +193,14 @@ export default function CulturalPage() {
 
               {/* two stacked squares, top-aligned with the portrait */}
               <div className="flex-1 flex flex-col gap-3">
-                <div className="relative aspect-square rounded-2xl overflow-hidden">
+                <div
+                  className="relative aspect-square rounded-2xl overflow-hidden"
+                  style={{
+                    clipPath: headingVisible ? 'inset(0 0 0% 0)' : 'inset(0 0 100% 0)',
+                    transition: 'clip-path 700ms var(--ease-smooth)',
+                    transitionDelay: headingVisible ? '320ms' : '0ms',
+                  }}
+                >
                   <SmoothImage
                     src="/cult-2.jpg"
                     alt="UTD Pamana dancer mid-performance"
@@ -167,7 +210,14 @@ export default function CulturalPage() {
                     sizes="(max-width: 1024px) 45vw, 220px"
                   />
                 </div>
-                <div className="relative aspect-square rounded-2xl overflow-hidden">
+                <div
+                  className="relative aspect-square rounded-2xl overflow-hidden"
+                  style={{
+                    clipPath: headingVisible ? 'inset(0 0 0% 0)' : 'inset(0 0 100% 0)',
+                    transition: 'clip-path 700ms var(--ease-smooth)',
+                    transitionDelay: headingVisible ? '320ms' : '0ms',
+                  }}
+                >
                   <SmoothImage
                     src="/cult-3.jpg"
                     alt="UTD Pamana group performance at Goodphil"
@@ -185,6 +235,12 @@ export default function CulturalPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="mt-4 inline-flex items-center justify-center gap-2 px-6 py-3 bg-accent-green text-[#0e0e0e] rounded-full font-sans font-bold text-sm transition-all duration-200 hover:brightness-[1.08]"
+              style={{
+                opacity: headingVisible ? 1 : 0,
+                transform: headingVisible ? 'translateY(0)' : 'translateY(10px)',
+                transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth), filter 200ms, background-color 200ms',
+                transitionDelay: headingVisible ? '480ms' : '0ms',
+              }}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden="true">
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />

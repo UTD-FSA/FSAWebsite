@@ -81,12 +81,18 @@ export default async function ProfilePage() {
     <main className="bg-brand-bg min-h-screen text-white">
       <div className="max-w-2xl mx-auto px-6 py-12">
 
-        <h1 className="font-display font-black text-[clamp(36px,5vw,64px)] text-white uppercase leading-none tracking-tight mb-10">
+        <h1
+          className="font-display font-black text-[clamp(36px,5vw,64px)] text-white uppercase leading-none tracking-tight mb-10"
+          style={{ animation: 'fadeUp 450ms cubic-bezier(0.16,1,0.3,1) both' }}
+        >
           MY PROFILE
         </h1>
 
         {/* Avatar and name */}
-        <div className="flex items-center gap-5 mb-10">
+        <div
+          className="flex items-center gap-5 mb-10"
+          style={{ animation: 'fadeUp 450ms cubic-bezier(0.16,1,0.3,1) 80ms both' }}
+        >
           {member.avatar_url ? (
             <img
               src={member.avatar_url}
@@ -108,7 +114,10 @@ export default async function ProfilePage() {
         </div>
 
         {/* Membership status */}
-        <section className="mb-4 p-6 border border-white/[7%] rounded-2xl bg-[#1a1a1a]">
+        <section
+          className="mb-4 p-6 border border-white/[7%] rounded-2xl bg-[#1a1a1a]"
+          style={{ animation: 'fadeUp 500ms cubic-bezier(0.16,1,0.3,1) 150ms both' }}
+        >
           <h3 className="font-display font-black text-xs uppercase tracking-widest text-white/50 mb-4">Membership</h3>
           <div className="flex flex-col gap-3">
             <div className="flex justify-between items-center">
@@ -152,7 +161,10 @@ export default async function ProfilePage() {
         </section>
 
         {/* Points */}
-        <section className="mb-4 p-6 border border-white/[7%] rounded-2xl bg-[#1a1a1a]">
+        <section
+          className="mb-4 p-6 border border-white/[7%] rounded-2xl bg-[#1a1a1a]"
+          style={{ animation: 'fadeUp 500ms cubic-bezier(0.16,1,0.3,1) 220ms both' }}
+        >
           <h3 className="font-display font-black text-xs uppercase tracking-widest text-white/50 mb-4">Points</h3>
           <p className="font-display font-black text-[56px] text-white leading-none">{member.points ?? 0}</p>
           <p className="font-sans text-sm text-white/50 mt-1 mb-6">
@@ -169,7 +181,10 @@ export default async function ProfilePage() {
         </section>
 
         {/* Personal info */}
-        <section className="mb-4 p-6 border border-white/[7%] rounded-2xl bg-[#1a1a1a]">
+        <section
+          className="mb-4 p-6 border border-white/[7%] rounded-2xl bg-[#1a1a1a]"
+          style={{ animation: 'fadeUp 500ms cubic-bezier(0.16,1,0.3,1) 290ms both' }}
+        >
           <h3 className="font-display font-black text-xs uppercase tracking-widest text-white/50 mb-4">Personal Info</h3>
           <div className="flex flex-col gap-3">
             {/* contact email — always shown */}
@@ -216,7 +231,10 @@ export default async function ProfilePage() {
         {/* Re-apply section — only renders for members who opted out of the pamilya program */}
         {/* do not remove this condition */}
         {member.member_type === 'not_interested' && (
-          <section className="mb-4 p-6 border border-white/[7%] rounded-2xl bg-[#1a1a1a]">
+          <section
+            className="mb-4 p-6 border border-white/[7%] rounded-2xl bg-[#1a1a1a]"
+            style={{ animation: 'fadeUp 500ms cubic-bezier(0.16,1,0.3,1) 360ms both' }}
+          >
             <h3 className="font-display font-black text-sm text-white uppercase mb-1">Changed your mind?</h3>
             <p className="font-sans text-sm text-white/50 mb-4">You can still apply.</p>
             <div className="flex gap-3 flex-wrap">
@@ -247,7 +265,10 @@ export default async function ProfilePage() {
         {/* Unpaid membership banner — only renders when membership is not active */}
         {/* do not remove this condition */}
         {member.membership_status !== 'active' && (
-          <div className="mt-6 p-5 border-2 border-accent-gold/40 rounded-2xl bg-[#1a1a1a]">
+          <div
+            className="mt-6 p-5 border-2 border-accent-gold/40 rounded-2xl bg-[#1a1a1a]"
+            style={{ animation: 'fadeUp 500ms cubic-bezier(0.16,1,0.3,1) 430ms both' }}
+          >
             <p className="font-sans text-sm text-accent-gold">
               Your membership is not yet active.{' '}
               <Link href="/membership" className="underline font-bold">

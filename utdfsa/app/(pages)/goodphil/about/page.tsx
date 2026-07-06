@@ -15,7 +15,7 @@ import Image from 'next/image'
 import SmoothImage from '@/components/SmoothImage'
 import { BlurInImg } from '@/components/SmoothImage'
 import Link from 'next/link'
-import AnimatedTitle from '@/components/AnimatedTitle'
+import AnimatedLetters from '@/components/AnimatedLetters'
 import GoodphilNavRail from '@/components/GoodphilNavRail'
 
 // host-school logo grid data — colors match the hover hex already used on the
@@ -42,6 +42,12 @@ function hexToRgba(hex: string, alpha: number) {
 // grid) permanently invisible with no fallback — the poll guarantees reveal
 // once the element is actually in the viewport, without pre-revealing
 // off-screen content early.
+//
+// the poll must honor the same `threshold` as the observer (fraction of the
+// element's height visible) — a bare "any overlap" check fired the moment
+// the section merely bordered the viewport (e.g. the tall Goodphil hero
+// leaves "WHAT IS GOODPHIL?" sitting right at the fold on load), revealing
+// it before the user had actually scrolled.
 function useRevealOnScroll<T extends HTMLElement>(ref: RefObject<T | null>, threshold: number) {
   const [visible, setVisible] = useState(false)
   useEffect(() => {
@@ -54,7 +60,8 @@ function useRevealOnScroll<T extends HTMLElement>(ref: RefObject<T | null>, thre
     observer.observe(el)
     const poll = setInterval(() => {
       const rect = el.getBoundingClientRect()
-      if (rect.top < window.innerHeight && rect.bottom > 0) reveal()
+      const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0)
+      if (visibleHeight / rect.height >= threshold) reveal()
     }, 500)
     return () => { observer.disconnect(); clearInterval(poll) }
   }, [ref, threshold])
@@ -62,6 +69,10 @@ function useRevealOnScroll<T extends HTMLElement>(ref: RefObject<T | null>, thre
 }
 
 export default function GoodphilAboutPage() {
+  // "WHAT IS GOODPHIL?" heading — three words fade in in sequence on scroll
+  const headingRef = useRef<HTMLDivElement>(null)
+  const headingVisible = useRevealOnScroll(headingRef, 0.3)
+
   // team grid — staggered fade/slide-up once scrolled into view
   const teamGridRef = useRef<HTMLDivElement>(null)
   const teamGridVisible = useRevealOnScroll(teamGridRef, 0.2)
@@ -109,9 +120,7 @@ export default function GoodphilAboutPage() {
             sizes="100vw"
           />
           <div className="absolute inset-0 bg-black/30" />
-          <AnimatedTitle as="h1" animation="slideFromRight" className="absolute bottom-4 left-4 font-display font-black text-5xl text-white leading-none z-10">
-            GOODPHIL
-          </AnimatedTitle>
+          <AnimatedLetters as="h1" text="GOODPHIL" className="absolute bottom-4 left-4 font-display font-black text-5xl text-white leading-none z-10" />
         </div>
         <div className="bg-brand-bg h-[56px] flex items-center overflow-hidden">
           <div className="flex gap-8 whitespace-nowrap w-max animate-marquee">
@@ -179,18 +188,16 @@ export default function GoodphilAboutPage() {
         </div>
 
         {/* GOODPHIL title — overlaps bottom photo and bg pattern */}
-        <AnimatedTitle
+        <AnimatedLetters
           as="h1"
-          animation="slideFromRight"
+          text="GOODPHIL"
           className="absolute font-display font-black text-white leading-none z-20"
           style={{
             bottom: '90px',
             right: '210px',
             fontSize: 'clamp(60px, 8vw, 120px)',
           }}
-        >
-          GOODPHIL
-        </AnimatedTitle>
+        />
 
         {/* Autoscroll marquee bar — pinned to the very bottom of the hero */}
         <div className="absolute bottom-0 left-0 right-0 bg-brand-bg h-[68px] z-30 flex items-center overflow-hidden">
@@ -227,12 +234,37 @@ export default function GoodphilAboutPage() {
             <div className="absolute inset-0 bg-black/40" />
           </div>
 
-          {/* Staggered heading overlaid on the photo — matches Figma's 4-line layout */}
-          <div className="relative z-10 min-h-[420px] md:min-h-[540px]">
+          {/* Staggered heading overlaid on the photo — matches Figma's 4-line layout;
+              the three words also fade in in sequence (WHAT → IS → GOODPHIL?) on scroll */}
+          <div ref={headingRef} className="relative z-10 min-h-[420px] md:min-h-[540px]">
             <h2 className="absolute inset-0 font-display font-black text-[clamp(40px,6.5vw,96px)] text-white leading-none">
-              <span className="absolute top-8 left-8 md:top-16 md:left-16">WHAT</span>
-              <span className="absolute top-1/2 right-8 md:right-16 -translate-y-1/2">IS</span>
-              <span className="absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 w-full px-8 text-center">
+              <span
+                className="absolute top-8 left-8 md:top-16 md:left-16"
+                style={{
+                  opacity: headingVisible ? 1 : 0,
+                  transition: 'opacity 1094ms var(--ease-smooth)',
+                }}
+              >
+                WHAT
+              </span>
+              <span
+                className="absolute top-1/2 right-8 md:right-16 -translate-y-1/2"
+                style={{
+                  opacity: headingVisible ? 1 : 0,
+                  transition: 'opacity 1094ms var(--ease-smooth)',
+                  transitionDelay: headingVisible ? '281ms' : '0ms',
+                }}
+              >
+                IS
+              </span>
+              <span
+                className="absolute bottom-8 md:bottom-12 left-1/2 -translate-x-1/2 w-full px-8 text-center"
+                style={{
+                  opacity: headingVisible ? 1 : 0,
+                  transition: 'opacity 1094ms var(--ease-smooth)',
+                  transitionDelay: headingVisible ? '563ms' : '0ms',
+                }}
+              >
                 GOODPHIL?
               </span>
             </h2>
@@ -410,7 +442,8 @@ export default function GoodphilAboutPage() {
                 key={name}
                 style={{
                   transform: teamGridVisible ? 'translateY(0)' : 'translateY(16px)',
-                  transition: `transform 600ms cubic-bezier(0.16, 1, 0.3, 1) ${i * 100}ms`,
+                  opacity: teamGridVisible ? 1 : 0,
+                  transition: `transform 600ms cubic-bezier(0.16, 1, 0.3, 1) ${i * 100}ms, opacity 600ms ease-out ${i * 100}ms`,
                 }}
               >
                 <Link

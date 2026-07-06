@@ -34,14 +34,28 @@ export default function ProgressBars({ goodphilPoints, goodphilMeetings, riskMgm
           <span className="font-sans text-xs text-white/60">Goodphil Points (6 required)</span>
           <span className="font-display font-bold text-xs text-white/60">{Math.min(goodphilPoints, 6)} / 6</span>
         </div>
-        <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+        <div
+          className="h-2 rounded-full overflow-hidden"
+          style={{
+            background: '#0e0e0e',
+            animation: mounted && goodphilPoints >= 6 ? 'fsa-bar-glow 700ms cubic-bezier(0.16,1,0.3,1) 700ms 1 both' : undefined,
+          }}
+        >
           <div
-            className="h-full rounded-full bg-accent-green transition-all duration-700"
-            style={{ width: mounted ? `${pointsWidth}%` : '0%' }}
+            className="h-full rounded-full transition-all duration-700"
+            style={{
+              width: mounted ? `${pointsWidth}%` : '0%',
+              background: goodphilPoints >= 6 ? '#75ba78' : 'rgba(117,186,120,0.65)',
+            }}
           />
         </div>
         {goodphilPoints >= 6 && (
-          <p className="font-sans text-xs text-accent-green mt-1">✓ Points requirement met</p>
+          <p
+            className="font-sans text-xs text-accent-green mt-1"
+            style={mounted ? { animation: 'fsa-check-pop 500ms cubic-bezier(0.16,1,0.3,1) 700ms both' } : undefined}
+          >
+            ✓ Points requirement met
+          </p>
         )}
       </div>
 
@@ -51,7 +65,13 @@ export default function ProgressBars({ goodphilPoints, goodphilMeetings, riskMgm
           <span className="font-sans text-xs text-white/60">Meetings Attended (3 required)</span>
           <span className="font-display font-bold text-xs text-white/60 shrink-0">{Math.min(goodphilMeetings, 3)} / 3</span>
         </div>
-        <div className="h-2 rounded-full bg-white/10 overflow-hidden">
+        <div
+          className="h-2 rounded-full overflow-hidden"
+          style={{
+            background: '#0e0e0e',
+            animation: mounted && goodphilMeetings >= 3 ? 'fsa-bar-glow 700ms cubic-bezier(0.16,1,0.3,1) 700ms 1 both' : undefined,
+          }}
+        >
           <div
             className="h-full rounded-full transition-all duration-700"
             style={{

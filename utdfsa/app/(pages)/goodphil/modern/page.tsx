@@ -9,7 +9,7 @@
 
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import SmoothImage from '@/components/SmoothImage'
 import AnimatedTitle from '@/components/AnimatedTitle'
 import BaybayinRule from '@/components/BaybayinRule'
@@ -17,17 +17,27 @@ import GoodphilNavRail from '@/components/GoodphilNavRail'
 import { useRevealOnScroll, useStaggeredReveal } from '@/lib/useRevealOnScroll'
 
 export default function ModernPage() {
-  // Baybayin subheader — opacity fade-in as it scrolls into view
-  const baybayinRef = useRef<HTMLDivElement>(null)
-  const baybayinVisible = useRevealOnScroll(baybayinRef, 0.3)
+  // Right-column reveal (photo collage + logo badge + Instagram CTA pill) —
+  // ref sits on that column itself, not the whole Section-2 <section>. The
+  // section also contains the heading + long paragraph, so on mobile's short
+  // hero (h-[40vh]) a big chunk of that tall section is already on screen at
+  // load, tripping the 30%-of-element threshold before the user scrolls —
+  // even though the photo group is still stacked below the fold. Targeting
+  // the column directly means it only reveals once it's actually in view.
+  const headingRef = useRef<HTMLDivElement>(null)
+  const headingVisible = useRevealOnScroll(headingRef, 0.3)
+
+  // title (h2) + Baybayin fire on page load instead of on scroll — only the
+  // paragraph/photos/CTA below stay scroll-triggered via headingVisible
+  const [titleVisible, setTitleVisible] = useState(false)
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setTitleVisible(true))
+    return () => cancelAnimationFrame(raf)
+  }, [])
 
   // "noble warrior class" — color eases from white to green as it enters the viewport
   const nobleRef = useRef<HTMLSpanElement>(null)
   const nobleVisible = useRevealOnScroll(nobleRef, 0.6)
-
-  // description paragraph — slides up 10px while fading in on scroll into view
-  const paraRef = useRef<HTMLParagraphElement>(null)
-  const paraVisible = useRevealOnScroll(paraRef, 0.3)
 
   // past-performances video vault — each card animates independently as it individually
   // scrolls into view (mirrors the officer board card pattern in AboutClient.tsx),
@@ -97,10 +107,19 @@ export default function ModernPage() {
 
         {/* heading + Baybayin stay centered, matching the Cultural page convention */}
         <div className="max-w-3xl mx-auto text-center mb-10 md:mb-12">
-          <h2 className="font-display font-black text-white mb-4" style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', letterSpacing: '-0.01em' }}>
+          <h2
+            className="font-display font-black text-white mb-4"
+            style={{
+              fontSize: 'clamp(28px, 3.5vw, 44px)',
+              letterSpacing: '-0.01em',
+              opacity: titleVisible ? 1 : 0,
+              transform: titleVisible ? 'translateY(0)' : 'translateY(10px)',
+              transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
+            }}
+          >
             WHAT IS UTD MAHARLIKA?
           </h2>
-          <div ref={baybayinRef} style={{ opacity: baybayinVisible ? 1 : 0, transition: 'opacity 900ms var(--ease-smooth)' }}>
+          <div style={{ opacity: titleVisible ? 1 : 0, transition: 'opacity 900ms var(--ease-smooth)', transitionDelay: titleVisible ? '160ms' : '0ms' }}>
             <BaybayinRule word="ᜋᜓᜇᜒᜍ᜔ᜈ᜔" size="clamp(16px,2vw,27px)" />
           </div>
         </div>
@@ -110,13 +129,13 @@ export default function ModernPage() {
             badge sitting beside the copy instead of a separate bottom block */}
         <div className="max-w-[1400px] mx-auto grid lg:grid-cols-[1fr_460px] gap-10 lg:gap-16 items-start">
           <p
-            ref={paraRef}
             className="font-sans leading-relaxed text-white/60 text-left"
             style={{
               fontSize: 'clamp(16px, 1.9vw, 29px)',
-              opacity: paraVisible ? 1 : 0,
-              transform: paraVisible ? 'translateY(0)' : 'translateY(10px)',
+              opacity: titleVisible ? 1 : 0,
+              transform: titleVisible ? 'translateY(0)' : 'translateY(10px)',
               transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
+              transitionDelay: titleVisible ? '510ms' : '0ms',
             }}
           >
             <span className="font-bold text-white">UTD Maharlika</span>
@@ -131,7 +150,7 @@ export default function ModernPage() {
             {' '}of pre-colonial Philippines—a name that reflects confidence, strength, and pride. Established in 2002, UTD FSA&apos;s modern dance team brings those qualities to life through <span className="font-bold text-accent-gold">hip hop and a variety of contemporary dance styles.</span> Each fall, the team dedicates <span className="font-bold text-white">2–3 months</span> of intense rehearsals in preparation for Isang Mahal, where they perform alongside modern dance teams from Filipino Student Associations across Texas, before taking that same passion to the Goodphil stage. Beyond the performances, Maharlika is built on <span className="font-bold text-accent-green">teamwork, resilience, and the friendships formed</span> through every late-night practice.
           </p>
 
-          <div className="flex flex-col items-center lg:items-stretch gap-7 mx-auto lg:mx-0 w-full max-w-[460px]">
+          <div ref={headingRef} className="flex flex-col items-center lg:items-stretch gap-7 mx-auto lg:mx-0 w-full max-w-[460px]">
             {/* staggered 3-photo collage: one tall portrait on the left, two
                 stacked squares on the right, top-aligned */}
             <div className="flex gap-3 w-full">
@@ -139,7 +158,14 @@ export default function ModernPage() {
                   can overhang the photo's bottom edge; the image itself is
                   clipped by an inner layer */}
               <div className="relative flex-1 aspect-[3/4]">
-                <div className="absolute inset-0 rounded-2xl overflow-hidden">
+                <div
+                  className="absolute inset-0 rounded-2xl overflow-hidden"
+                  style={{
+                    clipPath: headingVisible ? 'inset(0 0 0% 0)' : 'inset(0 0 100% 0)',
+                    transition: 'clip-path 700ms var(--ease-smooth)',
+                    transitionDelay: headingVisible ? '320ms' : '0ms',
+                  }}
+                >
                   <SmoothImage
                     src="/mod-1.jpg"
                     alt="UTD Maharlika performing at Goodphil"
@@ -150,8 +176,18 @@ export default function ModernPage() {
                   />
                 </div>
                 {/* Maharlika logo badge — overlaps the photo's bottom-left corner, cut out
-                    from the section background so it reads as a floating identity stamp */}
-                <div className="absolute -bottom-5 left-4 w-14 h-14 rounded-full overflow-hidden border-4 border-section-bg bg-section-bg">
+                    from the section background so it reads as a floating identity stamp;
+                    stamps in just after the photo above finishes unraveling (320ms delay
+                    + 700ms duration = settles ~1020ms) */}
+                <div
+                  className="absolute -bottom-5 left-4 w-14 h-14 rounded-full overflow-hidden border-4 border-section-bg bg-section-bg"
+                  style={{
+                    opacity: headingVisible ? 1 : 0,
+                    transform: headingVisible ? 'scale(1)' : 'scale(0.6)',
+                    transition: 'opacity 500ms var(--ease-smooth), transform 500ms var(--ease-smooth)',
+                    transitionDelay: headingVisible ? '1120ms' : '0ms',
+                  }}
+                >
                   <SmoothImage
                     src="/modern-logo.svg"
                     alt="UTD Maharlika logo"
@@ -164,7 +200,14 @@ export default function ModernPage() {
 
               {/* two stacked squares, top-aligned with the portrait */}
               <div className="flex-1 flex flex-col gap-3">
-                <div className="relative aspect-square rounded-2xl overflow-hidden">
+                <div
+                  className="relative aspect-square rounded-2xl overflow-hidden"
+                  style={{
+                    clipPath: headingVisible ? 'inset(0 0 0% 0)' : 'inset(0 0 100% 0)',
+                    transition: 'clip-path 700ms var(--ease-smooth)',
+                    transitionDelay: headingVisible ? '320ms' : '0ms',
+                  }}
+                >
                   <SmoothImage
                     src="/mod-2.jpg"
                     alt="UTD Maharlika dancer mid-performance"
@@ -174,7 +217,14 @@ export default function ModernPage() {
                     sizes="(max-width: 1024px) 45vw, 220px"
                   />
                 </div>
-                <div className="relative aspect-square rounded-2xl overflow-hidden">
+                <div
+                  className="relative aspect-square rounded-2xl overflow-hidden"
+                  style={{
+                    clipPath: headingVisible ? 'inset(0 0 0% 0)' : 'inset(0 0 100% 0)',
+                    transition: 'clip-path 700ms var(--ease-smooth)',
+                    transitionDelay: headingVisible ? '320ms' : '0ms',
+                  }}
+                >
                   <SmoothImage
                     src="/mod-3.jpg"
                     alt="UTD Maharlika group performance at Goodphil"
@@ -192,6 +242,12 @@ export default function ModernPage() {
               target="_blank"
               rel="noopener noreferrer"
               className="mt-4 inline-flex items-center justify-center gap-2 px-6 py-3 bg-accent-green text-[#0e0e0e] rounded-full font-sans font-bold text-sm transition-all duration-200 hover:brightness-[1.08]"
+              style={{
+                opacity: headingVisible ? 1 : 0,
+                transform: headingVisible ? 'translateY(0)' : 'translateY(10px)',
+                transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth), filter 200ms, background-color 200ms',
+                transitionDelay: headingVisible ? '480ms' : '0ms',
+              }}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden="true">
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />

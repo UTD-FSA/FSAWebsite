@@ -16,6 +16,12 @@ export function prefersReducedMotion() {
 // motion bypasses the whole reveal and shows the content immediately.
 // (Lifted from the Goodphil about page so the other Goodphil subpages inherit
 // the same never-blank guarantee.)
+//
+// the poll must honor the same `threshold` as the observer (fraction of the
+// element's height visible) — a bare "any overlap" check fires the moment a
+// section merely borders the viewport (e.g. a tall hero leaves the "what is"
+// section sitting right at the fold on load), revealing it before the user
+// actually scrolled.
 export function useRevealOnScroll<T extends HTMLElement>(
   ref: RefObject<T | null>,
   threshold = 0.3,
@@ -32,7 +38,8 @@ export function useRevealOnScroll<T extends HTMLElement>(
     observer.observe(el)
     const poll = setInterval(() => {
       const rect = el.getBoundingClientRect()
-      if (rect.top < window.innerHeight && rect.bottom > 0) reveal()
+      const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0)
+      if (visibleHeight / rect.height >= threshold) reveal()
     }, 500)
     return () => { observer.disconnect(); clearInterval(poll) }
   }, [ref, threshold])
