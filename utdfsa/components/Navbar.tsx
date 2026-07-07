@@ -158,11 +158,11 @@ export default function Navbar({ initialMember }: NavbarProps) {
     `${navBase} ${active ? 'text-accent-green' : 'text-white hover:text-accent-green'}`
   const dropdownItemClass = (active: boolean) =>
     `block px-5 py-3 text-sm font-display font-semibold uppercase tracking-wide transition-colors ${active ? 'text-accent-green' : 'text-white hover:text-accent-green'}`
-  const mobileLinkClass = "block py-4 px-6 text-lg font-display font-semibold text-white uppercase tracking-wider hover:bg-white/10 transition-colors"
   const mobileBase = "block py-4 px-6 text-lg font-display font-semibold uppercase tracking-wider hover:bg-white/10 transition-colors"
   const mobileNavLink = (active: boolean) =>
     `${mobileBase} ${active ? 'text-accent-green' : 'text-white hover:text-accent-green'}`
-  const mobileSubLinkClass = "block py-3 px-12 text-base font-display font-semibold text-white uppercase tracking-wider hover:bg-white/10 transition-colors"
+  const mobileSubLink = (active: boolean) =>
+    `block py-3 px-12 text-base font-display font-semibold uppercase tracking-wider hover:bg-white/10 transition-colors ${active ? 'text-accent-green' : 'text-white hover:text-accent-green'}`
 
   return (
     <>
@@ -377,15 +377,15 @@ export default function Navbar({ initialMember }: NavbarProps) {
               {mobileGoodphilOpen && (
                 <ul className="bg-white/5">
                   {/* route: /goodphil/about — About Goodphil page — do not change this path */}
-                  <li><Link href="/goodphil/about" className={mobileSubLinkClass} onClick={closeMobileMenu}>About Goodphil</Link></li>
+                  <li><Link href="/goodphil/about" className={mobileSubLink(isActive('/goodphil/about'))} onClick={closeMobileMenu}>About Goodphil</Link></li>
                   {/* route: /goodphil/spirit — Spirit Goodphil branch page — do not change this path */}
-                  <li><Link href="/goodphil/spirit" className={mobileSubLinkClass} onClick={closeMobileMenu}>Spirit</Link></li>
+                  <li><Link href="/goodphil/spirit" className={mobileSubLink(isActive('/goodphil/spirit'))} onClick={closeMobileMenu}>Spirit</Link></li>
                   {/* route: /goodphil/cultural — Cultural Goodphil branch page — do not change this path */}
-                  <li><Link href="/goodphil/cultural" className={mobileSubLinkClass} onClick={closeMobileMenu}>Cultural</Link></li>
+                  <li><Link href="/goodphil/cultural" className={mobileSubLink(isActive('/goodphil/cultural'))} onClick={closeMobileMenu}>Cultural</Link></li>
                   {/* route: /goodphil/modern — Modern Goodphil branch page — do not change this path */}
-                  <li><Link href="/goodphil/modern" className={mobileSubLinkClass} onClick={closeMobileMenu}>Modern</Link></li>
+                  <li><Link href="/goodphil/modern" className={mobileSubLink(isActive('/goodphil/modern'))} onClick={closeMobileMenu}>Modern</Link></li>
                   {/* route: /goodphil/sports — Sports Goodphil branch page — do not change this path */}
-                  <li><Link href="/goodphil/sports" className={mobileSubLinkClass} onClick={closeMobileMenu}>Sports</Link></li>
+                  <li><Link href="/goodphil/sports" className={mobileSubLink(isActive('/goodphil/sports'))} onClick={closeMobileMenu}>Sports</Link></li>
                 </ul>
               )}
             </li>
@@ -401,45 +401,27 @@ export default function Navbar({ initialMember }: NavbarProps) {
             {/* only renders the member section when signed in — do not remove this condition */}
             {member ? (
               <>
-                <div className="flex items-center gap-3 px-6 py-4">
-                  {member.avatar_url ? (
-                    <img
-                      src={member.avatar_url}
-                      alt={`${member.first_name} ${member.last_name}`}
-                      className="w-10 h-10 rounded-full object-cover ring-2 ring-white/20"
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-[#444] flex items-center justify-center text-white text-sm font-bold ring-2 ring-white/20">
-                      {member.first_name?.[0]}{member.last_name?.[0]}
-                    </div>
-                  )}
-                  <span className="font-display font-semibold text-white text-base">
-                    {member.first_name} {member.last_name}
-                  </span>
-                </div>
-
                 {/* route: /member/profile — member profile page — do not change this path */}
-                <Link href="/member/profile" className={mobileLinkClass} onClick={closeMobileMenu}>Profile</Link>
+                <Link href="/member/profile" className={mobileNavLink(isActive('/member/profile'))} onClick={closeMobileMenu}>Profile</Link>
                 {/* route: /member/orders — member ticket order history page — do not change this path */}
-                <Link href="/member/orders" className={mobileLinkClass} onClick={closeMobileMenu}>Order History</Link>
+                <Link href="/member/orders" className={mobileNavLink(isActive('/member/orders'))} onClick={closeMobileMenu}>Order History</Link>
                 {/* route: /member/attendance — member attendance history page — do not change this path */}
-                <Link href="/member/attendance" className={mobileLinkClass} onClick={closeMobileMenu}>Attendance History</Link>
+                <Link href="/member/attendance" className={mobileNavLink(isActive('/member/attendance'))} onClick={closeMobileMenu}>Attendance History</Link>
 
                 {/* only renders officer-specific links when member.role is 'officer' or 'admin' — do not remove this condition */}
                 {isOfficer && (
                   <>
                     <div className="border-t border-white/10 mx-6 my-1" />
                     {/* route: /officer/events — officer event management dashboard — do not change this path */}
-                    <Link href="/officer/events" className={mobileLinkClass} onClick={closeMobileMenu}>Manage Events</Link>
+                    <Link href="/officer/events" className={mobileNavLink(isActive('/officer/events'))} onClick={closeMobileMenu}>Manage Events</Link>
                     {/* route: /officer/gallery — officer gallery management dashboard — do not change this path */}
-                    <Link href="/officer/gallery" className={mobileLinkClass} onClick={closeMobileMenu}>Create Gallery</Link>
+                    <Link href="/officer/gallery" className={mobileNavLink(isActive('/officer/gallery'))} onClick={closeMobileMenu}>Create Gallery</Link>
                     {/* route: /officer/scan — officer QR code ticket scanner — do not change this path */}
-                    <Link href="/officer/scan" className={mobileLinkClass} onClick={closeMobileMenu}>Scan QR Codes</Link>
+                    <Link href="/officer/scan" className={mobileNavLink(isActive('/officer/scan'))} onClick={closeMobileMenu}>Scan QR Codes</Link>
                     {/* route: /officer/goodphil — goodphil eligibility lookup — do not change this path */}
-                    <Link href="/officer/goodphil" className={mobileLinkClass} onClick={closeMobileMenu}>Goodphil Eligibility</Link>
+                    <Link href="/officer/goodphil" className={mobileNavLink(isActive('/officer/goodphil'))} onClick={closeMobileMenu}>Goodphil Eligibility</Link>
                     {/* route: /officer/applications — ading and kuyate application review — do not change this path */}
-                    <Link href="/officer/applications" className={mobileLinkClass} onClick={closeMobileMenu}>Review Applications</Link>
+                    <Link href="/officer/applications" className={mobileNavLink(isActive('/officer/applications'))} onClick={closeMobileMenu}>Review Applications</Link>
                   </>
                 )}
 

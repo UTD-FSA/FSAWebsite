@@ -258,8 +258,8 @@ export default function SportsPage() {
                   quality={85}
                 />
               </div>
-              <div className="px-5 pt-[18px] pb-[22px]">
-                <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Men&apos;s Basketball</h3>
+              <div className="px-5 py-[18px]">
+                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Men&apos;s Basketball</h3>
               </div>
             </div>
 
@@ -275,8 +275,8 @@ export default function SportsPage() {
                   quality={85}
                 />
               </div>
-              <div className="px-5 pt-[18px] pb-[22px]">
-                <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Women&apos;s Basketball</h3>
+              <div className="px-5 py-[18px]">
+                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Women&apos;s Basketball</h3>
               </div>
             </div>
 
@@ -292,8 +292,8 @@ export default function SportsPage() {
                   quality={85}
                 />
               </div>
-              <div className="px-5 pt-[18px] pb-[22px]">
-                <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Men&apos;s Volleyball</h3>
+              <div className="px-5 py-[18px]">
+                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Men&apos;s Volleyball</h3>
               </div>
             </div>
 
@@ -309,8 +309,8 @@ export default function SportsPage() {
                   quality={85}
                 />
               </div>
-              <div className="px-5 pt-[18px] pb-[22px]">
-                <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Women&apos;s Volleyball</h3>
+              <div className="px-5 py-[18px]">
+                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Women&apos;s Volleyball</h3>
               </div>
             </div>
 
@@ -326,8 +326,8 @@ export default function SportsPage() {
                   quality={85}
                 />
               </div>
-              <div className="px-5 pt-[18px] pb-[22px]">
-                <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Coed Volleyball</h3>
+              <div className="px-5 py-[18px]">
+                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Coed Volleyball</h3>
               </div>
             </div>
 
@@ -343,8 +343,8 @@ export default function SportsPage() {
                   quality={85}
                 />
               </div>
-              <div className="px-5 pt-[18px] pb-[22px]">
-                <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Men&apos;s Flag Football</h3>
+              <div className="px-5 py-[18px]">
+                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Men&apos;s Flag Football</h3>
               </div>
             </div>
 
@@ -360,8 +360,8 @@ export default function SportsPage() {
                   quality={85}
                 />
               </div>
-              <div className="px-5 pt-[18px] pb-[22px]">
-                <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Coed Soccer</h3>
+              <div className="px-5 py-[18px]">
+                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Coed Soccer</h3>
               </div>
             </div>
 
@@ -377,8 +377,8 @@ export default function SportsPage() {
                   quality={85}
                 />
               </div>
-              <div className="px-5 pt-[18px] pb-[22px]">
-                <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Ultimate Frisbee</h3>
+              <div className="px-5 py-[18px]">
+                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Ultimate Frisbee</h3>
               </div>
             </div>
 
@@ -387,8 +387,8 @@ export default function SportsPage() {
               <div className="relative w-full aspect-video overflow-hidden rounded-t-xl bg-[#111] flex items-center justify-center border-b border-white/[0.08]">
                 <span className="text-6xl">❓</span>
               </div>
-              <div className="px-5 pt-[18px] pb-[22px]">
-                <h3 className="font-display font-bold text-white mb-2" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Wildcard Sport: TBD</h3>
+              <div className="px-5 py-[18px]">
+                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Wildcard Sport: TBD</h3>
               </div>
             </div>
 
