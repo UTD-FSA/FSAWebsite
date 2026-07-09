@@ -9,6 +9,13 @@
 //   "last updated" date manually whenever a material section changes.
 // ─────────────────────────────────────────────────────────
 
+import type { Metadata } from 'next'
+export const metadata: Metadata = {
+  title: 'Terms of Service',
+  description: "Read UTD FSA's Terms of Service covering membership, payments, acceptable use, and eligibility for the Filipino Student Association at UT Dallas.",
+  alternates: { canonical: '/terms' },
+}
+
 export default function TermsPage() {
   return (
     <main className="bg-brand-bg min-h-screen text-white">

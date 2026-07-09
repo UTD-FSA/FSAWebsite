@@ -6,7 +6,11 @@
 // notes: early-bird check compares server-side now vs. earlyBirdDeadline (a Date object);
 //        all prices in cents to avoid floating-point issues
 import type { Metadata } from 'next'
-export const metadata: Metadata = { title: 'Become a Member' }
+export const metadata: Metadata = {
+  title: 'Become a Member',
+  description: 'Join UTD FSA, the Filipino Student Association at UT Dallas, and get access to pamilya matching, events, and the Filipino-American community on campus.',
+  alternates: { canonical: '/membership' },
+}
 
 import { getSettings } from '@/lib/settings'
 import MembershipClient from './MembershipClient'

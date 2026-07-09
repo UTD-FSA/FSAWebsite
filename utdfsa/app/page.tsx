@@ -7,6 +7,11 @@
 // ─────────────────────────────────────────────────────────────
 export const revalidate = 3600
 
+import type { Metadata } from "next"
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+}
+
 import SmoothImage from "@/components/SmoothImage"
 import PhotoCarousel from "@/components/PhotoCarousel"
 import HeroSection from "@/components/HeroSection"

@@ -34,12 +34,43 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 }
 
+const SITE_URL = "https://www.utdfsa.org"
+const SITE_DESCRIPTION = "The Filipino Student Association at The University of Texas at Dallas. Join events, become a member, explore pamilyas, cultural programs, and connect with the Filipino-American community at UTD."
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "UTD FSA — Filipino Student Association at UT Dallas",
     template: "%s | UTD FSA",
   },
-  description: "The Filipino Student Association at The University of Texas at Dallas. Join events, become a member, explore pamilyas, cultural programs, and connect with the Filipino-American community at UTD.",
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: "UTD FSA",
+    locale: "en_US",
+    images: [{ url: "/hero-officers.jpg", width: 1200, height: 630, alt: "UTD FSA members" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+}
+
+// sitewide Organization structured data — one instance is enough for the whole
+// site per Google's guidance, so it lives in the root layout rather than per-page
+const ORGANIZATION_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "UTD FSA — Filipino Student Association at UT Dallas",
+  alternateName: "UTD FSA",
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo-head.png`,
+  description: SITE_DESCRIPTION,
+  sameAs: [
+    "https://instagram.com/fsautd",
+    "https://youtube.com/@fsautd",
+    "https://tiktok.com/@utdfsa",
+    "https://discord.gg/uVRmuF3BT",
+  ],
 }
 
 export default async function RootLayout({
@@ -73,6 +104,11 @@ export default async function RootLayout({
         {supabaseOrigin && <link rel="preconnect" href={supabaseOrigin} />}
         <link rel="preconnect" href="https://api.stripe.com" />
         <link rel="dns-prefetch" href="https://js.stripe.com" />
+        <script
+          type="application/ld+json"
+          // static, no user input — safe to inline
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
+        />
       </head>
       <body className="min-h-full flex flex-col">
         <a

@@ -10,6 +10,13 @@
 //   added june 2026 (free tier, no custom events, no cookies).
 // ─────────────────────────────────────────────────────────
 
+import type { Metadata } from 'next'
+export const metadata: Metadata = {
+  title: 'Privacy Policy',
+  description: "Read UTD FSA's Privacy Policy to learn what information we collect, how it's used, and how pamilya matching and payment data are handled.",
+  alternates: { canonical: '/privacy' },
+}
+
 export default function PrivacyPage() {
   return (
     <main className="bg-brand-bg min-h-screen text-white">

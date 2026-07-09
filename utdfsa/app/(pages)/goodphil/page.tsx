@@ -2,9 +2,10 @@
 // /goodphil index — immediately redirects to /goodphil/about
 // ──────────────────────────────────────────────────────────
 
-import { redirect } from 'next/navigation'
+import { permanentRedirect } from 'next/navigation'
 
 export default function GoodphilPage() {
-  // redirect the bare /goodphil route to the about sub-page
-  redirect('/goodphil/about')
+  // permanent (308) redirect — the bare /goodphil route always resolves to
+  // /goodphil/about, so search engines should consolidate signals there
+  permanentRedirect('/goodphil/about')
 }

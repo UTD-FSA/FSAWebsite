@@ -11,8 +11,8 @@ const BASE_URL = 'https://www.utdfsa.org'
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     '', '/about', '/events', '/pamilyas', '/archives', '/membership',
-    '/goodphil', '/goodphil/about', '/goodphil/cultural', '/goodphil/modern',
-    '/goodphil/spirit', '/goodphil/sports',
+    '/goodphil/about', '/goodphil/cultural', '/goodphil/modern',
+    '/goodphil/spirit', '/goodphil/sports', '/privacy', '/terms',
   ]
   return routes.map((route) => ({
     url: `${BASE_URL}${route}`,

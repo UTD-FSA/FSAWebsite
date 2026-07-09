@@ -1,5 +1,10 @@
 import type { Metadata } from 'next'
-export const metadata: Metadata = { title: 'Events' }
+export const metadata: Metadata = {
+  title: 'Events',
+  description: 'See upcoming UTD FSA events and register for general meetings, cultural nights, and socials hosted by the Filipino Student Association at UT Dallas.',
+  alternates: { canonical: '/events' },
+  openGraph: { images: [{ url: '/event-photo.jpg', width: 1200, height: 630 }] },
+}
 
 import { createAdminClient, createUserClient } from '@/utils/supabase/server'
 import { PUBLIC_EVENT_COLUMNS } from '@/lib/constants'
@@ -117,14 +122,48 @@ export default async function EventsPage({
   //   ticketQRs — populated for non-member purchases once payment is confirmed; each entry has
   //               attendee_fname, attendee_lname, attendee_email, and a base64 qr_data_url
   // ============================================================
+  // structured data — one Event entry per visible event, for search rich results
+  const eventsJsonLd = ((allEvents ?? []) as unknown as Event[]).map(e => ({
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: e.name,
+    ...(e.description ? { description: e.description } : {}),
+    startDate: e.event_date,
+    ...(e.event_end ? { endDate: e.event_end } : {}),
+    eventStatus: 'https://schema.org/EventScheduled',
+    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    location: e.location
+      ? { '@type': 'Place', name: e.location }
+      // Google requires a location even when unconfirmed; VirtualLocation
+      // pointing at the events page is the documented fallback
+      : { '@type': 'VirtualLocation', url: 'https://www.utdfsa.org/events' },
+    offers: {
+      '@type': 'Offer',
+      price: (e.price_cents_members / 100).toFixed(2),
+      priceCurrency: 'USD',
+      availability: 'https://schema.org/InStock',
+      url: 'https://www.utdfsa.org/events',
+    },
+  }))
+
   return (
-    <EventsPageClient
-      events={(allEvents ?? []) as unknown as Event[]}
-      isMember={isMember}
-      member={member}
-      registeredEventIds={[...registeredEventIds]}
-      success={success}
-      ticketQRs={ticketQRs}
-    />
+    <>
+      {eventsJsonLd.length > 0 && (
+        <script
+          type="application/ld+json"
+          // name/description come from officer-entered event data, not public
+          // input — still escape "<" so a stray "</script>" can't break out
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(eventsJsonLd).replace(/</g, '\\u003c') }}
+        />
+      )}
+      <EventsPageClient
+        events={(allEvents ?? []) as unknown as Event[]}
+        isMember={isMember}
+        member={member}
+        registeredEventIds={[...registeredEventIds]}
+        success={success}
+        ticketQRs={ticketQRs}
+      />
+    </>
   )
 }

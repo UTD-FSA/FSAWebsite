@@ -8,7 +8,12 @@
 // ─────────────────────────────────────────────────────────────
 
 import type { Metadata } from 'next'
-export const metadata: Metadata = { title: 'About Us' }
+export const metadata: Metadata = {
+  title: 'About Us',
+  description: 'Meet the officers and mission behind UTD FSA, the Filipino Student Association at The University of Texas at Dallas, uniting Filipino-American students through culture and community.',
+  alternates: { canonical: '/about' },
+  openGraph: { images: [{ url: '/about-us-hero.jpg', width: 1200, height: 630 }] },
+}
 
 import AboutClient from './AboutClient'
 

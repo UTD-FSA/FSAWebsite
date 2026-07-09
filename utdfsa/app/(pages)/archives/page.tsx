@@ -7,7 +7,11 @@
 //        block unauthenticated access; only is_published = true rows are shown
 // ─────────────────────────────────────────────────────────────
 import type { Metadata } from 'next'
-export const metadata: Metadata = { title: 'Archives' }
+export const metadata: Metadata = {
+  title: 'Archives',
+  description: 'Browse photo archives from past UTD FSA events, socials, and Goodphil competitions, the Filipino Student Association at UT Dallas.',
+  alternates: { canonical: '/archives' },
+}
 export const revalidate = 3600
 
 import { createAdminClient } from '@/utils/supabase/server'
