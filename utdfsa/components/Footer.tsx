@@ -45,9 +45,14 @@ export default function Footer() {
 
         {/* credit content — center column, desktop only; mobile version is below */}
         <div className="hidden md:flex flex-col items-center gap-1.5">
-          <Link href="/privacy" className="text-white/50 text-[11px] uppercase tracking-widest font-medium hover:text-white/65 transition-colors whitespace-nowrap">
-            Privacy Policy
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link href="/privacy" className="text-white/50 text-[11px] uppercase tracking-widest font-medium hover:text-white/65 transition-colors whitespace-nowrap">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="text-white/50 text-[11px] uppercase tracking-widest font-medium hover:text-white/65 transition-colors whitespace-nowrap">
+              Terms of Service
+            </Link>
+          </div>
           <p className="text-white/60 text-xs uppercase tracking-widest font-medium text-center">
             WEBSITE CURATED BY THE UTD FSA 2026-27 WEB COMMITTEE
           </p>
@@ -94,9 +99,14 @@ export default function Footer() {
 
       {/* credit bar — mobile only; desktop version lives as center column above */}
       <div className="md:hidden py-3 px-6 flex flex-col items-center justify-center gap-1.5">
-        <Link href="/privacy" className="text-white/50 text-[11px] uppercase tracking-widest font-medium hover:text-white/65 transition-colors whitespace-nowrap">
-          Privacy Policy
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/privacy" className="text-white/50 text-[11px] uppercase tracking-widest font-medium hover:text-white/65 transition-colors whitespace-nowrap">
+            Privacy Policy
+          </Link>
+          <Link href="/terms" className="text-white/50 text-[11px] uppercase tracking-widest font-medium hover:text-white/65 transition-colors whitespace-nowrap">
+            Terms of Service
+          </Link>
+        </div>
         <p className="text-white/60 text-xs uppercase tracking-widest font-medium text-center">
           WEBSITE CURATED BY THE UTD FSA 2026-27 WEB COMMITTEE
         </p>

@@ -134,7 +134,9 @@ export const adingApplicationSchema = z.object({
 
   phone: phoneField.optional(),
 
-  // birthday: validates the date is parseable and the applicant is at least 16
+  // birthday: required — validates the date is parseable and the applicant is at least 16.
+  // not .optional(): client already requires + gates this, but the field must stay
+  // required here too or a direct API call could omit it and skip the age check entirely.
   birthday: z.preprocess(
     nullIfEmpty,
     z.string()
@@ -148,8 +150,7 @@ export const adingApplicationSchema = z.object({
         const adj = (m < 0 || (m === 0 && today.getDate() < d.getDate())) ? age - 1 : age
         return adj >= 16
       }, 'You must be at least 16 years old to apply')
-      .nullable()
-  ).optional(),
+  ),
 
   pronouns: z.enum([
     'He/Him', 'She/Her', 'They/Them', 'He/They', 'She/They', 'Any', 'Prefer not to say',
