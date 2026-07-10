@@ -8,11 +8,13 @@
 //        applicationForm is validated by the member-type-specific schema after the
 //        outer schema parse, because zod can't know which sub-schema to use upfront.
 
-import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { adingApplicationSchema, kuyateApplicationSchema, phoneField } from '@/lib/schemas'
 import { formatPhone } from '@/lib/format'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { fail, failValidation } from '@/lib/api-response'
 
 const schema = z.object({
   memberType: z.enum(['ading', 'kuyate']),
@@ -38,22 +40,16 @@ const schema = z.object({
 
 export async function POST(req: Request) {
   // respects rls — confirms caller is authenticated; returns 401 on failure
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-  }
+  const ctx = await requireUser()
+  if (!ctx) return fail('Unauthorized', 401)
+  const { supabase, user } = ctx
 
   const body = await req.json()
   // outer schema validates shape — applicationForm is z.record and re-validated below
   const parsed = schema.safeParse(body)
 
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'invalid input', details: parsed.error.format() },
-      { status: 400 }
-    )
+    return failValidation(parsed.error)
   }
 
   const { memberType, profileForm, applicationForm } = parsed.data
@@ -64,10 +60,7 @@ export async function POST(req: Request) {
     : kuyateApplicationSchema.safeParse(applicationForm)
 
   if (!appParsed.success) {
-    return NextResponse.json(
-      { error: 'invalid application fields', details: appParsed.error.format() },
-      { status: 400 }
-    )
+    return failValidation(appParsed.error, 'Invalid application fields.')
   }
 
   // ── auth / membership checks ──────────────────────────────────────────────
@@ -80,17 +73,17 @@ export async function POST(req: Request) {
     .maybeSingle()
 
   if (!member) {
-    return NextResponse.json({ error: 'member not found' }, { status: 404 })
+    return fail('Member not found', 404)
   }
 
   // guard: only active (paid) members can submit an application
   if (member.membership_status !== 'active') {
-    return NextResponse.json({ error: 'membership not active' }, { status: 400 })
+    return fail('Membership not active', 400)
   }
 
   // dedup guard: prevent double-submission if the member refreshes after completing
   if (member.onboarding_complete) {
-    return NextResponse.json({ error: 'onboarding already completed' }, { status: 400 })
+    return fail('Onboarding already completed', 400)
   }
 
   // bypass rls — safe because member.id/membership_status were already resolved
@@ -114,7 +107,7 @@ export async function POST(req: Request) {
 
   if (profileError) {
     console.error('[onboarding submit] profile update error:', profileError)
-    return NextResponse.json({ error: 'failed to update profile' }, { status: 500 })
+    return fail('Failed to update profile', 500)
   }
 
   // ── phase 2: insert application and mark onboarding complete ─────────────
@@ -155,7 +148,7 @@ export async function POST(req: Request) {
     if (adingError) {
       console.error('[onboarding submit] ading insert error:', adingError)
       // profile data was saved but application failed — leave onboarding_complete false so they can retry
-      return NextResponse.json({ error: 'failed to submit ading application' }, { status: 500 })
+      return fail('Failed to submit ading application', 500)
     }
 
     // application saved — now mark onboarding complete and set member_type
@@ -187,7 +180,7 @@ export async function POST(req: Request) {
     if (kuyateError) {
       console.error('[onboarding submit] kuyate insert error:', kuyateError)
       // profile data was saved but application failed — leave onboarding_complete false so they can retry
-      return NextResponse.json({ error: 'failed to submit kuyate application' }, { status: 500 })
+      return fail('Failed to submit kuyate application', 500)
     }
 
     // application saved — now mark onboarding complete and set member_type

@@ -6,7 +6,8 @@
 // notes: admin client is used to bypass rls for member_type + onboarding_complete updates.
 //        handles three special cases before rendering: reapply, stripe race condition, and membership gate.
 
-import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { stripe } from '@/lib/stripe'
 import { redirect } from 'next/navigation'
 import { getSettings } from '@/lib/settings'
@@ -30,11 +31,9 @@ export default async function OnboardingPage({ searchParams }: Props) {
   const { session_id, reapply, type } = await searchParams
 
   // user client to validate the auth session; unauthenticated users redirect to login
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // auth check: no session → send to login
-  if (!user) redirect('/login')
+  const ctx = await requireUser()
+  if (!ctx) redirect('/login')
+  const { user } = ctx
 
   // bypass rls — officer action, user client would be blocked for onboarding_complete + member_type updates
   const admin = createAdminClient()
@@ -83,7 +82,13 @@ export default async function OnboardingPage({ searchParams }: Props) {
     if (stripeSession?.payment_status === 'paid') {
       // payment confirmed by stripe directly; activate membership now.
       // the stripe webhook will also fire and update, but this prevents a blank onboarding screen.
-      const { membershipExpiry } = await getSettings()
+      let membershipExpiry: Date
+      try {
+        ({ membershipExpiry } = await getSettings())
+      } catch (err) {
+        console.error('[onboarding] getSettings failed during stripe race-condition activation, member', member.id, err)
+        throw err
+      }
 
       // supabase: members table — activate membership immediately after stripe confirms payment
       // bypass rls — officer action, user client would be blocked
@@ -113,7 +118,13 @@ export default async function OnboardingPage({ searchParams }: Props) {
   }
 
   // fetch the kuyate applications flag from settings; passed to the client to conditionally show the kuyate option
-  const { kuyateApplicationsOpen } = await getSettings()
+  let kuyateApplicationsOpen: boolean
+  try {
+    ({ kuyateApplicationsOpen } = await getSettings())
+  } catch (err) {
+    console.error('[onboarding] getSettings failed fetching kuyateApplicationsOpen:', err)
+    throw err
+  }
 
   // ============================================================
   // UI — safe to restyle everything below this line

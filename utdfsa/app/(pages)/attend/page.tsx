@@ -7,7 +7,8 @@
 //        attendance + points are written via the record_attendance RPC (admin
 //        client) — client roles are write-restricted, so this is the only path
 // ─────────────────────────────────────────────────────────────
-import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
 interface Props {
@@ -28,13 +29,12 @@ export default async function AttendPage({ searchParams }: Props) {
   // token missing — qr was scanned without a token param; bail to home
   if (!token) redirect('/')
 
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
+  const ctx = await requireUser()
   // redirect to login, preserving the full attend url so the user returns after auth
-  if (!user) {
+  if (!ctx) {
     redirect(`/login?next=${encodeURIComponent(`/attend?token=${token}`)}`)
   }
+  const { supabase, user } = ctx
 
   // run event and member queries in parallel — both are independent of each other
   const [{ data: event }, { data: member }] = await Promise.all([

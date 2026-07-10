@@ -5,7 +5,7 @@
 // deps:  supabase (respects rls — user client)
 // notes: meetingCount and riskMgmtCount are derived in js from attendanceRecords (already
 //        fetched below) instead of two extra count queries — same events embed, one less round trip
-import { createUserClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import AttendanceClient from './AttendanceClient'
 
@@ -20,11 +20,9 @@ export default async function AttendancePage() {
   //   riskMgmtCount — Risk Management sessions attended specifically
   // ============================================================
   // respects rls — only returns rows the caller owns
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // redirect to /login if no session found
-  if (!user) redirect('/login')
+  const ctx = await requireUser()
+  if (!ctx) redirect('/login')
+  const { supabase, user } = ctx
 
   // members table — fetch id and current point total for this user
   const { data: member } = await supabase

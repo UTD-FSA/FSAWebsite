@@ -6,8 +6,10 @@
 //        guarded by membership_status check — only active members can reach this step.
 //        client redirects to /onboarding/basic-info afterward to collect profile info.
 
-import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { NextResponse } from 'next/server'
+import { fail } from '@/lib/api-response'
 
 // POST /api/onboarding/not-interested
 // marks the member as not interested in the pamilya program:
@@ -15,12 +17,9 @@ import { NextResponse } from 'next/server'
 // client then redirects to /onboarding/basic-info to collect profile info
 export async function POST() {
   // respects rls — confirms caller is authenticated; returns 401 on failure
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-  }
+  const ctx = await requireUser()
+  if (!ctx) return fail('Unauthorized', 401)
+  const { supabase, user } = ctx
 
   // respects rls — fetch the caller's own member row to verify status
   const { data: member } = await supabase
@@ -30,12 +29,12 @@ export async function POST() {
     .maybeSingle()
 
   if (!member) {
-    return NextResponse.json({ error: 'member not found' }, { status: 404 })
+    return fail('Member not found', 404)
   }
 
   // guard: only active (paid) members can proceed through onboarding
   if (member.membership_status !== 'active') {
-    return NextResponse.json({ error: 'membership not active' }, { status: 400 })
+    return fail('Membership not active', 400)
   }
 
   // bypass rls — safe because member.id was just resolved above via an
@@ -50,7 +49,7 @@ export async function POST() {
 
   if (error) {
     console.error('[onboarding not-interested]', error)
-    return NextResponse.json({ error: 'failed to update' }, { status: 500 })
+    return fail('Failed to update', 500)
   }
 
   return NextResponse.json({ success: true })

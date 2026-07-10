@@ -3,9 +3,10 @@
 //
 // data:  ading_applications, members (pamilya field)
 // notes: pamilya is stored on the member row, not the application; officer-only
-import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { requireOfficer } from '@/lib/auth'
 import { z } from 'zod'
 import { NextResponse } from 'next/server'
+import { fail, failValidation } from '@/lib/api-response'
 
 const PAMILYA_VALUES = ['Shiballers', 'Gutom Gang', 'Sushi Cuchi', 'Hanobe', 'Moganda', 'SDIYBT', 'Arigyattos'] as const
 
@@ -19,39 +20,16 @@ const patchSchema = z.object({
 
 type RouteContext = { params: Promise<{ id: string }> }
 
-// ── auth guard ───────────────────────────────────────────
-// returns null if unauthenticated or if role is not officer/admin;
-// callers must check for null and return 403 before proceeding
-async function requireOfficer() {
-  // respects rls — user client; only returns a user if a valid session exists
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  // bypass rls — needed to read role from members table since the caller
-  // isn't verified as officer/admin yet at this point (that's what this check does);
-  // read-only, scoped to the caller's own email, so no cross-account exposure
-  const admin = createAdminClient()
-  const { data: member } = await admin
-    .from('members')
-    .select('id, role')
-    .eq('email', user.email!)
-    .maybeSingle()
-
-  if (!member || (member.role !== 'officer' && member.role !== 'admin')) return null
-  return { admin, officerId: member.id }
-}
-
 export async function PATCH(req: Request, { params }: RouteContext) {
   const ctx = await requireOfficer()
-  if (!ctx) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!ctx) return fail('Forbidden', 403)
 
   const { id } = await params
   const body = await req.json().catch(() => null)
   const parsed = patchSchema.safeParse(body)
 
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid data.', details: parsed.error.flatten() }, { status: 400 })
+    return failValidation(parsed.error)
   }
 
   const { status, pamilya } = parsed.data
@@ -68,7 +46,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
 
     if (fetchError || !currentApp) {
       console.error('[ading/[id]] application not found:', fetchError)
-      return NextResponse.json({ error: 'Application not found.' }, { status: 404 })
+      return fail('Application not found.', 404)
     }
 
     // no-op: requested status already matches — skip the write
@@ -79,7 +57,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
       // concurrently, 0 rows match and updatedRow is null — we return 409 with reviewer context
       const { data: updatedRow, error } = await ctx.admin
         .from('ading_applications')
-        .update({ status, reviewed_by: ctx.officerId, reviewed_at: new Date().toISOString() })
+        .update({ status, reviewed_by: ctx.member.id, reviewed_at: new Date().toISOString() })
         .eq('id', id)
         .eq('status', currentApp.status)
         .select('id')
@@ -87,7 +65,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
 
       if (error) {
         console.error('[ading/[id]] status update error:', error)
-        return NextResponse.json({ error: 'Failed to update application status.' }, { status: 500 })
+        return fail('Failed to update application status.', 500)
       }
 
       if (!updatedRow) {
@@ -108,11 +86,10 @@ export async function PATCH(req: Request, { params }: RouteContext) {
           if (reviewer) reviewerName = `${reviewer.first_name} ${reviewer.last_name}`
         }
 
-        return NextResponse.json({
-          error: 'conflict',
+        return fail('conflict', 409, {
           message: `${reviewerName} already reviewed this as ${conflictRow?.status ?? 'unknown'}`,
           currentStatus: conflictRow?.status ?? null,
-        }, { status: 409 })
+        })
       }
     }
   }
@@ -129,7 +106,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
 
     if (appError || !appRow) {
       console.error('[ading/[id]] application not found:', appError)
-      return NextResponse.json({ error: 'Application not found.' }, { status: 404 })
+      return fail('Application not found.', 404)
     }
 
     // update members.pamilya directly — pamilya lives on the member, not the application
@@ -141,7 +118,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
 
     if (memberError) {
       console.error('[ading/[id]] pamilya update error:', memberError)
-      return NextResponse.json({ error: 'Failed to update pamilya assignment.' }, { status: 500 })
+      return fail('Failed to update pamilya assignment.', 500)
     }
   }
 

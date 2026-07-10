@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
-import { createClient } from '@/utils/supabase/client'
 import Modal from '@/components/Modal'
 import RegisterModal from '@/app/(pages)/events/RegisterModal'
 import type { Event } from '@/types/database'
@@ -47,43 +46,14 @@ type MemberInfo = {
 
 interface Props {
   events: Event[]
+  isMember: boolean
+  member: MemberInfo | null
+  registeredEventIds: string[]
 }
 
-export default function UpcomingEventsSection({ events }: Props) {
+export default function UpcomingEventsSection({ events, isMember, member, registeredEventIds }: Props) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [showAlreadyRegistered, setShowAlreadyRegistered] = useState(false)
-  const [member, setMember] = useState<MemberInfo | null>(null)
-  const [isMember, setIsMember] = useState(false)
-  const [registeredEventIds, setRegisteredEventIds] = useState<string[]>([])
-
-  // fetch member + registration state client-side (auth-gated, not needed for event display)
-  useEffect(() => {
-    const supabase = createClient()
-    async function fetchMember() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user?.email) return
-      const { data: m } = await supabase
-        .from('members')
-        .select('id, membership_status, first_name, last_name, email, contact_email')
-        .eq('email', user.email)
-        .maybeSingle()
-      if (!m) return
-      setMember(m)
-      const active = m.membership_status === 'active'
-      setIsMember(active)
-      if (active) {
-        const { data: regs } = await supabase
-          .from('event_registrations')
-          .select('event_id')
-          .eq('member_id', m.id)
-          .eq('payment_status', 'paid')
-        setRegisteredEventIds(
-          (regs ?? []).map((r: { event_id: string }) => r.event_id).filter(Boolean)
-        )
-      }
-    }
-    fetchMember()
-  }, [])
 
   const stripRef = useRef<HTMLDivElement>(null)
   useStaggeredReveal(

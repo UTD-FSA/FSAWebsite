@@ -3,9 +3,13 @@
 //
 // data:  next 4 upcoming visible events fetched server-side for SSR
 // notes: z-10 overlay and z-20 logo/text layer the hero; marquee duplicates
-//        8 items so the looping seam is never visible at any viewport width
+//        8 items so the looping seam is never visible at any viewport width.
+//        the events query itself is cached via getCachedVisibleEvents (see
+//        lib/data/events.ts) — there is no route-segment `revalidate` export
+//        here because auth.getUser() below reads cookies() unconditionally,
+//        which forces this whole page to render dynamically per request
+//        regardless of that export; unstable_cache is the real cache boundary.
 // ─────────────────────────────────────────────────────────────
-export const revalidate = 3600
 
 import type { Metadata } from "next"
 export const metadata: Metadata = {
@@ -19,20 +23,58 @@ import UpcomingEventsSection from "@/components/UpcomingEventsSection"
 import MissionStatementSection from "@/components/MissionStatementSection"
 import WhoAreWeText from "@/components/WhoAreWeText"
 import ScrollFadeIn from "@/components/ScrollFadeIn"
-import { createAdminClient } from "@/utils/supabase/server"
-import { PUBLIC_EVENT_COLUMNS } from "@/lib/constants"
-import type { Event } from "@/types/database"
+import { createAdminClient, createUserClient } from "@/utils/supabase/server"
+import { getCachedVisibleEvents } from "@/lib/data/events"
 
 export default async function Home() {
   const admin = createAdminClient()
-  // explicit columns — never select('*') here; that would leak attend_qr_token to the public
-  const { data: upcomingEvents } = await admin
-    .from('events')
-    .select(PUBLIC_EVENT_COLUMNS)
-    .eq('is_visible', true)
-    .gte('event_date', new Date().toISOString())
-    .order('event_date', { ascending: true })
-    .limit(4)
+
+  // filtered/sliced live (not baked into the cached query) so "upcoming" stays
+  // correct as events start, without needing a separate cache entry per window
+  const visibleEvents = await getCachedVisibleEvents()
+  const now = new Date()
+  const upcomingEvents = visibleEvents
+    .filter(e => new Date(e.event_date) >= now)
+    .slice(0, 4)
+
+  // resolve caller server-side — same pattern as app/(pages)/events/page.tsx — so the
+  // Register/Already-registered button state is correct on first paint instead of
+  // popping in after a client-side auth/registration waterfall
+  const supabase = await createUserClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  let member: {
+    id: string
+    membership_status: string
+    first_name: string
+    last_name: string
+    email: string
+    contact_email: string | null
+  } | null = null
+  let registeredEventIds = new Set<string>()
+
+  if (user?.email) {
+    const { data } = await admin
+      .from('members')
+      .select('id, membership_status, first_name, last_name, email, contact_email')
+      .eq('email', user.email)
+      .maybeSingle()
+    member = data
+
+    if (member?.membership_status === 'active') {
+      const { data: regs } = await admin
+        .from('event_registrations')
+        .select('event_id')
+        .eq('member_id', member.id)
+        .eq('payment_status', 'paid')
+      registeredEventIds = new Set(
+        (regs ?? []).map(r => r.event_id).filter(Boolean) as string[]
+      )
+    }
+  }
+
+  const isMember = member?.membership_status === 'active'
+
   return (
     <main className="bg-brand-bg text-white overflow-x-clip">
 
@@ -94,7 +136,12 @@ export default async function Home() {
       <MissionStatementSection />
 
       {/* ── UPCOMING EVENTS ───────────────────────────────────────── */}
-      <UpcomingEventsSection events={(upcomingEvents ?? []) as unknown as Event[]} />
+      <UpcomingEventsSection
+        events={upcomingEvents}
+        isMember={isMember}
+        member={member}
+        registeredEventIds={[...registeredEventIds]}
+      />
 
       {/* ── SECOND FULL-BLEED PHOTO ───────────────────────────────── */}
       <ScrollFadeIn className="relative h-[300px] md:h-[450px] lg:h-[600px] w-full overflow-hidden">

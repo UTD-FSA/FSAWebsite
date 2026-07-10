@@ -5,7 +5,8 @@
 //        members table (email + phone, merged by email into eligibility rows)
 // notes: phone is not in the view so it is fetched separately and merged here.
 //        both queries run in parallel. eligibility thresholds live in the db view.
-import { createAdminClient, createUserClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import type { GoodphilEligibility } from '@/types/database'
 import GoodphilClient from './GoodphilClient'
@@ -14,10 +15,9 @@ export default async function GoodphilPage() {
   // defense-in-depth auth check — middleware also protects this route
   // but we verify role explicitly here in case middleware is misconfigured
   // redirects to /login if no session found
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) redirect('/login')
+  const ctx = await requireUser()
+  if (!ctx) redirect('/login')
+  const { supabase, user } = ctx
 
   // table: members — role check; redirects non-officers to their profile with error flag
   const { data: roleRow } = await supabase

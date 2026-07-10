@@ -3,20 +3,16 @@
 //
 // data:  members
 // notes: used by client hooks to hydrate global user state; returns 401 if unauthenticated
-import { createUserClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { NextResponse } from 'next/server'
+import { fail } from '@/lib/api-response'
 
 export async function GET() {
   // ── auth check ───────────────────────────────────────────
   // returns 401 if no valid session — all callers must be logged in
-  const supabase = await createUserClient()
-
-  // get the authenticated user from Supabase Auth
-  const { data: { user }, error: authError } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const ctx = await requireUser()
+  if (!ctx) return fail('Unauthorized', 401)
+  const { supabase, user } = ctx
 
   // ── member lookup ─────────────────────────────────────────
   // respects rls — user client; row is accessible only if the caller owns it
@@ -28,7 +24,7 @@ export async function GET() {
     .single()
 
   if (dbError || !member) {
-    return NextResponse.json({ error: 'Member not found' }, { status: 404 })
+    return fail('Member not found', 404)
   }
 
   return NextResponse.json(member, {

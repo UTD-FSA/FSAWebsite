@@ -122,6 +122,48 @@ export const phoneField = z.preprocess(
     .nullable()
 )
 
+// ── gallery ────────────────────────────────────────────────
+
+// only official google photos domains are accepted to prevent open-redirect abuse
+const ALLOWED_GOOGLE_PHOTOS_HOSTS = ['photos.google.com', 'photos.app.goo.gl']
+
+// google photos url — https only, restricted to the allowlisted hosts; empty input becomes null
+const galleryPhotosUrlField = z.preprocess(
+  nullIfEmpty,
+  z.string().nullable()
+).refine(v => {
+  if (v === null) return true
+  try {
+    const parsed = new URL(v)
+    return parsed.protocol === 'https:' && ALLOWED_GOOGLE_PHOTOS_HOSTS.includes(parsed.hostname)
+  } catch {
+    return false
+  }
+}, 'Google Photos URL must be from photos.google.com or photos.app.goo.gl')
+
+// shared fields for both POST /api/galleries and PATCH /api/galleries/[id] form-data submissions
+const galleryFieldsSchema = z.object({
+  title: z.string().trim().min(1, 'Title is required').max(200, 'Title must be 200 characters or fewer'),
+  google_photos_url: galleryPhotosUrlField.optional(),
+  description: z.preprocess(
+    nullIfEmpty,
+    z.string().trim().max(1000, 'Description must be 1000 characters or fewer').nullable()
+  ).optional(),
+  semester: z.preprocess(nullIfEmpty, z.enum(['Fall', 'Spring', 'Summer']).nullable()).optional(),
+  year: z.preprocess(
+    nullIfEmpty,
+    z.coerce.number('Year must be between 2000 and 2050').int().min(2000).max(2050).nullable()
+  ).optional(),
+})
+
+export const createGallerySchema = galleryFieldsSchema
+
+// PATCH additionally accepts is_published as a form-data string; cover file validation
+// (type, size, magic bytes) stays in the route since it needs the raw File object
+export const updateGallerySchema = galleryFieldsSchema.extend({
+  is_published: z.preprocess(nullIfEmpty, z.enum(['true', 'false']).nullable()).optional(),
+})
+
 // ── ading application ─────────────────────────────────────
 
 // form schema for the ading (new member) application

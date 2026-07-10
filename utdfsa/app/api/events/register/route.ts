@@ -9,6 +9,7 @@ import { stripe } from '@/lib/stripe'
 import { eventRegisterSchema } from '@/lib/schemas'
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { fail, failValidation } from '@/lib/api-response'
 
 // ponytail: in-memory rate limit — per-instance backstop only. the real gate is the
 // Vercel Firewall rate-limit rule on this path (global, runs at the edge). kept generous
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
   const parsed = eventRegisterSchema.safeParse(body)
 
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid request', details: parsed.error.flatten() }, { status: 400 })
+    return failValidation(parsed.error)
   }
 
   const { event_id, tickets } = parsed.data
@@ -81,10 +82,7 @@ export async function POST(req: Request) {
 
   if (isMember) {
     if (tickets.length > 1) {
-      return NextResponse.json(
-        { error: 'Members may only purchase one ticket per event.' },
-        { status: 400 }
-      )
+      return fail('Members may only purchase one ticket per event.', 400)
     }
 
     // prevent buying a second ticket for the same event; only a confirmed paid ticket blocks retry
@@ -97,10 +95,7 @@ export async function POST(req: Request) {
       .maybeSingle()
 
     if (existing?.payment_status === 'paid') {
-      return NextResponse.json(
-        { error: 'You are already registered for this event.' },
-        { status: 409 }
-      )
+      return fail('You are already registered for this event.', 409)
     }
 
     memberExistingRegistration = existing
@@ -116,11 +111,11 @@ export async function POST(req: Request) {
     .maybeSingle()
 
   if (!event) {
-    return NextResponse.json({ error: 'Event not found or not available.' }, { status: 404 })
+    return fail('Event not found or not available.', 404)
   }
 
   if (event.registration_closes_at && new Date() > new Date(event.registration_closes_at)) {
-    return NextResponse.json({ error: 'Registration has closed for this event.' }, { status: 400 })
+    return fail('Registration has closed for this event.', 400)
   }
 
   // ── pricing ─────────────────────────────────────────────────────────────────
@@ -186,7 +181,7 @@ export async function POST(req: Request) {
 
       if (updateError || !updated) {
         console.error('Registration update error:', updateError)
-        return NextResponse.json({ error: 'Failed to update registration.' }, { status: 500 })
+        return fail('Failed to update registration.', 500)
       }
 
       registration = updated
@@ -213,7 +208,7 @@ export async function POST(req: Request) {
 
       if (insertError || !inserted) {
         console.error('Registration insert error:', insertError)
-        return NextResponse.json({ error: 'Failed to create registration.' }, { status: 500 })
+        return fail('Failed to create registration.', 500)
       }
 
       registration = inserted
@@ -238,7 +233,7 @@ export async function POST(req: Request) {
 
     if (insertError || !inserted) {
       console.error('Registration insert error:', insertError)
-      return NextResponse.json({ error: 'Failed to create registration.' }, { status: 500 })
+      return fail('Failed to create registration.', 500)
     }
 
     registration = inserted
@@ -266,7 +261,7 @@ export async function POST(req: Request) {
       await admin.from('event_registrations').delete().eq('id', registration.id)
     }
     console.error('Ticket insert error:', ticketError)
-    return NextResponse.json({ error: 'Failed to create tickets.' }, { status: 500 })
+    return fail('Failed to create tickets.', 500)
   }
 
   // ── free events skip Stripe entirely ───────────────────────────────────────
@@ -314,10 +309,16 @@ export async function POST(req: Request) {
 
   // save the stripe session id immediately so the success page can resolve tickets by session id
   // before the webhook fires. for upserts this also replaces the stale abandoned session id.
-  await admin
+  const { error: sessionIdError } = await admin
     .from('event_registrations')
     .update({ stripe_checkout_session_id: session.id })
     .eq('id', registration.id)
+
+  if (sessionIdError) {
+    // don't block redirect — stripe session already exists, user must still reach checkout.
+    // webhook fulfillment still works via metadata.registration_id even if this write failed.
+    console.error('[register] stripe_checkout_session_id write failed for registration', registration.id, sessionIdError)
+  }
 
   return NextResponse.json({ url: session.url })
 }

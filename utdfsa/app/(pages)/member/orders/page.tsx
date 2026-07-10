@@ -6,7 +6,8 @@
 // notes: events are fetched in a separate query because nested fk joins require
 //        explicit constraints in the supabase schema; eventsData is passed as a
 //        record keyed by id for O(1) lookups in the client component
-import { createAdminClient, createUserClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import OrdersClient from './OrdersClient'
 
@@ -24,10 +25,10 @@ export default async function OrdersPage({
   const { success } = await searchParams
 
   // respects rls — only used for the auth check; all data reads use the admin client below
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const ctx = await requireUser()
   // route: /login — redirects unauthenticated users to sign in — do not change this path
-  if (!user) redirect('/login')
+  if (!ctx) redirect('/login')
+  const { user } = ctx
 
   // bypass rls — safe because every query below is scoped to this member's
   // own id/email; no other member's data is ever read here

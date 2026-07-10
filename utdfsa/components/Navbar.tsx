@@ -117,19 +117,26 @@ export default function Navbar({ initialMember }: NavbarProps) {
   // hide on scroll down past 80px, reveal on scroll up; registered once, reads state via ref
   useEffect(() => {
   let lastY = window.scrollY
+  // guards against queuing more than one rAF per frame — scroll fires far more often than paint
+  let ticking = false
   function onScroll() {
-    const y = window.scrollY
-    const scrollingUp = y < lastY
-    if (!anyDropdownOpenRef.current) {
-      if (y < 80) {
-        setNavVisible(true)
-      } else if (scrollingUp && lastY - y > 25) {
-        setNavVisible(true)
-      } else if (!scrollingUp) {
-        setNavVisible(false)
+    if (ticking) return
+    ticking = true
+    requestAnimationFrame(() => {
+      const y = window.scrollY
+      const scrollingUp = y < lastY
+      if (!anyDropdownOpenRef.current) {
+        if (y < 80) {
+          setNavVisible(true)
+        } else if (scrollingUp && lastY - y > 25) {
+          setNavVisible(true)
+        } else if (!scrollingUp) {
+          setNavVisible(false)
+        }
       }
-    }
-    lastY = y
+      lastY = y
+      ticking = false
+    })
   }
   window.addEventListener('scroll', onScroll, { passive: true })
   return () => window.removeEventListener('scroll', onScroll)

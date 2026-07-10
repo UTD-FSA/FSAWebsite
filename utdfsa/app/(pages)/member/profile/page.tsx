@@ -5,7 +5,7 @@
 // deps:  supabase (respects rls — user client), getSettings (kuyateApplicationsOpen flag)
 // notes: meeting and risk management counts are derived in js from one attendance+events
 //        query instead of three round trips — mirrors the pattern in member/attendance/page.tsx
-import { createUserClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getSettings } from '@/lib/settings'
 import Link from 'next/link'
@@ -19,11 +19,9 @@ export default async function ProfilePage() {
   // render the re-apply section for not_interested members.
   // ============================================================
   // respects rls — only returns rows the caller owns
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // redirect to /login if no session found
-  if (!user) redirect('/login')
+  const ctx = await requireUser()
+  if (!ctx) redirect('/login')
+  const { supabase, user } = ctx
 
   // members table — fetch the full member row for display on the profile page
   const { data: member } = await supabase

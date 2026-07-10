@@ -6,7 +6,8 @@
 // notes: uses admin client for both the role check and gallery fetch;
 //        officers see all galleries regardless of is_published status.
 import { redirect } from 'next/navigation'
-import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import OfficerGalleryClient from './OfficerGalleryClient'
 import type { Gallery } from '@/types/database'
 
@@ -16,10 +17,10 @@ export default async function OfficerGalleryPage() {
   // all database queries and auth checks live here
   // changing these will break functionality
   // ============================================================
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const ctx = await requireUser()
   // route: /login — redirects unauthenticated users to sign in — do not change this path
-  if (!user) redirect('/login?next=/officer/gallery')
+  if (!ctx) redirect('/login?next=/officer/gallery')
+  const { user } = ctx
 
   const admin = createAdminClient()
 

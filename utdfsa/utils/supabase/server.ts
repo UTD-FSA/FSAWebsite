@@ -29,10 +29,15 @@ export async function createUserClient() {
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
             try {
-              cookieStore.set(name, value, options)
+              // sameSite defaults to 'lax' — explicit rather than relying on the browser
+              // default, so a request forged from another site can't ride these cookies
+              // (lax still allows the Google OAuth redirect back to /auth/callback to work,
+              // since that's a top-level GET navigation, not a cross-site subrequest)
+              cookieStore.set(name, value, { sameSite: 'lax', ...options })
             } catch (e) {
               // next.js throws if you try to set cookies in a server component render pass;
-              // this is safe to swallow — the middleware handles the cookie refresh
+              // this is safe to swallow — the next request's middleware/route handler
+              // will set them instead, since there is no middleware.ts in this project
               console.error('[server.ts] failed to set cookie:', name, e)
             }
           })

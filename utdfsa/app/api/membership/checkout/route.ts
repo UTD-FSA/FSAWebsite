@@ -5,10 +5,11 @@
 // deps:  stripe (checkout session)
 // notes: early-bird pricing is applied when current time is before settings.earlyBirdDeadline;
 //        price and expiry are read from the db at request time — never hardcoded
-import { createUserClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { stripe } from '@/lib/stripe'
 import { getSettings } from '@/lib/settings'
 import { NextResponse } from 'next/server'
+import { fail } from '@/lib/api-response'
 
 export async function POST() {
   // ============================================================
@@ -19,12 +20,9 @@ export async function POST() {
 
   // ── auth check ───────────────────────────────────────────
   // returns 401 if no valid session — must be logged in to purchase
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const ctx = await requireUser()
+  if (!ctx) return fail('Unauthorized', 401)
+  const { supabase, user } = ctx
 
   // ── member lookup ─────────────────────────────────────────
   // respects rls — user client; verifies membership_status before proceeding
@@ -35,17 +33,23 @@ export async function POST() {
     .maybeSingle()
 
   if (!member) {
-    return NextResponse.json({ error: 'Member not found' }, { status: 404 })
+    return fail('Member not found', 404)
   }
 
   // block duplicate purchases — membership is already active for this account
   if (member.membership_status === 'active') {
-    return NextResponse.json({ error: 'Already a member' }, { status: 400 })
+    return fail('Already a member', 400)
   }
 
   // ── pricing ─────────────────────────────────────────────
   // fetch prices dynamically from the database
-  const settings = await getSettings()
+  let settings
+  try {
+    settings = await getSettings()
+  } catch (err) {
+    console.error('[membership/checkout] getSettings failed:', err)
+    return fail('Unable to load pricing. Please try again later.', 500)
+  }
   // compare current server time against the early-bird deadline stored in settings
   const now = new Date()
   const isEarlyBird = now < settings.earlyBirdDeadline

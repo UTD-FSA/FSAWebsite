@@ -5,16 +5,15 @@
 // notes: defense-in-depth auth check — middleware also protects this route
 //        but we verify role explicitly here in case middleware is misconfigured.
 //        all camera/scanner logic lives in ScanClient (client component).
-import { createUserClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import ScanClient from './ScanClient'
 
 export default async function ScanPage() {
   // redirect to /login if no session found
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) redirect('/login')
+  const ctx = await requireUser()
+  if (!ctx) redirect('/login')
+  const { supabase, user } = ctx
 
   // table: members — role check; redirects non-officers to their profile with error flag
   const { data: roleRow } = await supabase

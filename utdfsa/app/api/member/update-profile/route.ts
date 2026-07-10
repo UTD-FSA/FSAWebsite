@@ -4,11 +4,13 @@
 // data:  members
 // notes: only updates name/phone/year/major/contact_email; does not affect
 //        membership_status or role; contact_email empty string is coerced to null
-import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { phoneField } from '@/lib/schemas'
 import { formatPhone } from '@/lib/format'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { fail, failValidation } from '@/lib/api-response'
 
 const schema = z.object({
   first_name: z.string().min(1).max(50).trim(),
@@ -22,22 +24,16 @@ const schema = z.object({
 export async function POST(req: Request) {
   // ── auth check ───────────────────────────────────────────
   // returns 401 if no valid session
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const ctx = await requireUser()
+  if (!ctx) return fail('Unauthorized', 401)
+  const { user } = ctx
 
   // ── request validation ────────────────────────────────────
   const body = await req.json()
   const parsed = schema.safeParse(body)
 
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'Invalid input', details: parsed.error.format() },
-      { status: 400 }
-    )
+    return failValidation(parsed.error)
   }
 
   const { first_name, last_name, phone, year, major, contact_email } = parsed.data
@@ -63,7 +59,7 @@ export async function POST(req: Request) {
 
   if (error) {
     console.error('[update-profile] error:', error)
-    return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 })
+    return fail('Failed to update profile', 500)
   }
 
   return NextResponse.json({ success: true })

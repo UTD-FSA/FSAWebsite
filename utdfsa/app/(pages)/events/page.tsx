@@ -7,9 +7,8 @@ export const metadata: Metadata = {
 }
 
 import { createAdminClient, createUserClient } from '@/utils/supabase/server'
-import { PUBLIC_EVENT_COLUMNS } from '@/lib/constants'
+import { getCachedVisibleEvents } from '@/lib/data/events'
 import EventsPageClient from './EventsPageClient'
-import type { Event } from '@/types/database'
 import QRCode from 'qrcode'
 
 // ── page ──────────────────────────────────────────────────────────────────────
@@ -27,13 +26,10 @@ export default async function EventsPage({
   const { success, sid } = await searchParams
   const admin = createAdminClient()
 
-  // visible events — base order ascending; client re-sorts into upcoming/past
-  // explicit columns — never select('*') here; that would leak attend_qr_token to the public
-  const { data: allEvents } = await admin
-    .from('events')
-    .select(PUBLIC_EVENT_COLUMNS)
-    .eq('is_visible', true)
-    .order('event_date', { ascending: true })
+  // cached — base order ascending; client re-sorts into upcoming/past.
+  // see lib/data/events.ts for why this needs unstable_cache instead of
+  // a route-segment revalidate export
+  const allEvents = await getCachedVisibleEvents()
 
   // resolve caller (page is public — members get different display)
   const supabase = await createUserClient()
@@ -73,22 +69,24 @@ export default async function EventsPage({
   const isMember = member?.membership_status === 'active'
 
   // when a non-member purchase completes, stripe substitutes ?sid=<checkout_session_id> in the success url.
-  // the session id is only delivered to the browser that completed checkout, so it functions as
-  // an access token — no additional ownership check is needed for guests who have no auth account.
-  // if payment is confirmed (webhook has fired), fetch the ticket rows and pre-generate qr data urls.
-  // if the webhook hasn't fired yet, ticketQRs stays undefined and the email fallback text shows.
+  // the session id is only delivered to the browser that completed checkout, but it can still leak
+  // (browser history sync, screenshots, analytics referrers) — so tickets_viewed_at makes the QR
+  // reveal one-time: once shown here, the sid link no longer re-displays live, scannable QR codes.
+  // if payment is confirmed (webhook has fired) and this is the first view, fetch the ticket rows,
+  // pre-generate qr data urls, and mark the registration viewed. if the webhook hasn't fired yet,
+  // or the tickets were already viewed, ticketQRs stays undefined and the email fallback text shows.
   type TicketQR = { attendee_fname: string; attendee_lname: string; attendee_email: string; qr_data_url: string }
   let ticketQRs: TicketQR[] | undefined = undefined
 
   if (success && sid) {
     const { data: reg } = await admin
       .from('event_registrations')
-      .select('id')
+      .select('id, tickets_viewed_at')
       .eq('stripe_checkout_session_id', sid)
       .eq('payment_status', 'paid')
       .maybeSingle()
 
-    if (reg) {
+    if (reg && !reg.tickets_viewed_at) {
       const { data: ticketRows } = await admin
         .from('registration_tickets')
         .select('qr_code, attendee_fname, attendee_lname, attendee_email')
@@ -107,6 +105,12 @@ export default async function EventsPage({
             }),
           }))
         )
+
+        // one-time reveal — this sid link renders live QR codes exactly once
+        await admin
+          .from('event_registrations')
+          .update({ tickets_viewed_at: new Date().toISOString() })
+          .eq('id', reg.id)
       }
     }
   }
@@ -123,7 +127,7 @@ export default async function EventsPage({
   //               attendee_fname, attendee_lname, attendee_email, and a base64 qr_data_url
   // ============================================================
   // structured data — one Event entry per visible event, for search rich results
-  const eventsJsonLd = ((allEvents ?? []) as unknown as Event[]).map(e => ({
+  const eventsJsonLd = allEvents.map(e => ({
     '@context': 'https://schema.org',
     '@type': 'Event',
     name: e.name,
@@ -157,7 +161,7 @@ export default async function EventsPage({
         />
       )}
       <EventsPageClient
-        events={(allEvents ?? []) as unknown as Event[]}
+        events={allEvents}
         isMember={isMember}
         member={member}
         registeredEventIds={[...registeredEventIds]}

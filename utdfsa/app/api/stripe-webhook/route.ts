@@ -28,6 +28,7 @@ import { ticketEmailHtml } from '@/lib/email/ticket'
 import { membershipEmailHtml } from '@/lib/email/membership'
 import QRCode from 'qrcode'
 import { NextResponse } from 'next/server'
+import { fail } from '@/lib/api-response'
 
 // App Router reads the raw body via req.text() — no special config needed.
 // Do NOT add bodyParser: false here (that's Pages Router only and is ignored in App Router).
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
   const signature = req.headers.get('stripe-signature')
 
   if (!signature) {
-    return NextResponse.json({ error: 'No signature' }, { status: 400 })
+    return fail('No signature', 400)
   }
 
   let event
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
     )
   } catch (err) {
     console.error('Webhook signature verification failed:', err)
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
+    return fail('Invalid signature', 400)
   }
 
   // bypass rls — webhook has no user session; all writes are trusted server-side
@@ -75,7 +76,13 @@ export async function POST(req: Request) {
 
     // ── membership payment ─────────────────────────────────────────────────────
     if (type === 'membership' && member_id) {
-      const settings = await getSettings()
+      let settings
+      try {
+        settings = await getSettings()
+      } catch (err) {
+        console.error('[webhook] getSettings failed for membership activation, member', member_id, err)
+        return fail('Settings unavailable', 500)
+      }
 
       // updates membership_status to active — this is what unlocks member access
       // membership_expires_at is pulled from settings so all members share the same expiry date
@@ -104,7 +111,7 @@ export async function POST(req: Request) {
 
       if (activationError || !activatedMember) {
         console.error('[webhook] membership activation DB write failed for member', member_id, activationError)
-        return NextResponse.json({ error: 'DB write failed' }, { status: 500 })
+        return fail('DB write failed', 500)
       }
 
       // ── send membership confirmation email ────────────────────────────────────
@@ -149,7 +156,7 @@ export async function POST(req: Request) {
 
       if (!registration_id) {
         console.error('[webhook] event_ticket missing registration_id in session metadata', session.id)
-        return NextResponse.json({ error: 'Missing registration_id' }, { status: 400 })
+        return fail('Missing registration_id', 400)
       }
 
       // mark registration as paid — fill all payment tracking fields
@@ -175,7 +182,7 @@ export async function POST(req: Request) {
 
       if (fulfillmentError) {
         console.error('[webhook] event_ticket DB write failed for registration', registration_id, fulfillmentError)
-        return NextResponse.json({ error: 'DB write failed' }, { status: 500 })
+        return fail('DB write failed', 500)
       }
 
       // ── send QR code emails ──────────────────────────────────────────────────
@@ -287,10 +294,15 @@ export async function POST(req: Request) {
 
     if (type === 'event_ticket' && registration_id) {
       // update event_registrations to reflect abandoned payment
-      await supabase
+      const { error: expireError } = await supabase
         .from('event_registrations')
         .update({ payment_status: 'failed' })
         .eq('id', registration_id)
+
+      if (expireError) {
+        console.error('[webhook] checkout expiry DB write failed for registration', registration_id, expireError)
+        return fail('DB write failed', 500)
+      }
     }
   }
 

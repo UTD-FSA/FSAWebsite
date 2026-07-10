@@ -8,10 +8,12 @@
 //        qr fields (attend_qr_open, attend_qr_expires_at) are split out before
 //        schema validation because they are not part of updateEventSchema.
 
-import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { requireOfficer } from '@/lib/auth'
 import { updateEventSchema } from '@/lib/schemas'
 import { z } from 'zod'
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
+import { fail, failValidation } from '@/lib/api-response'
 
 const qrControlSchema = z.object({
   attend_qr_open: z.boolean().optional(),
@@ -20,34 +22,12 @@ const qrControlSchema = z.object({
 
 type RouteContext = { params: Promise<{ id: string }> }
 
-// ── auth guard ───────────────────────────────────────────────────────────────
-
-async function requireOfficer() {
-  // respects rls — only confirms the caller is authenticated
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  // bypass rls — officer action, user client would be blocked
-  const admin = createAdminClient()
-  // query members table to verify the caller holds officer or admin role
-  const { data: member } = await admin
-    .from('members')
-    .select('id, role')
-    .eq('email', user.email!)
-    .maybeSingle()
-
-  // returns null on failure — callers respond with 403
-  if (!member || (member.role !== 'officer' && member.role !== 'admin')) return null
-  return { admin }
-}
-
 // ── DELETE /api/officer/events/[id] ──────────────────────────────────────────
 // delete event and all associated registrations/tickets
 export async function DELETE(_req: Request, { params }: RouteContext) {
   // returns 403 if caller is not an officer or admin
   const ctx = await requireOfficer()
-  if (!ctx) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!ctx) return fail('Forbidden', 403)
 
   const { id } = await params
 
@@ -69,8 +49,11 @@ export async function DELETE(_req: Request, { params }: RouteContext) {
 
   if (error) {
     console.error('Event delete error:', error)
-    return NextResponse.json({ error: 'Failed to delete event.' }, { status: 500 })
+    return fail('Failed to delete event.', 500)
   }
+
+  // bust the cached public events listing (see lib/data/events.ts)
+  revalidateTag('events', { expire: 0 })
 
   return NextResponse.json({ success: true })
 }
@@ -83,7 +66,7 @@ export async function DELETE(_req: Request, { params }: RouteContext) {
 export async function PATCH(req: Request, { params }: RouteContext) {
   // returns 403 if caller is not an officer or admin
   const ctx = await requireOfficer()
-  if (!ctx) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!ctx) return fail('Forbidden', 403)
 
   const { id } = await params
   const body = await req.json().catch(() => null)
@@ -103,7 +86,7 @@ export async function PATCH(req: Request, { params }: RouteContext) {
   if (Object.keys(eventFields).length > 0) {
     const parsed = updateEventSchema.safeParse(eventFields)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Invalid data.', details: parsed.error.flatten() }, { status: 400 })
+      return failValidation(parsed.error)
     }
 
     const d = parsed.data
@@ -128,14 +111,14 @@ export async function PATCH(req: Request, { params }: RouteContext) {
   if (attend_qr_open !== undefined || attend_qr_expires_at !== undefined) {
     const qrParsed = qrControlSchema.safeParse({ attend_qr_open, attend_qr_expires_at })
     if (!qrParsed.success) {
-      return NextResponse.json({ error: 'Invalid QR control data.', details: qrParsed.error.flatten() }, { status: 400 })
+      return failValidation(qrParsed.error, 'Invalid QR control data.')
     }
     if (qrParsed.data.attend_qr_open !== undefined) updates.attend_qr_open = qrParsed.data.attend_qr_open
     if (qrParsed.data.attend_qr_expires_at !== undefined) updates.attend_qr_expires_at = qrParsed.data.attend_qr_expires_at
   }
 
   if (Object.keys(updates).length === 0) {
-    return NextResponse.json({ error: 'No fields to update.' }, { status: 400 })
+    return fail('No fields to update.', 400)
   }
 
   // ── write ─────────────────────────────────────────────────────────────────
@@ -150,8 +133,12 @@ export async function PATCH(req: Request, { params }: RouteContext) {
 
   if (error) {
     console.error('Event update error:', error)
-    return NextResponse.json({ error: 'Failed to update event.' }, { status: 500 })
+    return fail('Failed to update event.', 500)
   }
+
+  // bust the cached public events listing (see lib/data/events.ts) — covers
+  // visibility toggles (is_visible) as well as ordinary field edits
+  revalidateTag('events', { expire: 0 })
 
   return NextResponse.json({ event })
 }

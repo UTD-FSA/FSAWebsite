@@ -104,6 +104,8 @@ export interface EventRegistration {
   payment_method: string | null
   payment_metadata: Record<string, unknown> | null
   cover_photo_url: string | null
+  // set the first time the post-checkout success page renders this registration's ticket QR codes
+  tickets_viewed_at: string | null
 }
 
 // ── registration ticket ───────────────────────────────────

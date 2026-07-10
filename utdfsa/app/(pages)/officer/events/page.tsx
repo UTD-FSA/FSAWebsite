@@ -5,7 +5,8 @@
 // notes: uses admin client to read events; role check uses user client.
 //        all mutating operations (create/edit/delete) are handled by api routes
 //        which enforce their own auth — this page only reads.
-import { createAdminClient, createUserClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import OfficerEventsClient from './OfficerEventsClient'
 
@@ -13,10 +14,9 @@ export default async function OfficerEventsPage() {
   // defense-in-depth auth check — middleware also protects this route
   // but we verify role explicitly here in case middleware is misconfigured
   // redirect to /login if no session found
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) redirect('/login')
+  const ctx = await requireUser()
+  if (!ctx) redirect('/login')
+  const { supabase, user } = ctx
 
   // table: members — role check; redirects non-officers to their profile with error flag
   const { data: roleRow } = await supabase

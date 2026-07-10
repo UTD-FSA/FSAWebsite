@@ -5,17 +5,15 @@
 // deps:  supabase (respects rls — user client)
 // notes: loginEmail is the google oauth email; it is passed read-only and cannot
 //        be changed by the user — only contact_email is editable
-import { createUserClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import ProfileEditClient from './ProfileEditClient'
 
 export default async function ProfileEditPage() {
   // respects rls — only returns rows the caller owns
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // redirect to /login if no session found
-  if (!user) redirect('/login')
+  const ctx = await requireUser()
+  if (!ctx) redirect('/login')
+  const { supabase, user } = ctx
 
   // members table — fetch only the editable profile fields
   const { data: member } = await supabase

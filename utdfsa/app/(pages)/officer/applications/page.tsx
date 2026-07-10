@@ -4,7 +4,8 @@
 // data:  ading_applications, kuyate_applications, members (joined via !inner)
 // notes: uses admin client to bypass rls; auth + role check done first with user client.
 //        rows are sorted pending → accepted → rejected, then by submitted_at ascending.
-import { createAdminClient, createUserClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import ApplicationsClient from './ApplicationsClient'
 
@@ -27,10 +28,9 @@ export default async function OfficerApplicationsPage() {
   // ============================================================
 
   // redirect to /login if no session found
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) redirect('/login')
+  const ctx = await requireUser()
+  if (!ctx) redirect('/login')
+  const { supabase, user } = ctx
 
   // table: members — fetch role to enforce officer-only access
   // redirects to member profile with error flag if role check fails

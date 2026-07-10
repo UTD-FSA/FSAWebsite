@@ -13,41 +13,25 @@
 // auth: officer or admin only
 // calls: supabase
 
-import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { requireOfficer } from '@/lib/auth'
 import { scanTicketSchema } from '@/lib/schemas'
 import { NextResponse } from 'next/server'
+import { fail } from '@/lib/api-response'
 
 // ── POST /api/scan-ticket ─────────────────────────────────────────────────────
 
 export async function POST(req: Request) {
-  // respects rls — confirms caller is authenticated; returns 401 on failure
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   // ── auth check ────────────────────────────────────────────────────────────
 
-  // bypass rls — admin client needed to read role from members table (matches every other officer route)
-  const admin = createAdminClient()
-
-  const { data: officer } = await admin
-    .from('members')
-    .select('id, role')
-    .eq('email', user.email!)
-    .maybeSingle()
-
-  if (!officer || (officer.role !== 'officer' && officer.role !== 'admin')) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-  }
+  const ctx = await requireOfficer()
+  if (!ctx) return fail('Forbidden', 403)
+  const { admin, member: officer } = ctx
 
   const body = await req.json().catch(() => null)
   const parsed = scanTicketSchema.safeParse(body)
 
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Invalid QR code format' }, { status: 400 })
+    return fail('Invalid QR code format', 400)
   }
 
   const { qr_code } = parsed.data
@@ -111,10 +95,10 @@ export async function POST(req: Request) {
   // ── check-in write ────────────────────────────────────────────────────────
 
   // mark as checked in — records timestamp and officer who scanned for audit trail.
-  // check-then-act, not atomic: no .eq('checked_in', false) guard, so two
-  // near-simultaneous scans of the same ticket can both pass the check above
-  // and both write here (duplicate check-in, not a double-charge — low impact)
-  await admin
+  // .eq('checked_in', false) makes this atomic: if two near-simultaneous scans race,
+  // only the first write matches a row; the loser gets zero rows back and is treated
+  // as already checked in below, closing the TOCTOU gap between the read above and this write.
+  const { data: updatedTickets } = await admin
     .from('registration_tickets')
     .update({
       checked_in: true,
@@ -122,6 +106,17 @@ export async function POST(req: Request) {
       checked_in_by: officer.id,
     })
     .eq('id', ticket.id)
+    .eq('checked_in', false)
+    .select('id')
+
+  if (!updatedTickets || updatedTickets.length === 0) {
+    return NextResponse.json({
+      valid: false,
+      reason: 'ALREADY_CHECKED_IN',
+      message: 'Already checked in',
+      attendee_name: `${ticket.attendee_fname} ${ticket.attendee_lname}`,
+    })
+  }
 
   return NextResponse.json({
     valid: true,

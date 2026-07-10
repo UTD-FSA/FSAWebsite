@@ -6,11 +6,13 @@
 //        not-interested route before the client navigates here.
 //        used by the /onboarding/basic-info page.
 
-import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { createAdminClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { phoneField } from '@/lib/schemas'
 import { formatPhone } from '@/lib/format'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { fail, failValidation } from '@/lib/api-response'
 
 // capitalize only the first letter of each word — preserves internal casing like 'DeJesus' or 'de la Cruz'
 const titleCase = (v: string) =>
@@ -30,21 +32,15 @@ const schema = z.object({
 // used by the /onboarding/basic-info page after a member opts out of the pamilya program.
 export async function POST(req: Request) {
   // respects rls — confirms caller is authenticated; returns 401 on failure
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-  }
+  const ctx = await requireUser()
+  if (!ctx) return fail('Unauthorized', 401)
+  const { supabase, user } = ctx
 
   const body = await req.json().catch(() => null)
   const parsed = schema.safeParse(body)
 
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'invalid input', details: parsed.error.format() },
-      { status: 400 }
-    )
+    return failValidation(parsed.error)
   }
 
   // ── auth / membership checks ──────────────────────────────────────────────
@@ -57,12 +53,12 @@ export async function POST(req: Request) {
     .maybeSingle()
 
   if (!member) {
-    return NextResponse.json({ error: 'member not found' }, { status: 404 })
+    return fail('Member not found', 404)
   }
 
   // guard: only active (paid) members can update their profile via onboarding
   if (member.membership_status !== 'active') {
-    return NextResponse.json({ error: 'membership not active' }, { status: 400 })
+    return fail('Membership not active', 400)
   }
 
   // bypass rls — safe because member.id was just resolved above via an
@@ -86,7 +82,7 @@ export async function POST(req: Request) {
 
   if (error) {
     console.error('[update-basic-info]', error)
-    return NextResponse.json({ error: 'failed to update profile' }, { status: 500 })
+    return fail('Failed to update profile', 500)
   }
 
   return NextResponse.json({ success: true })

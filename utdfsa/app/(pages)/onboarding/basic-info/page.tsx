@@ -5,7 +5,7 @@
 // notes: only active members may access this page; non-members redirect to /membership.
 //        user client is used (not admin) so rls applies to the member's own row.
 
-import { createUserClient } from '@/utils/supabase/server'
+import { requireUser } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import BasicInfoClient from './BasicInfoClient'
 
@@ -18,11 +18,9 @@ export default async function BasicInfoPage() {
   // in the onboarding flow, but is also accessible standalone.
   // ============================================================
   // user client ensures the auth session is valid; unauthenticated users redirect to login
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  // auth check: no session → send to login
-  if (!user) redirect('/login')
+  const ctx = await requireUser()
+  if (!ctx) redirect('/login')
+  const { supabase, user } = ctx
 
   // supabase: members table — fetch existing profile fields for pre-filling the form
   const { data: member } = await supabase

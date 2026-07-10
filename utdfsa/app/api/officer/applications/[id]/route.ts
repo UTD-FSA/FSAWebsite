@@ -6,33 +6,15 @@
 //
 // data:  ading_applications, kuyate_applications, members
 // notes: officer-only; type must be passed as a query param
-import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { requireOfficer } from '@/lib/auth'
 import { NextResponse } from 'next/server'
+import { fail } from '@/lib/api-response'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
-// ── auth guard ───────────────────────────────────────────
-async function requireOfficer() {
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  // bypass rls — needed to read role from members table before the caller is
-  // verified as officer/admin; read-only, scoped to the caller's own email
-  const admin = createAdminClient()
-  const { data: member } = await admin
-    .from('members')
-    .select('role')
-    .eq('email', user.email!)
-    .maybeSingle()
-
-  if (!member || (member.role !== 'officer' && member.role !== 'admin')) return null
-  return { admin }
-}
-
 export async function DELETE(req: Request, { params }: RouteContext) {
   const ctx = await requireOfficer()
-  if (!ctx) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  if (!ctx) return fail('Forbidden', 403)
 
   const { id: applicationId } = await params
 
@@ -42,7 +24,7 @@ export async function DELETE(req: Request, { params }: RouteContext) {
   // allowlist check — type must resolve to one of the two known tables below,
   // never interpolated directly into the query
   if (!type || !['ading', 'kuyate'].includes(type)) {
-    return NextResponse.json({ error: 'Invalid application type' }, { status: 400 })
+    return fail('Invalid application type', 400)
   }
 
   const table = type === 'ading' ? 'ading_applications' : 'kuyate_applications'
@@ -56,7 +38,7 @@ export async function DELETE(req: Request, { params }: RouteContext) {
 
   if (fetchError || !application) {
     console.error('[delete application] fetch error:', fetchError)
-    return NextResponse.json({ error: 'Application not found' }, { status: 404 })
+    return fail('Application not found', 404)
   }
 
   // delete the application row
@@ -67,7 +49,7 @@ export async function DELETE(req: Request, { params }: RouteContext) {
 
   if (deleteError) {
     console.error('[delete application] delete error:', deleteError)
-    return NextResponse.json({ error: 'Failed to delete application' }, { status: 500 })
+    return fail('Failed to delete application', 500)
   }
 
   // reset member onboarding so they can reapply from scratch
@@ -78,11 +60,9 @@ export async function DELETE(req: Request, { params }: RouteContext) {
 
   if (resetError) {
     console.error('[delete application] member reset error:', resetError)
-    // application was deleted — log the reset failure but return success
-    return NextResponse.json({
-      success: true,
-      warning: 'Application deleted but member onboarding reset failed — check Supabase manually',
-    })
+    // application was already deleted — surface this as a failure (not 200) so the
+    // caller doesn't mistake a partial write for full success
+    return fail('Application deleted, but member onboarding reset failed — check Supabase manually', 500)
   }
 
   return NextResponse.json({ success: true })
