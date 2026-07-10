@@ -3,8 +3,8 @@
 //
 // data:  members (id, points), attendance joined with events, meeting/risk management counts
 // deps:  supabase (respects rls — user client)
-// notes: meetingCount and riskMgmtCount are computed via subqueries because
-//        supabase doesn't support aggregate filters on joined tables directly
+// notes: meetingCount and riskMgmtCount are derived in js from attendanceRecords (already
+//        fetched below) instead of two extra count queries — same events embed, one less round trip
 import { createUserClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import AttendanceClient from './AttendanceClient'
@@ -36,9 +36,9 @@ export default async function AttendancePage() {
   // redirect to /login if no member row exists (e.g. account not set up yet)
   if (!member) redirect('/login')
 
-  // parallel: attendance history + event id lookup (both need member.id but not each other)
-  const [{ data: attendanceRecords }, { data: meetingAndRiskEvents }] = await Promise.all([
-    supabase.from('attendance').select(`
+  // attendance history — events embed already carries event_type, so meeting/risk-mgmt
+  // counts are derived from this one result below instead of two extra count queries
+  const { data: attendanceRecords } = await supabase.from('attendance').select(`
       id,
       created_at,
       events (
@@ -48,22 +48,20 @@ export default async function AttendancePage() {
         event_date,
         points
       )
-    `).eq('member_id', member.id).order('created_at', { ascending: false }),
-    supabase.from('events').select('id, event_type').in('event_type', ['General Meeting', 'Risk Management']),
-  ])
+    `).eq('member_id', member.id).order('created_at', { ascending: false })
 
-  const generalAndRiskEventIds = meetingAndRiskEvents?.map((e: { id: string }) => e.id) ?? []
-  const riskMgmtEventIds = meetingAndRiskEvents?.filter((e: { event_type: string }) => e.event_type === 'Risk Management').map((e: { id: string }) => e.id) ?? []
+  // supabase returns the joined row as an object or a single-element array depending on
+  // relation cardinality — normalize the same way AttendanceClient's resolveEvent does
+  const resolveEventType = (raw: unknown): string | undefined => {
+    const e = Array.isArray(raw) ? raw[0] : raw
+    return (e as { event_type?: string } | null | undefined)?.event_type
+  }
 
-  // parallel: both counts are independent of each other
-  const [{ count: meetingCount }, { count: riskMgmtCount }] = await Promise.all([
-    supabase.from('attendance').select('id', { count: 'exact', head: true })
-      .eq('member_id', member.id)
-      .in('event_id', generalAndRiskEventIds.length > 0 ? generalAndRiskEventIds : ['__none__']),
-    supabase.from('attendance').select('id', { count: 'exact', head: true })
-      .eq('member_id', member.id)
-      .in('event_id', riskMgmtEventIds.length > 0 ? riskMgmtEventIds : ['__none__']),
-  ])
+  const meetingCount = (attendanceRecords ?? []).filter(r => {
+    const type = resolveEventType(r.events)
+    return type === 'General Meeting' || type === 'Risk Management'
+  }).length
+  const riskMgmtCount = (attendanceRecords ?? []).filter(r => resolveEventType(r.events) === 'Risk Management').length
 
   // ============================================================
   // UI — rendered by AttendanceClient (client component)

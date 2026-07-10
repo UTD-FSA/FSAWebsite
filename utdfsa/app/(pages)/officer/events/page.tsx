@@ -38,10 +38,12 @@ export default async function OfficerEventsPage() {
   const admin = createAdminClient()
   // officer page is role-gated server-side above — safe to include attend_qr_token here.
   // the client (OfficerEventsClient) needs it to render each event's check-in QR/URL.
+  // ponytail: safety ceiling, add cursor pagination if lists ever exceed 1000
   const { data: events } = await admin
     .from('events')
     .select('id, created_at, name, description, event_type, event_date, event_end, location, points, price_cents_members, price_cents_nonmembers, eb_price_members, eb_price_nonmembers, eb_deadline, is_active, is_visible, attend_qr_open, attend_qr_expires_at, attend_qr_token, cover_photo_url, registration_closes_at')
     .order('event_date', { ascending: false })
+    .limit(1000)
 
   // ============================================================
   // UI — safe to restyle everything below this line

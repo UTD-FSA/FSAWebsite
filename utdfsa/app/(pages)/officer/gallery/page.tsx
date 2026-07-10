@@ -36,11 +36,13 @@ export default async function OfficerGalleryPage() {
   }
 
   // fetches ALL galleries (published + drafts) — officers see everything
+  // ponytail: safety ceiling, add cursor pagination if lists ever exceed 1000
   const { data: galleries } = await admin
     .from('galleries')
     .select('*')
     .order('year', { ascending: false })
     .order('created_at', { ascending: false })
+    .limit(1000)
 
   // ============================================================
   // UI — safe to restyle everything below this line

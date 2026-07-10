@@ -75,6 +75,10 @@ export async function POST(req: Request) {
   const isMember = member?.membership_status === 'active'
 
   // ── member-specific restrictions ───────────────────────────────────────────
+  // fetched once here (unique constraint guarantees at most one row per member+event)
+  // and reused below in the update/insert block instead of re-querying for the stale-row check
+  let memberExistingRegistration: { id: string; payment_status: string } | null = null
+
   if (isMember) {
     if (tickets.length > 1) {
       return NextResponse.json(
@@ -87,18 +91,19 @@ export async function POST(req: Request) {
     // bypass rls — admin client needed to query all registrations across members
     const { data: existing } = await admin
       .from('event_registrations')
-      .select('id')
+      .select('id, payment_status')
       .eq('member_id', member!.id)
       .eq('event_id', event_id)
-      .eq('payment_status', 'paid')
       .maybeSingle()
 
-    if (existing) {
+    if (existing?.payment_status === 'paid') {
       return NextResponse.json(
         { error: 'You are already registered for this event.' },
         { status: 409 }
       )
     }
+
+    memberExistingRegistration = existing
   }
 
   // ── fetch event ─────────────────────────────────────────────────────────────
@@ -149,14 +154,19 @@ export async function POST(req: Request) {
   let isUpsert = false
 
   if (member) {
-    // check for any non-paid row for this member+event (pending from abandonment, or failed/expired)
-    const { data: existingRow } = await admin
-      .from('event_registrations')
-      .select('id')
-      .eq('member_id', member.id)
-      .eq('event_id', event_id)
-      .neq('payment_status', 'paid')
-      .maybeSingle()
+    // check for any non-paid row for this member+event (pending from abandonment, or failed/expired).
+    // active members: reuse the row already fetched above (guaranteed non-paid — a paid
+    // row would have 409'd already) instead of re-querying. non-active members: fetch fresh,
+    // since the isMember block above never ran for them.
+    const existingRow = isMember
+      ? memberExistingRegistration
+      : (await admin
+          .from('event_registrations')
+          .select('id')
+          .eq('member_id', member.id)
+          .eq('event_id', event_id)
+          .neq('payment_status', 'paid')
+          .maybeSingle()).data
 
     if (existingRow) {
       // update the stale row with the current attempt's ticket info

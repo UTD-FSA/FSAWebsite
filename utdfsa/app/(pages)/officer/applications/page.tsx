@@ -48,6 +48,7 @@ export default async function OfficerApplicationsPage() {
   const admin = createAdminClient()
 
   // fetch both application tables in parallel to reduce server response time
+  // ponytail: safety ceiling, add cursor pagination if lists ever exceed 1000
   const [{ data: rawAding }, { data: rawKuyate }] = await Promise.all([
     admin
       .from('ading_applications')
@@ -59,7 +60,8 @@ export default async function OfficerApplicationsPage() {
         thoughts_on_drinking, dislikes, pam_dealbreakers, pam_incompatibilities, future_kuyate,
         mbti,
         members!member_id!inner(first_name, last_name, email, year, major, phone, pamilya)
-      `),
+      `)
+      .limit(1000),
     admin
       .from('kuyate_applications')
       .select(`
@@ -67,7 +69,8 @@ export default async function OfficerApplicationsPage() {
         instagram, pamilya_name, wants_to_be_pam_head, pam_head_phone,
         why_kuyate, acknowledges_responsibilities,
         members!member_id!inner(first_name, last_name, email, year, major, phone, pamilya)
-      `),
+      `)
+      .limit(1000),
   ])
 
   const adingApps = sortByStatusThenDate(rawAding ?? [])
