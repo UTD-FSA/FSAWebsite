@@ -19,7 +19,7 @@ export const scanTicketSchema = z.object({
 export const attendeeSchema = z.object({
   fname: z.string().min(1).max(50).trim(),
   lname: z.string().min(1).max(50).trim(),
-  email: z.string().email(),
+  email: z.string().trim().email(),
 })
 
 // payload sent when registering for an event; supports multi-ticket orders (up to 10)

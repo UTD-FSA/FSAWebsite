@@ -214,29 +214,84 @@ export async function POST(req: Request) {
       registration = inserted
     }
   } else {
-    // unauthenticated guest — member_id is null; postgres unique constraints treat null as distinct,
-    // so there is no collision risk and a plain insert is always safe here
-    const { data: inserted, error: insertError } = await admin
+    // unauthenticated guest — dedupe on (event_id, lower(guest_email)) so one person can't
+    // resubmit this form repeatedly and mint unlimited tickets for a free event. exact-match
+    // lookup first (cheap, handles the common case); the partial unique index
+    // (unique_guest_event_registration) is the authoritative backstop for case-variant
+    // emails or races, caught via 23505 below.
+    const { data: existingGuestRow } = await admin
       .from('event_registrations')
-      .insert({
-        member_id: null,
-        event_id,
-        payment_status: totalAmount === 0 ? 'paid' : 'pending',
-        num_tickets: tickets.length,
-        amt_expected: totalAmount,
-        guest_fname: tickets[0].fname,
-        guest_lname: tickets[0].lname,
-        guest_email: tickets[0].email,
-      })
-      .select('id')
-      .single()
+      .select('id, payment_status')
+      .eq('event_id', event_id)
+      .is('member_id', null)
+      .eq('guest_email', tickets[0].email)
+      .maybeSingle()
 
-    if (insertError || !inserted) {
-      console.error('Registration insert error:', insertError)
-      return fail('Failed to create registration.', 500)
+    if (existingGuestRow?.payment_status === 'paid') {
+      return fail('This email is already registered for this event.', 409)
     }
 
-    registration = inserted
+    if (existingGuestRow) {
+      // stale/pending row from an abandoned or expired attempt — update in place
+      const { data: updated, error: updateError } = await admin
+        .from('event_registrations')
+        .update({
+          guest_fname: tickets[0].fname,
+          guest_lname: tickets[0].lname,
+          guest_email: tickets[0].email,
+          num_tickets: tickets.length,
+          amt_expected: totalAmount,
+          payment_status: totalAmount === 0 ? 'paid' : 'pending',
+        })
+        .eq('id', existingGuestRow.id)
+        .select('id')
+        .single()
+
+      if (updateError || !updated) {
+        console.error('Registration update error:', updateError)
+        return fail('Failed to update registration.', 500)
+      }
+
+      registration = updated
+      // must be set — the ticket-insert-failure cleanup below only deletes the row
+      // when !isUpsert; this row pre-existed and isn't ours to delete on failure
+      isUpsert = true
+
+      // remove stale ticket rows from the prior attempt; fresh ones are inserted below
+      await admin.from('registration_tickets').delete().eq('registration_id', registration.id)
+    } else {
+      const { data: inserted, error: insertError } = await admin
+        .from('event_registrations')
+        .insert({
+          member_id: null,
+          event_id,
+          payment_status: totalAmount === 0 ? 'paid' : 'pending',
+          num_tickets: tickets.length,
+          amt_expected: totalAmount,
+          guest_fname: tickets[0].fname,
+          guest_lname: tickets[0].lname,
+          guest_email: tickets[0].email,
+        })
+        .select('id')
+        .single()
+
+      if (insertError) {
+        // 23505 = unique_violation — a case-variant email or a race slipped past the
+        // exact-match lookup above and hit unique_guest_event_registration
+        if (insertError.code === '23505') {
+          return fail('This email is already registered for this event.', 409)
+        }
+        console.error('Registration insert error:', insertError)
+        return fail('Failed to create registration.', 500)
+      }
+
+      if (!inserted) {
+        console.error('Registration insert error: no row returned')
+        return fail('Failed to create registration.', 500)
+      }
+
+      registration = inserted
+    }
   }
 
   // ── create one ticket row per attendee ──────────────────────────────────────

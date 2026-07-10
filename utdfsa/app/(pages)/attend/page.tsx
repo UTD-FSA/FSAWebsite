@@ -36,10 +36,15 @@ export default async function AttendPage({ searchParams }: Props) {
   }
   const { supabase, user } = ctx
 
+  // bypass rls — attend_qr_token is column-privilege-revoked for anon/authenticated
+  // (see migration: revoke_qr_token_column_and_tighten_events_visibility), so the
+  // user client can no longer filter on it; the admin client is required here
+  const admin = createAdminClient()
+
   // run event and member queries in parallel — both are independent of each other
   const [{ data: event }, { data: member }] = await Promise.all([
     // events table — look up the event associated with the scanned QR token
-    supabase
+    admin
       .from('events')
       .select('id, name, event_date, points, is_active, attend_qr_open, attend_qr_expires_at')
       .eq('attend_qr_token', token)
@@ -99,7 +104,6 @@ export default async function AttendPage({ searchParams }: Props) {
   // so all writes go through the admin client. record_attendance inserts the attendance row
   // (unique on member_id, event_id) and increments points in one transaction, returning true
   // only when a NEW row was created — concurrent double-scans can never double-award or duplicate.
-  const admin = createAdminClient()
   const { data: newlyRecorded, error: recordError } = await admin.rpc('record_attendance', {
     p_member_id: member.id,
     p_event_id: event.id,

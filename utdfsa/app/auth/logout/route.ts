@@ -5,22 +5,26 @@
 // notes: any authenticated user can call this. signOut is fire-and-forget —
 //        the redirect happens regardless of whether it errors.
 
-// route: GET /auth/logout
-// purpose: signs the user out and redirects to /login
+// route: POST /auth/logout
+// purpose: signs the user out
 // auth: any authenticated user
 // calls: supabase (auth.signOut)
+// notes: POST-only — a GET here would be triggerable via a bare <img src="/auth/logout">
+//        on any third-party page with zero interaction, since browsers fire GET for any
+//        embedded resource reference. requiring POST forces an attacker to run actual
+//        cross-site script/form logic instead, and Next auto-405s unimplemented methods.
 
 import { createUserClient } from '@/utils/supabase/server'
 import { NextResponse } from 'next/server'
 
-// ── GET /auth/logout ──────────────────────────────────────────────────────────
+// ── POST /auth/logout ─────────────────────────────────────────────────────────
 
-export async function GET(request: Request) {
+export async function POST(request: Request) {
   const { origin } = new URL(request.url)
   const supabase = await createUserClient()
 
   // only apply global scope when the request comes from our own origin;
-  // cross-origin GET requests (potential CSRF) fall back to local scope so they can
+  // cross-origin requests (potential CSRF) fall back to local scope so they can
   // at most log out this browser — not every session across all devices.
   // parse the Referer to its origin before comparing (startsWith is a prefix bypass).
   const refererHeader = request.headers.get('referer') ?? ''
@@ -32,6 +36,5 @@ export async function GET(request: Request) {
   console.info('[security] logout', { scope, isSameOrigin, ts: new Date().toISOString() })
   await supabase.auth.signOut({ scope })
 
-  const response = NextResponse.redirect(`${origin}/login`)
-  return response
+  return NextResponse.json({ success: true })
 }

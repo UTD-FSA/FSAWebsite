@@ -4,7 +4,7 @@
 // PamilyasClient
 //
 // data:  members, ading_applications, kuyate_applications,
-//        settings (kuyate_applications_open flag)
+//        settings (kuyate_applications_open flag, via lib/settings.ts)
 // deps:  supabase (user client + admin client)
 // ──────────────────────────────────────────────────────────
 
@@ -18,6 +18,7 @@ export const metadata: Metadata = {
 
 // ── data fetching ─────────────────────────────────────────
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { getSettings } from '@/lib/settings'
 import PamilyasClient, { type MemberState } from './PamilyasClient'
 
 export default async function PamilyasPage() {
@@ -62,13 +63,10 @@ export default async function PamilyasPage() {
     }
   }
 
-  // read settings table for the kuyate application open/closed flag
-  const { data: kuyateOpenSetting } = await supabase
-    .from('settings')
-    .select('value')
-    .eq('key', 'kuyate_applications_open')
-    .maybeSingle()
-  const isKuyateOpen = kuyateOpenSetting?.value === 'true'
+  // kuyate applications open/closed flag — also accounts for the kuyate_deadline cutoff
+  // (settings table is admin/service-role-only; the anon/authenticated roles have no
+  // direct read access, so this must go through getSettings() rather than a raw query)
+  const { kuyateApplicationsOpen: isKuyateOpen } = await getSettings()
 
   // ── render ────────────────────────────────────────────────
   // pass resolved state to client component; no markup here

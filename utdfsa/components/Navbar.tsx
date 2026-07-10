@@ -144,7 +144,9 @@ export default function Navbar({ initialMember }: NavbarProps) {
 
   async function handleLogout() {
     // route: /auth/logout — server route that clears the Supabase session cookie — do not change this path
-    window.location.href = '/auth/logout'
+    // must be POST — the route no longer accepts GET (CSRF hardening)
+    await fetch('/auth/logout', { method: 'POST' })
+    window.location.href = '/login'
   }
 
   function closeMobileMenu() {

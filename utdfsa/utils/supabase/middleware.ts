@@ -29,8 +29,27 @@ const ALLOWED_UNPAID_PATHS = [
 
 // ── session refresh + auth guards ─────────────────────────
 
-export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request })
+// per-request csp/nonce values, computed in proxy.ts — threaded through so
+// downstream Server Components can read x-nonce via next/headers
+type CspInfo = { nonce: string; csp: string }
+
+export async function updateSession(request: NextRequest, cspInfo?: CspInfo) {
+  // builds a fresh Headers copy from the CURRENT request.headers each time it's called —
+  // must not be built once and reused, because the setAll callback below mutates
+  // request.cookies (which updates request.headers) after a session refresh, and the
+  // second NextResponse.next() call needs to see that mutation to propagate the
+  // refreshed cookie to the downstream render. a single frozen snapshot would silently
+  // drop that refresh.
+  function forwardedHeaders() {
+    const headers = new Headers(request.headers)
+    if (cspInfo) {
+      headers.set('x-nonce', cspInfo.nonce)
+      headers.set('Content-Security-Policy', cspInfo.csp)
+    }
+    return headers
+  }
+
+  let supabaseResponse = NextResponse.next({ request: { headers: forwardedHeaders() } })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -46,7 +65,7 @@ export async function updateSession(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
-          supabaseResponse = NextResponse.next({ request })
+          supabaseResponse = NextResponse.next({ request: { headers: forwardedHeaders() } })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )

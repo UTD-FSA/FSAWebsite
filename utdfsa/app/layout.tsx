@@ -7,6 +7,7 @@
 //        the four google fonts are registered as CSS custom properties via @theme
 // ─────────────────────────────────────────────────────────────
 import type { Metadata, Viewport } from "next"
+import { headers } from "next/headers"
 import { Geist, Geist_Mono, Unbounded, Noto_Sans_Tagalog } from "next/font/google"
 import "./globals.css"
 import Navbar from "@/components/Navbar"
@@ -78,6 +79,10 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // nonce set per-request by proxy.ts — required for the inline JSON-LD script below
+  // to run under a nonce-based CSP (script-src no longer allows 'unsafe-inline')
+  const nonce = (await headers()).get('x-nonce')
+
   // ── auth + member prefetch ────────────────────────────────
   // fetch member server-side so Navbar has data immediately on hydration
   const supabase = await createUserClient()
@@ -106,6 +111,7 @@ export default async function RootLayout({
         <link rel="dns-prefetch" href="https://js.stripe.com" />
         <script
           type="application/ld+json"
+          nonce={nonce ?? undefined}
           // static, no user input — safe to inline
           dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
         />

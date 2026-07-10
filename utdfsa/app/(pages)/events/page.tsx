@@ -7,6 +7,7 @@ export const metadata: Metadata = {
 }
 
 import { createAdminClient, createUserClient } from '@/utils/supabase/server'
+import { headers } from 'next/headers'
 import { getCachedVisibleEvents } from '@/lib/data/events'
 import EventsPageClient from './EventsPageClient'
 import QRCode from 'qrcode'
@@ -24,6 +25,8 @@ export default async function EventsPage({
   // changing these will break functionality
   // ============================================================
   const { success, sid } = await searchParams
+  // nonce set per-request by proxy.ts — required for the inline JSON-LD script below
+  const nonce = (await headers()).get('x-nonce')
   const admin = createAdminClient()
 
   // cached — base order ascending; client re-sorts into upcoming/past.
@@ -155,6 +158,7 @@ export default async function EventsPage({
       {eventsJsonLd.length > 0 && (
         <script
           type="application/ld+json"
+          nonce={nonce ?? undefined}
           // name/description come from officer-entered event data, not public
           // input — still escape "<" so a stray "</script>" can't break out
           dangerouslySetInnerHTML={{ __html: JSON.stringify(eventsJsonLd).replace(/</g, '\\u003c') }}
