@@ -159,6 +159,10 @@ export default async function EventsPage({
         <script
           type="application/ld+json"
           nonce={nonce ?? undefined}
+          // browsers zero out the nonce attribute in the DOM after parsing (CSP
+          // hardening, prevents nonce exfiltration) — React sees that as a hydration
+          // mismatch even though the script already ran fine server-side
+          suppressHydrationWarning
           // name/description come from officer-entered event data, not public
           // input — still escape "<" so a stray "</script>" can't break out
           dangerouslySetInnerHTML={{ __html: JSON.stringify(eventsJsonLd).replace(/</g, '\\u003c') }}

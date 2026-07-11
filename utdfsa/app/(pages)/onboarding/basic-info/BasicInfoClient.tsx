@@ -1,16 +1,20 @@
 // ── BasicInfoClient.tsx ───────────────────────────────────
 // client form for collecting/updating a member's basic profile fields
 //
-// data:  props — initial (BasicInfoForm) pre-filled from the server component
+// data:  props — initial (BasicInfoForm) pre-filled from the server component;
+//        firstName + deadlineText for the post-submit confirmation screen
 // deps:  POST /api/onboarding/update-basic-info
 // notes: reached from the onboarding "not interested" path or as a standalone profile edit.
 //        does not set onboarding_complete — that is handled by the onboarding flow.
+//        submitting from the not-interested path shows an inline confirmation
+//        instead of redirecting straight to /member/profile (see `submitted` state).
 
 'use client'
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { toTitleCase, formatPhone } from '@/lib/format'
+import SimpleHeader from '@/components/SimpleHeader'
 
 interface BasicInfoForm {
   first_name: string
@@ -22,17 +26,23 @@ interface BasicInfoForm {
 
 interface Props {
   initial: BasicInfoForm
+  firstName: string
+  // pre-formatted kuyate deadline (e.g. "March 14"), or null when kuyate is
+  // closed / no deadline is configured — confirmation copy adapts to this
+  deadlineText: string | null
 }
 
-export default function BasicInfoClient({ initial }: Props) {
+export default function BasicInfoClient({ initial, firstName, deadlineText }: Props) {
   const router = useRouter()
-  useEffect(() => { router.prefetch('/member/profile'); router.prefetch('/onboarding') }, [router])
+  useEffect(() => { router.prefetch('/member/profile'); router.prefetch('/onboarding'); router.prefetch('/') }, [router])
   // all editable profile fields; seeded from pre-filled server data via props
   const [form, setForm] = useState<BasicInfoForm>(initial)
   // true while POST /api/onboarding/update-basic-info is in flight
   const [loading, setLoading] = useState(false)
   // validation or api error shown inline above the submit button
   const [error, setError] = useState<string | null>(null)
+  // true once the form has saved successfully — swaps in the confirmation screen
+  const [submitted, setSubmitted] = useState(false)
 
   function set<K extends keyof BasicInfoForm>(field: K, value: BasicInfoForm[K]) {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -78,12 +88,149 @@ export default function BasicInfoClient({ initial }: Props) {
         return
       }
 
-      // route: /member/profile — final destination after basic info is saved
-      router.push('/member/profile')
+      // show the confirmation screen instead of redirecting straight to
+      // /member/profile — reassures not-interested members the door stays open
+      setSubmitted(true)
+      setLoading(false)
     } catch {
       setError('Network error — please try again.')
       setLoading(false)
     }
+  }
+
+  // confirmation screen — shown after a successful save instead of redirecting;
+  // mirrors the ading/kuyate "step === 'submitted'" screen in OnboardingClient.tsx
+  // (same fsa-check-pop/fsa-ring keyframes, same card + CTA pattern)
+  // available data:
+  //   firstName (string) — greeting name from the member row
+  //   deadlineText (string | null) — pre-formatted kuyate deadline, or null when
+  //     kuyate is closed / no deadline is set — copy below adapts to both
+  if (submitted) {
+    const doorItems = [
+      {
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" /></svg>
+        ),
+        title: 'Applications Stay Open',
+        body: deadlineText
+          ? `Kuya/Ate applications remain open to everyone through ${deadlineText} — nothing closes because you passed this time. Ading applications are open throughout the year.`
+          : 'You can reapply anytime from your profile while ading applications are open — nothing closes because you passed this time.',
+      },
+      {
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z" /></svg>
+        ),
+        title: 'Change of Heart, No Penalty',
+        body: "Just come back to the application (visible on profile page) whenever you're ready. There's no separate \"late\" pile — it's reviewed the same as any other.",
+      },
+      {
+        icon: (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3.2" /><path d="M2.5 20c0-3.4 2.9-6 6.5-6s6.5 2.6 6.5 6" /><path d="M16.5 4.6a3.2 3.2 0 0 1 0 6.3" /><path d="M20 20c0-2.7-1.7-5-4-5.8" /></svg>
+        ),
+        title: 'Same Community Either Way',
+        body: "You're still welcome at all parties, meetings, events, and Goodphil with or without a pamilya placement!",
+      },
+    ]
+
+    return (
+      <main className="bg-brand-bg min-h-screen text-white overflow-x-clip">
+        <SimpleHeader />
+        <div className="relative flex flex-col items-center text-center px-6 py-16 md:py-20 max-w-[660px] mx-auto">
+
+          {/* radial glow */}
+          <div
+            className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(117,186,120,0.14) 0%, transparent 70%)' }}
+          />
+
+          {/* checkmark medallion */}
+          <div className="relative z-10 w-[104px] h-[104px] flex items-center justify-center mb-8">
+            <span
+              className="absolute inset-0 rounded-full border-2 border-accent-green"
+              style={{ animation: 'fsa-ring 2.4s ease-out infinite' }}
+            />
+            <div
+              className="w-[104px] h-[104px] rounded-full bg-accent-green/[0.12] border border-accent-green/[0.34] flex items-center justify-center"
+              style={{ animation: 'fsa-check-pop 0.55s cubic-bezier(0.2,0.8,0.2,1) both' }}
+            >
+              <span
+                className="w-16 h-16 rounded-full bg-accent-green flex items-center justify-center"
+                style={{ boxShadow: '0 12px 34px -10px rgba(117,186,120,0.5)' }}
+              >
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#08130a" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+              </span>
+            </div>
+          </div>
+
+          {/* status pill */}
+          <div className="relative z-10 inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-accent-green/[0.12] border border-accent-green/[0.34] mb-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent-green" />
+            <span className="font-display font-bold text-[11px] tracking-[0.12em] text-accent-green uppercase">You&rsquo;re a member</span>
+          </div>
+
+          {/* heading */}
+          <h1 className="relative z-10 font-display font-black text-[clamp(42px,8vw,62px)] leading-[0.94] tracking-[-0.03em] text-white">
+            WELCOME TO FSA
+          </h1>
+
+          {/* subtext */}
+          <p className="relative z-10 max-w-[480px] text-[17px] leading-[1.6] text-[#9a9a9a] font-medium mt-5">
+            No pressure at all, {firstName} — we won&rsquo;t sign you up as an ading or kuya/ate this cycle, but the door stays wide open if you change your mind.
+          </p>
+
+          {/* door stays open */}
+          <div className="relative z-10 w-full bg-[#0d0d0d] border border-white/[0.08] rounded-[20px] p-7 md:p-8 mt-9 text-left">
+            <div className="flex items-center gap-3.5 mb-6">
+              <span className="font-display font-bold text-[13px] text-white whitespace-nowrap">The door stays open</span>
+              <div className="flex-1 h-px bg-white/[0.07]" />
+            </div>
+            <div className="flex flex-col gap-0">
+              {doorItems.map(({ icon, title, body }, i) => (
+                <div key={title} className="flex gap-4 items-start py-0.5">
+                  <div className="flex flex-col items-center self-stretch">
+                    <span className="shrink-0 w-[34px] h-[34px] rounded-full bg-accent-green/[0.12] border border-accent-green/[0.34] flex items-center justify-center text-accent-green">
+                      {icon}
+                    </span>
+                    {i < doorItems.length - 1 && (
+                      <span className="w-px flex-1 min-h-[22px] bg-white/10 my-1.5" />
+                    )}
+                  </div>
+                  <div className="pb-5">
+                    <div className="text-[15px] font-bold text-white tracking-[-0.01em] mb-1">{title}</div>
+                    <div className="text-[13.5px] leading-[1.55] text-[#8c8c8c] font-medium">{body}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* redirect actions */}
+          <div className="relative z-10 flex flex-col sm:flex-row gap-3.5 w-full mt-8">
+            <button
+              onClick={() => router.push('/member/profile')}
+              className="flex-1 flex items-center justify-center gap-2.5 py-[17px] rounded-[14px] bg-accent-green text-[#08130a] font-display font-extrabold text-[15px] tracking-[0.02em] hover:brightness-[1.08] transition-all"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#08130a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="4" /><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7" />
+              </svg>
+              GO TO MY PROFILE
+            </button>
+            <button
+              onClick={() => router.push('/')}
+              className="flex-1 flex items-center justify-center gap-2.5 py-[17px] rounded-[14px] border border-white/[0.14] bg-[#141414] text-white font-display font-extrabold text-[15px] tracking-[0.02em] hover:border-white/30 hover:bg-[#191919] transition-all"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 11l9-8 9 8" /><path d="M5 10v10h14V10" />
+              </svg>
+              BACK TO HOMEPAGE
+            </button>
+          </div>
+
+        </div>
+      </main>
+    )
   }
 
   // ============================================================

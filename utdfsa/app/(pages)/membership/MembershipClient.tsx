@@ -111,7 +111,7 @@ const FAQS = [
   },
   {
     q: 'What is a Pamilya?',
-    a: 'A Pamilya is your FSA family — a small group of members and upperclassmen (kuyas / ates) who hang out, support each other, and compete together throughout the year.',
+    a: 'A pamilya is your FSA family — a small group of members and upperclassmen (kuyas / ates) who hang out, support each other, and compete against other pamilyas throughout the year.',
   },
   {
     q: 'I have an officer code — where do I enter it?',
@@ -258,7 +258,7 @@ export default function MembershipClient({
               </AnimatedTitle>
 
               <AnimatedTitle as="p" animation="fadeUp" delay={160} className="max-w-[440px] text-lg leading-[1.65] text-[#9a9a9a] font-medium mt-6">
-                Join UTD FSA and unlock member pricing on every event, your pamilya placement, Goodphil eligibility tracking, and a whole community waiting to welcome you to the family!
+                Join UTD FSA and unlock member pricing on every event, access to our pamilya program, Goodphil eligibility tracking, and the full UTD FSA experience!
               </AnimatedTitle>
 
               {/* stats — "12 pamilyas" omitted per design spec */}

@@ -10,8 +10,7 @@ import type { Metadata, Viewport } from "next"
 import { headers } from "next/headers"
 import { Geist, Geist_Mono, Unbounded, Noto_Sans_Tagalog } from "next/font/google"
 import "./globals.css"
-import Navbar from "@/components/Navbar"
-import Footer from "@/components/Footer"
+import SiteChrome from "@/components/SiteChrome"
 import { createUserClient } from "@/utils/supabase/server"
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
@@ -112,6 +111,10 @@ export default async function RootLayout({
         <script
           type="application/ld+json"
           nonce={nonce ?? undefined}
+          // browsers zero out the nonce attribute in the DOM after parsing (CSP
+          // hardening, prevents nonce exfiltration) — React sees that as a hydration
+          // mismatch even though the script already ran fine server-side
+          suppressHydrationWarning
           // static, no user input — safe to inline
           dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
         />
@@ -123,11 +126,11 @@ export default async function RootLayout({
         >
           Skip to main content
         </a>
-        <Navbar initialMember={initialMember} />
-        <div id="main-content" tabIndex={-1} className="outline-none flex-1 flex flex-col">
-          {children}
-        </div>
-        <Footer />
+        <SiteChrome initialMember={initialMember}>
+          <div id="main-content" tabIndex={-1} className="outline-none flex-1 flex flex-col">
+            {children}
+          </div>
+        </SiteChrome>
         <Analytics />
         <SpeedInsights />
       </body>

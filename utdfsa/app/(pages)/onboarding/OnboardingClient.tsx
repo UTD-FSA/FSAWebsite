@@ -11,6 +11,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { toTitleCase, formatPhone } from '@/lib/format'
+import SimpleHeader from '@/components/SimpleHeader'
 
 /**
  * Props — passed down from OnboardingPage server component (onboarding/page.tsx)
@@ -1432,6 +1433,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
 
     return (
       <main className="bg-brand-bg min-h-screen text-white overflow-x-clip">
+        <SimpleHeader />
         <div className="relative flex flex-col items-center text-center px-6 py-16 md:py-20 max-w-[660px] mx-auto">
 
           {/* radial glow */}
