@@ -11,6 +11,10 @@ import Image from 'next/image'
 import { createClient } from '@/utils/supabase/client'
 import AnimatedTitle from '@/components/AnimatedTitle'
 
+// stagger timing mirrors the homepage hero (components/HeroSection.tsx) —
+// same lockup, same entrance, so the two feel like one brand asset
+const HERO_STAGGER = [0, 250, 500]
+
 // ── auth ──────────────────────────────────────────────────────
 // ============================================================
 // UI — safe to restyle everything below this line
@@ -52,54 +56,48 @@ export default function LoginPage() {
           className="absolute inset-0"
           style={{ background: 'linear-gradient(180deg, rgba(7,7,7,0.35) 0%, rgba(7,7,7,0.5) 55%, rgba(7,7,7,0.82) 100%)' }}
         />
-        {/* centered brand block */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-[22px] px-10 text-center">
-          <div
-            className="w-[88px] h-[88px] rounded-full flex items-center justify-center overflow-hidden flex-shrink-0"
-            style={{
-              boxShadow: '0 12px 40px -8px rgba(0,0,0,0.7)'
-            }}
-          >
+        {/* centered brand block — mirrors the homepage hero lockup (components/HeroSection.tsx) */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 sm:gap-4 px-10 text-center">
+          <AnimatedTitle as="div" animation="fadeIn" delay={HERO_STAGGER[0]} className="w-[280px] h-[280px] xl:w-[360px] xl:h-[360px] flex-shrink-0">
             <Image
-              src="/logo-head.png"
+              src="/hero-logo.svg"
               alt="UTD FSA"
-              width={88}
-              height={88}
-              className="rounded-full"
-              style={{ width: '88px', height: '88px', objectFit: 'cover' }}
+              width={360}
+              height={360}
+              className="w-full h-full object-contain"
+              priority
             />
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <span
-              className="font-display font-black text-[40px] leading-none tracking-[-0.01em] text-white"
-            >
-              UTD FSA
-            </span>
-            <span
-              className="text-[14px] font-semibold uppercase tracking-[0.16em]"
-              style={{ color: 'rgba(255,255,255,0.62)' }}
-            >
-              Filipino Student Association
-            </span>
-          </div>
-          <p
+          </AnimatedTitle>
+          <AnimatedTitle
+            as="p"
+            animation="fadeIn"
+            delay={HERO_STAGGER[1]}
+            className="font-display font-semibold uppercase tracking-[0.15em] text-[14px] xl:text-[16px]"
+            style={{ color: 'rgba(255,255,255,0.62)' }}
+          >
+            Filipino Student Association <span style={{ color: 'rgba(255,255,255,0.4)' }} className="mx-1">·</span> University of Texas at Dallas
+          </AnimatedTitle>
+          <AnimatedTitle
+            as="p"
+            animation="fadeIn"
+            delay={HERO_STAGGER[2]}
             className="font-display font-semibold text-[18px] tracking-[0.01em] italic"
             style={{ color: 'rgba(255,255,255,0.86)', marginTop: '6px' }}
           >
             Para sa Kultura. For the Culture.
-          </p>
+          </AnimatedTitle>
         </div>
       </div>
 
       {/* RIGHT: form panel */}
       <div
         className="w-full lg:flex-[0_0_40%] flex items-center justify-center p-6 lg:p-12 min-h-screen"
-        style={{ background: 'var(--background)', borderLeft: '1px solid var(--color-border-subtle)' }}
+        style={{ background: 'radial-gradient(120% 100% at 50% 30%, #1a1a1a 0%, #121212 45%, #0e0e0e 100%)', borderLeft: '1px solid var(--color-border-subtle)' }}
       >
         <AnimatedTitle as="div" animation="fadeUp" className="w-full max-w-[340px] flex flex-col">
 
-          {/* Mobile-only logo */}
-          <div className="lg:hidden flex justify-center mb-6">
+          {/* Logo above the heading — shown at every breakpoint */}
+          <div className="flex justify-center mb-6">
             <div
               className="w-[72px] h-[72px] rounded-full flex items-center justify-center overflow-hidden"
               style={{ boxShadow: '0 12px 40px -8px rgba(0,0,0,0.7)' }}

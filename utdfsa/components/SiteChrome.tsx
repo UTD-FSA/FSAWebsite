@@ -11,7 +11,6 @@
 import { usePathname } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import SimpleHeader from '@/components/SimpleHeader'
 import type { Member } from '@/types/database'
 
 interface SiteChromeProps {
@@ -22,19 +21,9 @@ interface SiteChromeProps {
 export default function SiteChrome({ initialMember, children }: SiteChromeProps) {
   const pathname = usePathname()
 
-  // membership + onboarding: no chrome at all — keep the visitor on task
-  if (pathname === '/membership' || pathname.startsWith('/onboarding')) {
+  // login + membership + onboarding: no chrome at all — keep the visitor on task
+  if (pathname === '/login' || pathname === '/membership' || pathname.startsWith('/onboarding')) {
     return <>{children}</>
-  }
-
-  // login: simplified header, no footer
-  if (pathname === '/login') {
-    return (
-      <>
-        <SimpleHeader />
-        {children}
-      </>
-    )
   }
 
   return (

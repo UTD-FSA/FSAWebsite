@@ -202,6 +202,18 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
                   border: '1px solid rgba(255,255,255,0.12)',
                   color: '#9a9a9a',
                 }}
+                onMouseEnter={e => {
+                  const el = e.currentTarget as HTMLButtonElement
+                  el.style.background = 'rgba(255,255,255,0.12)'
+                  el.style.borderColor = 'rgba(255,255,255,0.28)'
+                  el.style.color = '#fff'
+                }}
+                onMouseLeave={e => {
+                  const el = e.currentTarget as HTMLButtonElement
+                  el.style.background = 'rgba(255,255,255,0.06)'
+                  el.style.borderColor = 'rgba(255,255,255,0.12)'
+                  el.style.color = '#9a9a9a'
+                }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <path d="M18 6L6 18M6 6l12 12" />
