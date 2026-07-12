@@ -179,7 +179,7 @@ export default function ScanClient({ events }: { events: ScannableEvent[] }) {
           <div className="w-full max-w-md">
             <div className="flex items-center gap-2.5 mb-2">
               <span className="w-[7px] h-[7px] rounded-full bg-[#9747FF]" />
-              <h1 className="font-display font-bold text-[19px] tracking-[-0.01em]">Select event</h1>
+              <h1 className="font-display font-bold text-[19px] tracking-[-0.01em]">Select Event</h1>
             </div>
             <p className="text-sm text-[#8c8c8c] mb-6">Tickets for any other event will be rejected at this door.</p>
 

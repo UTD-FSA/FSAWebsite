@@ -8,6 +8,9 @@
 //        all camera/scanner logic lives in ScanClient (client component).
 //        events are limited to active ones from the last 7 days onward — the
 //        picker is for working a door, not browsing history.
+//        event_type is restricted to Party/Other — the only ticketed types
+//        (see isTicketed() in OfficerEventsClient.tsx); other types have no
+//        registration_tickets rows, so there's nothing to scan for them.
 import { requireUser } from '@/lib/auth'
 import { createAdminClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
@@ -39,6 +42,7 @@ export default async function ScanPage() {
     .from('events')
     .select('id, name, event_date, event_type')
     .eq('is_active', true)
+    .in('event_type', ['Party', 'Other'])
     .gte('event_date', windowStart.toISOString())
     .order('event_date', { ascending: true })
 

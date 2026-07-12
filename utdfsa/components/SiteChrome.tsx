@@ -22,7 +22,14 @@ export default function SiteChrome({ initialMember, children }: SiteChromeProps)
   const pathname = usePathname()
 
   // login + membership + onboarding: no chrome at all — keep the visitor on task
-  if (pathname === '/login' || pathname === '/membership' || pathname.startsWith('/onboarding')) {
+  // officer/scan: fullscreen camera tool — sticky navbar (z-[60]) would sit on top
+  // of the scan page's own fixed-position event picker/tally chip (z-30/z-40)
+  if (
+    pathname === '/login' ||
+    pathname === '/membership' ||
+    pathname.startsWith('/onboarding') ||
+    pathname === '/officer/scan'
+  ) {
     return <>{children}</>
   }
 
