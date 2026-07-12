@@ -913,8 +913,6 @@ function PendingCoverPhotoUpload({ onChange }: { onChange: (file: File | null) =
 
 // ── main component ────────────────────────────────────────────────────────────
 
-// ── main component ────────────────────────────────────────
-
 export default function OfficerEventsClient({ initialEvents }: { initialEvents: Event[] }) {
   // local events list — updated optimistically after create/update/delete
   const [events, setEvents] = useState<Event[]>(initialEvents)

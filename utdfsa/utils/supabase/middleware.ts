@@ -2,7 +2,7 @@
 // next.js middleware — refreshes the supabase session and
 // enforces route-level auth guards for member and officer paths.
 //
-// data:  members (role, membership_status)
+// data:  members (role, membership_status, membership_expires_at)
 // deps:  supabase/ssr
 // notes: called by proxy.ts on every non-static request;
 //        all redirects preserve the original path in ?next=
@@ -13,14 +13,14 @@ import { isMembershipActive } from '@/lib/membership'
 
 // ── route protection lists ────────────────────────────────
 
-// any logged-in user can access these routes
+// require login + effectively active membership (officers/admins exempt — see below)
 const MEMBER_ROUTES = ['/member']
 
 // only officers and admins can access these routes
 const OFFICER_ROUTES = ['/officer', '/api/officer']
 
-// paid members who haven't finished onboarding can still reach these
-// without being bounced back to /membership
+// unpaid users can still reach these without being bounced to /membership —
+// matters because '/membership' itself matches the '/member' prefix above
 const ALLOWED_UNPAID_PATHS = [
   '/membership',
   '/onboarding',
@@ -92,7 +92,7 @@ export async function updateSession(request: NextRequest, cspInfo?: CspInfo) {
   }
 
   // single member lookup shared by all three checks below —
-  // runs whenever we need role or membership_status
+  // runs whenever we need role or effective membership (status + expiry)
   let memberRow: { role: string; membership_status: string; membership_expires_at: string | null } | null = null
 
   if (user && (needsMember || needsOfficer || pathname === '/membership')) {

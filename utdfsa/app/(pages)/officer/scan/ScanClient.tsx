@@ -11,10 +11,6 @@
 //        validated against that event server-side (WRONG_EVENT rejection).
 'use client'
 
-// mobile-first page — designed for phone use at events
-// do not add a max-width container — full screen is intentional
-// do not add navbar padding — scan overlay must cover full viewport
-
 import { useEffect, useRef, useState } from 'react'
 import Modal from '@/components/Modal'
 import { Html5Qrcode } from 'html5-qrcode'

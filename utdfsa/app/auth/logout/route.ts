@@ -4,12 +4,7 @@
 // deps:  supabase (auth.signOut clears the http-only session cookies)
 // notes: any authenticated user can call this. signOut is fire-and-forget —
 //        the redirect happens regardless of whether it errors.
-
-// route: POST /auth/logout
-// purpose: signs the user out
-// auth: any authenticated user
-// calls: supabase (auth.signOut)
-// notes: POST-only — a GET here would be triggerable via a bare <img src="/auth/logout">
+//        POST-only — a GET here would be triggerable via a bare <img src="/auth/logout">
 //        on any third-party page with zero interaction, since browsers fire GET for any
 //        embedded resource reference. requiring POST forces an attacker to run actual
 //        cross-site script/form logic instead, and Next auto-405s unimplemented methods.

@@ -1,3 +1,12 @@
+// ── EventCalendar.tsx ─────────────────────────────────────
+// thin client wrapper around FullCalendar's month grid — receives
+// pre-mapped CalEvent rows and forwards event clicks to the caller
+//
+// data:  props — events (CalEvent[]), onEventClickAction callback
+// deps:  @fullcalendar/react (dayGrid + interaction plugins)
+// notes: dynamically imported by EventsPageClient to keep FullCalendar
+//        (~300KB) out of the initial bundle
+// ──────────────────────────────────────────────────────────
 'use client'
 
 import FullCalendar from '@fullcalendar/react'

@@ -10,13 +10,14 @@
 
 'use client'
 
-import { useEffect, useRef, useState, type RefObject, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import Image from 'next/image'
 import SmoothImage from '@/components/SmoothImage'
 import { BlurInImg } from '@/components/SmoothImage'
 import Link from 'next/link'
 import AnimatedLetters from '@/components/AnimatedLetters'
 import GoodphilNavRail from '@/components/GoodphilNavRail'
+import { useRevealOnScroll } from '@/lib/useRevealOnScroll'
 
 // host-school logo grid data — colors match the hover hex already used on the
 // UTA/TAMU/UT/UH/UTSA abbreviation spans in the "rotating between five host
@@ -34,38 +35,6 @@ function hexToRgba(hex: string, alpha: number) {
   const g = parseInt(hex.slice(3, 5), 16)
   const b = parseInt(hex.slice(5, 7), 16)
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
-}
-
-// scroll-reveal backed by IntersectionObserver plus a polling safety net.
-// A programmatic/full-page-capture scroll doesn't always dispatch the normal
-// intersection callbacks, which left this content (core requirements + team
-// grid) permanently invisible with no fallback — the poll guarantees reveal
-// once the element is actually in the viewport, without pre-revealing
-// off-screen content early.
-//
-// the poll must honor the same `threshold` as the observer (fraction of the
-// element's height visible) — a bare "any overlap" check fired the moment
-// the section merely bordered the viewport (e.g. the tall Goodphil hero
-// leaves "WHAT IS GOODPHIL?" sitting right at the fold on load), revealing
-// it before the user had actually scrolled.
-function useRevealOnScroll<T extends HTMLElement>(ref: RefObject<T | null>, threshold: number) {
-  const [visible, setVisible] = useState(false)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    function reveal() { setVisible(true); observer.disconnect(); clearInterval(poll) }
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) reveal()
-    }, { threshold })
-    observer.observe(el)
-    const poll = setInterval(() => {
-      const rect = el.getBoundingClientRect()
-      const visibleHeight = Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0)
-      if (visibleHeight / rect.height >= threshold) reveal()
-    }, 500)
-    return () => { observer.disconnect(); clearInterval(poll) }
-  }, [ref, threshold])
-  return visible
 }
 
 export default function GoodphilAboutPage() {

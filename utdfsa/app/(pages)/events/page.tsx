@@ -1,3 +1,13 @@
+// ── page.tsx ─────────────────────────────────────────────────
+// events server component — fetches cached visible events, resolves the
+// viewer, and handles the guest post-checkout one-time ticket reveal
+//
+// data:  events (via getCachedVisibleEvents), members, event_registrations,
+//        registration_tickets (guest ?sid= reveal)
+// deps:  stripe checkout session id in ?sid=, qrcode (npm)
+// notes: see lib/data/events.ts for why unstable_cache is the real cache
+//        boundary here; tickets_viewed_at makes the guest success link one-shot
+// ─────────────────────────────────────────────────────────────
 import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Events',

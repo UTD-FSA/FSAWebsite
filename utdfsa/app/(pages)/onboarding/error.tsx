@@ -1,3 +1,9 @@
+// ── error.tsx (onboarding) ────────────────────────────────
+// onboarding segment error boundary — shown when an /onboarding/* page throws
+//
+// notes: logs the error client-side; reset() re-renders the failed segment.
+//        payment state is unaffected — the stripe webhook records it server-side
+// ──────────────────────────────────────────────────────────
 'use client'
 
 import { useEffect } from 'react'

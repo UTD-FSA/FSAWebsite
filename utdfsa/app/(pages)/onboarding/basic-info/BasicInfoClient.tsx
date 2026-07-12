@@ -5,7 +5,7 @@
 //        firstName + deadlineText for the post-submit confirmation screen
 // deps:  POST /api/onboarding/update-basic-info
 // notes: reached from the onboarding "not interested" path or as a standalone profile edit.
-//        does not set onboarding_complete — that is handled by the onboarding flow.
+//        the api it calls (update-basic-info) stamps onboarding_complete = true on save.
 //        submitting from the not-interested path shows an inline confirmation
 //        instead of redirecting straight to /member/profile (see `submitted` state).
 

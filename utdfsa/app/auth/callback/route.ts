@@ -9,11 +9,6 @@
 //          fully set up → ?next or /member/profile.
 //        ?next param is honored only for paid/officer users (safe internal paths only).
 
-// route: GET /auth/callback
-// purpose: exchanges the oauth code for a session, provisions a member row on first sign-in, then routes to the right destination based on membership and onboarding status
-// auth: public — called by supabase oauth redirect, no session exists yet
-// calls: supabase (auth + members table)
-
 import { NextResponse } from 'next/server'
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import { isMembershipActive } from '@/lib/membership'

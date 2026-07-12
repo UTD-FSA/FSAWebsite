@@ -1,3 +1,10 @@
+// ── SmoothImage.tsx ───────────────────────────────────────
+// blur-up fade-in image wrappers: SmoothImage (next/image) and BlurInImg
+// (plain <img> for cases next/image can't cover)
+//
+// notes: BlurInImg checks img.complete on mount because cached images
+//        fire load before react attaches onLoad
+// ──────────────────────────────────────────────────────────
 'use client'
 
 import { useState, useRef, useEffect, type ImgHTMLAttributes } from 'react'

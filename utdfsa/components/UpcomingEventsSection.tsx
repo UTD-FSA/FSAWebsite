@@ -1,3 +1,10 @@
+// ── UpcomingEventsSection.tsx ─────────────────────────────
+// homepage upcoming-events strip — next few visible events with the same
+// detail modal + register flow as the events page
+//
+// data:  props from app/page.tsx — events, member, isMember, registeredEventIds
+// deps:  RegisterModal, useStaggeredReveal
+// ──────────────────────────────────────────────────────────
 'use client'
 
 import { useState, useRef } from 'react'

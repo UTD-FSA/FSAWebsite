@@ -1,3 +1,9 @@
+// ── error.tsx ─────────────────────────────────────────────
+// root error boundary — shown by next.js when any route without its own
+// error.tsx throws during render
+//
+// notes: logs the error client-side; reset() re-renders the failed segment
+// ──────────────────────────────────────────────────────────
 'use client'
 
 import { useEffect } from 'react'

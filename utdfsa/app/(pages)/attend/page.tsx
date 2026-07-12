@@ -1,7 +1,8 @@
 // ── page.tsx ─────────────────────────────────────────────────
 // attend page — QR code check-in handler; records attendance and awards points
 //
-// data:  events (by attend_qr_token), attendance (duplicate guard), members (points)
+// data:  events (by attend_qr_token), members (id); attendance + points
+//        written via the record_attendance RPC (duplicate-guarded there)
 // notes: all guard checks must remain in order — token → auth → event validity →
 //        qr open → expiry → member lookup → duplicate → then write;
 //        attendance + points are written via the record_attendance RPC (admin
@@ -20,8 +21,8 @@ export default async function AttendPage({ searchParams }: Props) {
   // DATA — do not modify this section
   // reads searchParams.token, authenticates the user, queries:
   //   events (by attend_qr_token) — to validate the QR and get event details
-  //   attendance — to prevent duplicate check-ins
-  //   members — to get and update the member's point total
+  //   members — id for the record_attendance RPC, which inserts the
+  //     attendance row (duplicate-guarded) and awards points atomically
   // all redirects and early-exit returns below guard data integrity
   // ============================================================
   const { token } = await searchParams

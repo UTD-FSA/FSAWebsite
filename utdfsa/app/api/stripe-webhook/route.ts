@@ -149,7 +149,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // ── event ticket payment ───────────────────────────────────────────────────
     // ── event ticket fulfillment ──────────────────────────────────────────────
     if (type === 'event_ticket') {
       const { registration_id } = session.metadata ?? {}
@@ -246,8 +245,7 @@ export async function POST(req: Request) {
                     [ticket.attendee_fname, ticket.attendee_lname].filter(Boolean).join(' ') ||
                     'Attendee'
 
-                  // prefer contact_email (member's preferred address) over ticket attendee_email
-                  // For members, prefer their stored contact_email over the attendee email on the ticket
+                  // for members, prefer their stored contact_email over the attendee email on the ticket
                   const recipientEmail = memberContactEmail ?? ticket.attendee_email!
 
                   const { error: sendError } = await resend.emails.send({

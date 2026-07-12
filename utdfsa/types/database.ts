@@ -3,7 +3,8 @@
 // used across server components, api routes, and client hooks.
 //
 // data:  members, events, event_registrations, registration_tickets,
-//        attendance, photos, galleries, settings
+//        attendance, photos, galleries, settings, ading_applications,
+//        kuyate_applications, goodphil_eligibility (view)
 // notes: keep in sync with supabase migrations; nullable fields
 //        reflect columns that allow null in the db
 
@@ -212,6 +213,23 @@ export interface AdingApplication {
   pam_incompatibilities: string | null
   future_kuyate: string | null
   mbti: string | null
+  additional_notes: string | null
+}
+
+// ── kuyate application ────────────────────────────────────
+
+// a submitted kuya/ate (mentor) application row
+export interface KuyateApplication {
+  id: string
+  member_id: string
+  submitted_at: string
+  status: 'pending' | 'accepted' | 'rejected'
+  instagram: string | null
+  pamilya_name: string | null
+  wants_to_be_pam_head: boolean
+  pam_head_phone: string | null
+  why_kuyate: string
+  acknowledges_responsibilities: boolean
   additional_notes: string | null
 }
 

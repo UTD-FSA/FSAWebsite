@@ -1,3 +1,8 @@
+// ── error.tsx (officer) ───────────────────────────────────
+// officer-area segment error boundary — shown when an /officer/* page throws
+//
+// notes: logs the error client-side; reset() re-renders the failed segment
+// ──────────────────────────────────────────────────────────
 'use client'
 
 import { useEffect } from 'react'

@@ -9,6 +9,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Modal from '@/components/Modal'
+import type { AdingApplication as AdingRow, KuyateApplication as KuyateRow } from '@/types/database'
 
 // ── types and constants ───────────────────────────────────
 
@@ -25,48 +26,9 @@ interface MemberInfo {
   pamilya: string | null
 }
 
-interface AdingApplication {
-  id: string
-  member_id: string
-  submitted_at: string
-  status: Status
-  additional_notes: string | null
-  instagram: string | null
-  phone: string | null
-  birthday: string | null
-  pronouns: string | null
-  activity_level: number | null
-  hobbies: string | null
-  fave_music_genre: string | null
-  fave_artist: string | null
-  fave_food: string | null
-  pam_vibe: string | null
-  hangout_size_preference: number | null
-  fave_tv_show_movie: string | null
-  availability: { days: string[]; times: string } | null
-  thoughts_on_drinking: string | null
-  dislikes: string | null
-  pam_dealbreakers: string | null
-  pam_incompatibilities: string | null
-  future_kuyate: string | null
-  mbti: string | null
-  members: MemberInfo
-}
-
-interface KuyateApplication {
-  id: string
-  member_id: string
-  submitted_at: string
-  status: Status
-  additional_notes: string | null
-  instagram: string | null
-  pamilya_name: string | null
-  wants_to_be_pam_head: boolean
-  pam_head_phone: string | null
-  why_kuyate: string
-  acknowledges_responsibilities: boolean
-  members: MemberInfo
-}
+// shared db row types + the members join this page's queries embed
+type AdingApplication = AdingRow & { members: MemberInfo }
+type KuyateApplication = KuyateRow & { members: MemberInfo }
 
 const PAMILYA_OPTIONS = [
   'Shiballers', 'Gutom Gang', 'Sushi Cuchi', 'Hanobe',

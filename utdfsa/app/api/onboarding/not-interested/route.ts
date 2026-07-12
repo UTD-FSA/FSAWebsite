@@ -2,8 +2,9 @@
 // marks a member as opting out of the pamilya program.
 //
 // data:  members (read via user client, write via admin client)
-// notes: sets onboarding_complete = true and member_type = 'not_interested'.
-//        guarded by membership_status check — only active members can reach this step.
+// notes: sets member_type = 'not_interested' only — onboarding_complete is
+//        stamped later by update-basic-info, after the basic-info form submits.
+//        guarded by isMembershipActive — only effectively active members can reach this step.
 //        client redirects to /onboarding/basic-info afterward to collect profile info.
 
 import { createAdminClient } from '@/utils/supabase/server'
@@ -14,7 +15,7 @@ import { fail } from '@/lib/api-response'
 
 // POST /api/onboarding/not-interested
 // marks the member as not interested in the pamilya program:
-//   sets onboarding_complete = true, member_type = 'not_interested'
+//   sets member_type = 'not_interested' (onboarding_complete is stamped by update-basic-info)
 // client then redirects to /onboarding/basic-info to collect profile info
 export async function POST() {
   // respects rls — confirms caller is authenticated; returns 401 on failure

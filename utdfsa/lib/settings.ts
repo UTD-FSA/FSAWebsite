@@ -11,7 +11,8 @@ import { createAdminClient } from '@/utils/supabase/server'
 // ── settings loader ───────────────────────────────────────
 
 export async function getSettings() {
-  // bypass rls — officer action, user client would be blocked
+  // bypass rls — client roles have no direct read access to settings
+  // (migration: revoke_settings_direct_access), so the admin client is required
   const supabase = createAdminClient()
 
   // fetch all key/value rows from the settings table

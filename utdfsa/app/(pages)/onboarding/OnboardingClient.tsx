@@ -71,7 +71,7 @@ const textareaCls = `${fieldCls} min-h-[96px] resize-y leading-relaxed`
 const labelCls = 'flex items-center gap-[5px] mb-[9px] text-[12px] font-bold tracking-[0.1em] text-[#9a9a9a] uppercase'
 
 // ── IMPORTANT — do not restructure the step logic below ──────────────────────
-// Rule 7: This is a multi-step form. The step flow (pick → profile → ading|kuyate)
+// This is a multi-step form. The step flow (pick → profile → ading|kuyate)
 // must be preserved exactly. Each step is a separate conditional return.
 // Do not merge steps, reorder them, or replace the step state with a router-based flow.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -204,7 +204,8 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
     setLoading(true)
     setServerError(null)
     try {
-      // api: POST /api/onboarding/not-interested — marks onboarding_complete + member_type='not_interested'
+      // api: POST /api/onboarding/not-interested — sets member_type='not_interested'
+      // (onboarding_complete is stamped later by update-basic-info)
       const res = await fetch('/api/onboarding/not-interested', { method: 'POST' })
       const data = await res.json()
       if (!res.ok) {

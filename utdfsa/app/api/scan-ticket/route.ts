@@ -11,11 +11,7 @@
 //        success and already-checked-in responses include the event's door tally
 //        (checked_in_count / total_paid) so the scanner ui stays current.
 //        checked_in_by is recorded for audit purposes.
-
-// route: POST /api/scan-ticket
-// purpose: validates a ticket QR code, checks payment status, and marks the ticket as checked in; returns pass/fail reason to the scan page
-// auth: officer or admin only
-// calls: supabase
+//        auth: officer or admin only (requireOfficer).
 
 import { requireOfficer } from '@/lib/auth'
 import { scanTicketSchema } from '@/lib/schemas'
@@ -64,7 +60,6 @@ export async function POST(req: Request) {
   // ── ticket lookup ─────────────────────────────────────────────────────────
 
   // find the ticket by qr_code and join payment status + event name in one query
-  // find the ticket
   const { data: ticket } = await admin
     .from('registration_tickets')
     .select(`

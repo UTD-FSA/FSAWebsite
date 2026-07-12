@@ -1,3 +1,12 @@
+// ── PamilyasClient.tsx ────────────────────────────────────
+// client component — pamilyas page: fan carousel, sign-up form cards
+// (ading / kuya-ate / protection form), and state-driven popups
+//
+// data:  memberState prop from pamilyas/page.tsx (login, membership,
+//        application, and onboarding state)
+// notes: each card's cta routes by member state — login, membership,
+//        onboarding, reapply, or a blocking popup (see the prop helpers)
+// ──────────────────────────────────────────────────────────
 'use client'
 
 import { useState, useEffect, useRef, type PointerEvent, type MouseEvent } from 'react'
@@ -35,7 +44,7 @@ const PAM_SLIDES = [
   { src: '/pam5.jpg', alt: 'Pamilya 5' },
 ]
 
-// FIX 2: rotate removed from PosConfig — cards stack flat with no vertical tilt
+// rotate deliberately omitted from PosConfig — cards stack flat with no vertical tilt
 type PosConfig = {
   scale: number
   translateX: string
@@ -182,7 +191,7 @@ function PamilyasCarousel() {
                 top: '50%',
                 width: `${cardW}px`,
                 height: `${cardH}px`,
-                // FIX 2: rotate removed — cards stack flat
+                // no rotate — cards stack flat
                 transform: `translateX(-50%) translateY(-50%) translateX(${pos.translateX}) scale(${pos.scale})`,
                 zIndex: pos.zIndex,
                 opacity,
@@ -274,7 +283,6 @@ function FormCard({
         quality={85}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-      {/* FIX 3: title vertically and horizontally centered */}
       <span className="absolute inset-0 flex items-center justify-center text-center text-white font-display font-black text-xl uppercase tracking-wide px-4">
         {title}
       </span>
@@ -300,7 +308,7 @@ function FormCard({
     </p>
   )
 
-  // FIX 4: external link (protection form) opens in new tab
+  // external link (protection form) opens in new tab
   if (externalHref) {
     return (
       <div>
@@ -319,7 +327,7 @@ function FormCard({
       </div>
     )
   }
-  // FIX 5: popup trigger — card is always clickable
+  // popup trigger — card is always clickable
   return (
     <div>
       <button type="button" className={cls} onClick={onClick}>
@@ -339,7 +347,7 @@ export default function PamilyasClient({
   memberState: MemberState
   isKuyateOpen: boolean
 }) {
-  // FIX 5: popup state replaces the submitted badge
+  // blocking popup content; null = no popup open
   const [popup, setPopup] = useState<{ title: string; message: string } | null>(null)
 
   // Baybayin subheader — opacity fade-in as it scrolls into view (matches goodphil subpages)
@@ -446,7 +454,7 @@ export default function PamilyasClient({
   function protectionCardProps(): { href?: string; externalHref?: string } {
     if (!memberState.isLoggedIn) return { href: '/login?next=/pamilyas' }
     if (!memberState.isMember) return { href: '/membership' }
-    // FIX 4: real Google Forms URL, opens in new tab
+    // protection form is an external google form — opens in new tab
     return {
       externalHref: 'https://docs.google.com/forms/d/e/1FAIpQLSdlewwrMBLXLK_4oRI_J7bb2fh-uR11_G4asmzaa26LUXes2Q/viewform?usp=dialog',
     }
@@ -460,7 +468,7 @@ export default function PamilyasClient({
     <main className="bg-section-bg text-white overflow-x-clip">
       <QuickNavRail mode="sections" ariaLabel="Pamilyas page sections" items={PAMILYAS_NAV_ITEMS} />
 
-      {/* FIX 5: popup modal — renders when popup is not null */}
+      {/* popup modal — renders when popup is not null */}
       {popup && (
         <Modal onClose={() => setPopup(null)} size="sm">
           <div className="bg-[#262626] rounded-2xl p-6 text-center shadow-2xl">

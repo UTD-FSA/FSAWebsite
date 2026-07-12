@@ -1,3 +1,10 @@
+// ── AnimatedTitle.tsx ─────────────────────────────────────
+// generic entrance-animation wrapper (fadeIn / fadeUp / slideFromRight)
+// that replays on every mount and on bfcache restore (pageshow) — the
+// reflow trick (void offsetHeight) reliably restarts the css animation
+//
+// data:  none — presentational wrapper
+// ──────────────────────────────────────────────────────────
 'use client'
 
 import { useEffect, useRef } from 'react'

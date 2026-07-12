@@ -36,7 +36,8 @@ export default async function OnboardingPage({ searchParams }: Props) {
   if (!ctx) redirect('/login')
   const { user } = ctx
 
-  // bypass rls — officer action, user client would be blocked for onboarding_complete + member_type updates
+  // bypass rls — member self-service flow, but client roles are write-restricted
+  // on members, so onboarding_complete + member_type updates need the admin client
   const admin = createAdminClient()
 
   // supabase: members table — fetch all fields needed for the onboarding gate checks and client props
@@ -54,7 +55,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
   if (reapply === 'true') {
     if (member.member_type === 'not_interested') {
       // supabase: members table — reset onboarding state so the flow renders fresh
-      // bypass rls — officer action, user client would be blocked
+      // bypass rls — write is scoped to the caller's own row, resolved above
       await admin
         .from('members')
         .update({ onboarding_complete: false, member_type: null })
@@ -98,7 +99,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
       }
 
       // supabase: members table — activate membership immediately after stripe confirms payment
-      // bypass rls — officer action, user client would be blocked
+      // bypass rls — write is scoped to the caller's own row, resolved above
       await admin
         .from('members')
         .update({

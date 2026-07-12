@@ -36,8 +36,8 @@ export async function createUserClient() {
               cookieStore.set(name, value, { sameSite: 'lax', ...options })
             } catch (e) {
               // next.js throws if you try to set cookies in a server component render pass;
-              // this is safe to swallow — the next request's middleware/route handler
-              // will set them instead, since there is no middleware.ts in this project
+              // this is safe to swallow — the next request's middleware (proxy.ts →
+              // updateSession) or route handler will set them instead
               console.error('[server.ts] failed to set cookie:', name, e)
             }
           })
@@ -52,7 +52,8 @@ export async function createUserClient() {
 // createAdminClient — for server-side operations that must bypass RLS (seeding, officer management)
 // uses the service role key; never expose this client or its key to the browser
 export function createAdminClient() {
-  // bypass rls — officer action, user client would be blocked
+  // bypass rls — service-role client; every call site documents its own
+  // justification with a `bypass rls — …` comment
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     // service role key grants full db access — server-only, never sent to the browser

@@ -1,3 +1,9 @@
+// ── ScrollFadeIn.tsx ──────────────────────────────────────
+// fades/scales children in once scrolled into view — thin wrapper over
+// useRevealOnScroll (inherits its never-blank + reduced-motion guards)
+//
+// data:  none — presentational wrapper
+// ──────────────────────────────────────────────────────────
 'use client'
 
 import { useRef, type ReactNode } from 'react'

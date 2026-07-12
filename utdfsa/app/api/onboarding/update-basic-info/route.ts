@@ -2,8 +2,9 @@
 // saves name, phone, year, and major for a member who opted out of pamilya.
 //
 // data:  members (read via user client, write via admin client)
-// notes: does NOT touch onboarding_complete — that is already set by the
-//        not-interested route before the client navigates here.
+// notes: stamps onboarding_complete = true alongside the profile fields —
+//        the not-interested route deliberately leaves it false so the back
+//        button on the basic-info form can return to /onboarding.
 //        used by the /onboarding/basic-info page.
 
 import { createAdminClient } from '@/utils/supabase/server'
@@ -28,8 +29,8 @@ const schema = z.object({
 })
 
 // ── POST /api/onboarding/update-basic-info ────────────────────────────────────
-// saves profile fields (name, phone, year, major) for a member.
-// does NOT touch onboarding_complete — that is already set by the not-interested route.
+// saves profile fields (name, phone, year, major) for a member and stamps
+// onboarding_complete = true (see the write below for why it happens here).
 // used by the /onboarding/basic-info page after a member opts out of the pamilya program.
 export async function POST(req: Request) {
   // respects rls — confirms caller is authenticated; returns 401 on failure

@@ -1,3 +1,9 @@
+// ── error.tsx (events) ────────────────────────────────────
+// events segment error boundary — shown when events/page.tsx throws
+//
+// notes: copy reassures paid buyers their ticket is still recorded
+//        (payment is webhook-recorded server-side, independent of this page)
+// ──────────────────────────────────────────────────────────
 'use client'
 
 import { useEffect } from 'react'

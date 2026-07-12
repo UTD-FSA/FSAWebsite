@@ -1,3 +1,8 @@
+// ── error.tsx (membership) ────────────────────────────────
+// membership segment error boundary — shown when /membership throws
+//
+// notes: logs the error client-side; reset() re-renders the failed segment
+// ──────────────────────────────────────────────────────────
 'use client'
 
 import { useEffect } from 'react'

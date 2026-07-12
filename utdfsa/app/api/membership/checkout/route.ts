@@ -26,7 +26,7 @@ export async function POST() {
   const { supabase, user } = ctx
 
   // ── member lookup ─────────────────────────────────────────
-  // respects rls — user client; verifies membership_status before proceeding
+  // respects rls — user client; verifies effective membership (status + expiry) before proceeding
   const { data: member } = await supabase
     .from('members')
     .select('id, membership_status, membership_expires_at, email, first_name, last_name')
