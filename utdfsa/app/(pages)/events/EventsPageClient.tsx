@@ -269,8 +269,8 @@ export default function EventsPageClient({ events, isMember, member, registeredE
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const sequence = [
-      { ref: titleRef, anim: 'evFadeUp24 700ms ease-out both' },
-      { ref: descRef,  anim: 'evFadeUp16 600ms ease-out 150ms both' },
+      { ref: titleRef, anim: 'evFadeUp24 700ms var(--ease-smooth) both' },
+      { ref: descRef,  anim: 'evFadeUp16 600ms var(--ease-smooth) 150ms both' },
     ]
     if (reduced) {
       sequence.forEach(({ ref }) => { if (ref.current) ref.current.style.opacity = '1' })
@@ -296,7 +296,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
     el.style.transform = 'translateY(12px)'
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
-        el.style.transition = 'opacity 500ms ease-out, transform 500ms ease-out'
+        el.style.transition = 'opacity 500ms var(--ease-smooth), transform 500ms var(--ease-smooth)'
         el.style.opacity = '1'
         el.style.transform = 'translateY(0)'
         observer.disconnect()
@@ -337,7 +337,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
           <div className="mb-8 rounded-2xl overflow-hidden" style={{
             background: 'rgba(117,186,120,0.08)',
             border: '1px solid rgba(117,186,120,0.28)',
-            animation: 'evCardIn 500ms ease-out both',
+            animation: 'evCardIn 500ms var(--ease-smooth) both',
           }}>
             <div className="px-5 py-4 flex items-center gap-3">
               <span className="relative w-6 h-6 flex-none">
@@ -368,7 +368,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                   {ticketQRs.map((t, i) => {
                     const name = [t.attendee_fname, t.attendee_lname].filter(Boolean).join(' ')
                     return (
-                      <div key={i} className="flex flex-col items-center gap-2" style={{ animation: `evWeekIn 450ms ease-out ${i * 80}ms both` }}>
+                      <div key={i} className="flex flex-col items-center gap-2" style={{ animation: `evWeekIn 450ms var(--ease-smooth) ${i * 80}ms both` }}>
                         {/* white padding is part of the qr spec — scanners need quiet zone */}
                         <img
                           src={t.qr_data_url}
@@ -419,7 +419,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                       paddingBottom: '15px',
                       background: '#161616',
                       border: '1px solid rgba(255,255,255,0.08)',
-                      animation: `evWeekIn 500ms ease-out ${i * 75}ms both`,
+                      animation: `evWeekIn 500ms var(--ease-smooth) ${i * 75}ms both`,
                     }}
                   >
                     <div className="flex items-center gap-2 mb-3">
@@ -458,7 +458,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
               style={{
                 opacity: gridPhase === 'exiting' ? 0 : 1,
                 transform: gridPhase === 'exiting' ? 'translateY(-8px)' : 'none',
-                transition: gridPhase === 'exiting' ? 'opacity 175ms ease-out, transform 175ms ease-out' : 'none',
+                transition: gridPhase === 'exiting' ? 'opacity 175ms var(--ease-smooth), transform 175ms var(--ease-smooth)' : 'none',
               }}
             >
               {paginatedEvents.map((event, index) => {
@@ -482,7 +482,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                       style={{
                         background: '#181818',
                         border: '1px solid rgba(255,255,255,0.08)',
-                        animation: `evCardIn 550ms ease-out ${index * 50}ms both`,
+                        animation: `evCardIn 550ms var(--ease-smooth) ${index * 50}ms both`,
                       }}
                     >
                       {/* photo — 4:5 portrait */}
@@ -559,10 +559,10 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                 <button
                   onClick={() => handlePageChange(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border text-[13px] font-semibold transition-colors${
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border text-[13px] font-semibold transition-all${
                     currentPage === 1
                       ? ' opacity-40 cursor-not-allowed border-white/16 bg-transparent text-[#8c8c8c]'
-                      : ' border-white/16 bg-transparent text-[#8c8c8c] hover:border-white/30 hover:text-[#cfcfcf]'
+                      : ' border-white/16 bg-transparent text-[#8c8c8c] hover:border-white/30 hover:text-[#cfcfcf] active:scale-95'
                   }`}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -576,7 +576,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                     <button
                       key={page}
                       onClick={() => handlePageChange(page as number)}
-                      className={`px-4 py-2 rounded-[10px] border text-[13px] font-semibold transition-colors${
+                      className={`px-4 py-2 rounded-[10px] border text-[13px] font-semibold transition-all active:scale-95${
                         page === currentPage
                           ? ' text-white'
                           : ' border-white/16 bg-transparent text-[#8c8c8c] hover:border-white/30 hover:text-[#cfcfcf]'
@@ -594,10 +594,10 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                 <button
                   onClick={() => handlePageChange(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border text-[13px] font-semibold transition-colors${
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] border text-[13px] font-semibold transition-all${
                     currentPage === totalPages
                       ? ' opacity-40 cursor-not-allowed border-white/16 bg-transparent text-[#8c8c8c]'
-                      : ' border-white/16 bg-transparent text-[#8c8c8c] hover:border-white/30 hover:text-[#cfcfcf]'
+                      : ' border-white/16 bg-transparent text-[#8c8c8c] hover:border-white/30 hover:text-[#cfcfcf] active:scale-95'
                   }`}
                 >
                   Next

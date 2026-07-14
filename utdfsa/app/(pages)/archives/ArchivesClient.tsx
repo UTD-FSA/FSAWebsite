@@ -53,9 +53,9 @@ export default function ArchivesClient({ galleries }: Props) {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
     const sequence = [
-      { ref: titleRef,    anim: 'archFadeUp24 700ms ease-out both' },
-      { ref: subtitleRef, anim: 'archFadeUp16 600ms ease-out 150ms both' },
-      { ref: filtersRef,  anim: 'archFadeUp12 500ms ease-out 250ms both' },
+      { ref: titleRef,    anim: 'archFadeUp24 700ms var(--ease-smooth) both' },
+      { ref: subtitleRef, anim: 'archFadeUp16 600ms var(--ease-smooth) 150ms both' },
+      { ref: filtersRef,  anim: 'archFadeUp12 500ms var(--ease-smooth) 250ms both' },
     ]
 
     if (reduced) {
@@ -72,7 +72,8 @@ export default function ArchivesClient({ galleries }: Props) {
     })
   }, [])
 
-  // ── gallery card entrance (mount only, scroll-triggered) ─
+  // ── gallery card entrance (scroll-triggered) — re-runs on filter change so
+  // switching filters replays the same staggered reveal as the first load ──
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduced) return
@@ -91,7 +92,7 @@ export default function ArchivesClient({ galleries }: Props) {
       visible.forEach((entry, i) => {
         const card = entry.target as HTMLElement
         const delay = Math.min(i * 75, 225)
-        card.style.transition = `opacity 600ms ease-out ${delay}ms, transform 600ms ease-out ${delay}ms`
+        card.style.transition = `opacity 600ms var(--ease-smooth) ${delay}ms, transform 600ms var(--ease-smooth) ${delay}ms`
         card.style.opacity = '1'
         card.style.transform = 'translateY(0) scale(1)'
         observer.unobserve(card)
@@ -102,7 +103,7 @@ export default function ArchivesClient({ galleries }: Props) {
 
     cards.forEach(card => observer.observe(card))
     return () => observer.disconnect()
-  }, [])
+  }, [displayFilter])
 
   // ── filter change: crossfade grid, then swap cards ────────
   function handleFilterChange(option: string) {
@@ -147,7 +148,7 @@ export default function ArchivesClient({ galleries }: Props) {
             <button
               key={option}
               onClick={() => handleFilterChange(option)}
-              className="filter-pill px-4.5 py-2.5 rounded-xl text-[13px] font-bold tracking-[0.02em] transition-all duration-150 cursor-pointer"
+              className="filter-pill px-4.5 py-2.5 rounded-xl text-[13px] font-bold tracking-[0.02em] transition-all duration-150 cursor-pointer active:scale-95"
               style={{
                 background: active ? '#75ba78' : 'rgba(255,255,255,0.03)',
                 color: active ? '#0e0e0e' : '#b8b8b8',
@@ -168,7 +169,7 @@ export default function ArchivesClient({ galleries }: Props) {
         {filtered.length === 0 ? (
           <div
             className="border border-dashed border-white/10 rounded-2xl min-h-[300px] flex flex-col items-center justify-center gap-4 text-center px-10 py-10"
-            style={{ animation: 'archFadeUp24 500ms ease-out both' }}
+            style={{ animation: 'archFadeUp24 500ms var(--ease-smooth) both' }}
           >
             <div className="w-[58px] h-[58px] rounded-2xl bg-white/[0.04] border border-white/[0.09] flex items-center justify-center">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.32)" strokeWidth="1.5">
@@ -186,7 +187,7 @@ export default function ArchivesClient({ galleries }: Props) {
           <div
             ref={gridRef}
             className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2"
-            style={{ opacity: gridVisible ? 1 : 0, transition: 'opacity 200ms ease-out' }}
+            style={{ opacity: gridVisible ? 1 : 0, transition: 'opacity 200ms var(--ease-smooth)' }}
           >
             {filtered.map((gallery) => {
               const termLabel = [gallery.semester, gallery.year].filter(Boolean).join(' ')

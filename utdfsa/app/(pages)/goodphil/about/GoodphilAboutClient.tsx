@@ -13,10 +13,10 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import Image from 'next/image'
 import SmoothImage from '@/components/SmoothImage'
-import { BlurInImg } from '@/components/SmoothImage'
 import Link from 'next/link'
 import AnimatedLetters from '@/components/AnimatedLetters'
 import GoodphilNavRail from '@/components/GoodphilNavRail'
+import HeroWatermark from '@/components/HeroWatermark'
 import { useRevealOnScroll } from '@/lib/useRevealOnScroll'
 
 // host-school logo grid data — colors match the hover hex already used on the
@@ -76,8 +76,11 @@ export default function GoodphilAboutPage() {
 
       {/* ── SECTION 1 — HERO ──────────────────────────────────────── */}
 
-      {/* Mobile hero — simplified single-image layout for small screens */}
-      <div className="block lg:hidden">
+      {/* Mobile/compact hero — simplified single-image layout. Covers everything
+          below xl (not just lg) since the watermark hero below is only pixel-
+          accurate at >=1280px per the design handoff; below that this one is
+          the more correct layout, not a compromise. */}
+      <div className="block xl:hidden">
         <div className="relative w-full h-[50vh] overflow-hidden bg-[#1f1f1f]">
           <SmoothImage
             src="/hero-2-gp.jpg"
@@ -92,7 +95,7 @@ export default function GoodphilAboutPage() {
           <AnimatedLetters as="h1" text="GOODPHIL" className="absolute bottom-4 left-4 font-display font-black text-5xl text-white leading-none z-10" />
         </div>
         <div className="bg-brand-bg h-[56px] flex items-center overflow-hidden">
-          <div className="flex gap-8 whitespace-nowrap w-max animate-marquee">
+          <div className="flex gap-8 whitespace-nowrap w-max animate-marquee" style={{ animationDuration: '78s' }}>
             {Array.from({ length: 8 }).map((_, i) => (
               <span key={i} className="font-display font-bold text-[18px] text-white shrink-0">
                 THE INTERCOLLEGIATE COMPETITION OF THE YEAR.
@@ -102,37 +105,34 @@ export default function GoodphilAboutPage() {
         </div>
       </div>
 
-      {/* Desktop hero — hidden below lg */}
-      <section className="hidden lg:block relative w-full overflow-hidden bg-[#1f1f1f] h-[900px]">
+      {/* Desktop hero — hidden below xl. Watermark hero design
+          (design_handoff_hero_sections/goodphil-hero.html): drifting "GOODPHIL"
+          watermark + vignette replaces the old gp-back.png pattern layer; photos
+          and title stay the same live assets, repositioned to the new spec.
+          Fixed pixel values throughout (no clamp/vw/vh) — safe because this only
+          ever renders at >=1280px (xl:), matching the handoff's own fidelity
+          boundary and its 660px-tall reference container (adapted from its 100svh
+          model since this page's navbar sits in normal flow above the hero, not
+          overlaid). Marquee ticker below is real content (not part of the
+          handoff) — kept as-is; the title block's fixed 96px bottom offset
+          already clears its 68px height with a 28px margin. */}
+      <section className="hidden xl:block relative w-full overflow-hidden bg-[#0b0b0b] h-[660px]">
 
-        {/* gp-back.png — background layer, left 62%, no padding */}
-        <div className="absolute left-0 top-0 h-full z-0" style={{ width: '62%' }}>
-          <BlurInImg
-            src="/gp-back.png"
-            alt=""
-            aria-hidden="true"
-            style={{
-              width: '120%',
-              height: '100%',
-              objectFit: 'cover',
-              objectPosition: 'left center',
-              pointerEvents: 'none',
-              userSelect: 'none',
-            }}
-          />
-        </div>
+        <HeroWatermark word="GOODPHIL" vignetteOrigin="58% 46%" topBleedRow />
 
-        {/* stacked photos — right side, foreground, overlaps bg pattern on the left */}
+        {/* stacked hero-1-gp.jpg / hero-2-gp.jpg — right-anchored photo pair */}
         <div
-          className="absolute z-10 flex flex-col gap-[30px]"
-          style={{
-            top: '60px',
-            bottom: '128px',
-            right: '50px',
-            width: '47%',
-          }}
+          className="absolute z-10 flex flex-col"
+          style={{ right: '76px', top: '78px', width: '600px', gap: '16px' }}
         >
-          <div className="flex-1 relative overflow-hidden rounded-sm">
+          <div
+            className="relative overflow-hidden rounded-[6px]"
+            style={{
+              height: '212px',
+              boxShadow: '0 26px 70px rgba(0,0,0,0.6)',
+              animation: 'fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 720ms both',
+            }}
+          >
             <SmoothImage
               src="/hero-1-gp.jpg"
               alt="Goodphil"
@@ -140,10 +140,17 @@ export default function GoodphilAboutPage() {
               className="object-cover object-center"
               preload
               quality={85}
-              sizes="55vw"
+              sizes="600px"
             />
           </div>
-          <div className="flex-1 relative overflow-hidden rounded-sm">
+          <div
+            className="relative overflow-hidden rounded-[6px]"
+            style={{
+              height: '212px',
+              boxShadow: '0 26px 70px rgba(0,0,0,0.6)',
+              animation: 'fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 880ms both',
+            }}
+          >
             <SmoothImage
               src="/hero-2-gp.jpg"
               alt=""
@@ -151,26 +158,34 @@ export default function GoodphilAboutPage() {
               className="object-cover object-center"
               preload
               quality={85}
-              sizes="55vw"
+              sizes="600px"
             />
           </div>
         </div>
 
-        {/* GOODPHIL title — overlaps bottom photo and bg pattern */}
-        <AnimatedLetters
-          as="h1"
-          text="GOODPHIL"
-          className="absolute font-display font-black text-white leading-none z-20"
-          style={{
-            bottom: '90px',
-            right: '210px',
-            fontSize: 'clamp(60px, 8vw, 120px)',
-          }}
-        />
+        {/* GOODPHIL title + tagline — left-aligned; 96px bottom offset clears
+            the 68px marquee bar below with a 28px margin */}
+        <div
+          className="absolute z-20 flex flex-col items-start"
+          style={{ left: '76px', bottom: '96px', gap: '14px' }}
+        >
+          <AnimatedLetters
+            as="h1"
+            text="GOODPHIL"
+            className="font-display font-black text-white leading-none"
+            style={{ fontSize: '104px', letterSpacing: '-0.02em', lineHeight: 0.98 }}
+          />
+          <span
+            className="font-sans font-semibold uppercase"
+            style={{ fontSize: '16px', letterSpacing: '0.14em', color: '#9a9a9a' }}
+          >
+            The biggest Filipino intercollegiate event in the South
+          </span>
+        </div>
 
         {/* Autoscroll marquee bar — pinned to the very bottom of the hero */}
         <div className="absolute bottom-0 left-0 right-0 bg-brand-bg h-[68px] z-30 flex items-center overflow-hidden">
-          <div className="flex gap-8 whitespace-nowrap w-max animate-marquee">
+          <div className="flex gap-8 whitespace-nowrap w-max animate-marquee" style={{ animationDuration: '78s' }}>
             {Array.from({ length: 8 }).map((_, i) => (
               <span
                 key={i}
@@ -199,6 +214,7 @@ export default function GoodphilAboutPage() {
               className="object-cover object-center"
               sizes="100vw"
               quality={85}
+              preload
             />
             <div className="absolute inset-0 bg-black/40" />
           </div>

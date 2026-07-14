@@ -26,24 +26,25 @@ type PosConfig = {
 }
 
 // Five fan positions: index 0 = far-left (-2), index 2 = active center, index 4 = far-right (+2)
-// flanking idle opacity sits low (0.4–0.5) so hover-to-0.7 reads as an affordance
+// flanking idle opacity sits closer to full (0.65–0.78) so the focused card reads
+// via scale/shadow rather than a hard opacity cliff; hover-to-0.9 still brightens further
 const DESKTOP: PosConfig[] = [
-  { scale: 0.70, translateX: '-90%', zIndex: 5,  opacity: 0.40 },
-  { scale: 0.85, translateX: '-55%', zIndex: 10, opacity: 0.50 },
+  { scale: 0.70, translateX: '-90%', zIndex: 5,  opacity: 0.65 },
+  { scale: 0.85, translateX: '-55%', zIndex: 10, opacity: 0.78 },
   { scale: 1.03, translateX: '0%',   zIndex: 20, opacity: 1.00 },
-  { scale: 0.85, translateX: '55%',  zIndex: 10, opacity: 0.50 },
-  { scale: 0.70, translateX: '90%',  zIndex: 5,  opacity: 0.40 },
+  { scale: 0.85, translateX: '55%',  zIndex: 10, opacity: 0.78 },
+  { scale: 0.70, translateX: '90%',  zIndex: 5,  opacity: 0.65 },
 ]
 
 const MOBILE: PosConfig[] = [
-  { scale: 0.65, translateX: '-85%', zIndex: 5,  opacity: 0.40 },
-  { scale: 0.82, translateX: '-50%', zIndex: 10, opacity: 0.50 },
+  { scale: 0.65, translateX: '-85%', zIndex: 5,  opacity: 0.65 },
+  { scale: 0.82, translateX: '-50%', zIndex: 10, opacity: 0.78 },
   { scale: 1.03, translateX: '0%',   zIndex: 20, opacity: 1.00 },
-  { scale: 0.82, translateX: '50%',  zIndex: 10, opacity: 0.50 },
-  { scale: 0.65, translateX: '85%',  zIndex: 5,  opacity: 0.40 },
+  { scale: 0.82, translateX: '50%',  zIndex: 10, opacity: 0.78 },
+  { scale: 0.65, translateX: '85%',  zIndex: 5,  opacity: 0.65 },
 ]
 
-const HOVER_OPACITY = 0.70
+const HOVER_OPACITY = 0.90
 
 export default function PhotoCarousel() {
   // index of the currently centered slide (0–4)

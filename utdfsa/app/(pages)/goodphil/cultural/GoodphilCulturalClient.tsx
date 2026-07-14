@@ -9,7 +9,7 @@
 
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import SmoothImage from '@/components/SmoothImage'
 import AnimatedTitle from '@/components/AnimatedTitle'
 import BaybayinRule from '@/components/BaybayinRule'
@@ -27,13 +27,12 @@ export default function CulturalPage() {
   const headingRef = useRef<HTMLDivElement>(null)
   const headingVisible = useRevealOnScroll(headingRef, 0.3)
 
-  // title (h2) + Baybayin fire on page load instead of on scroll — only the
-  // paragraph/photos/CTA below stay scroll-triggered via headingVisible
-  const [titleVisible, setTitleVisible] = useState(false)
-  useEffect(() => {
-    const raf = requestAnimationFrame(() => setTitleVisible(true))
-    return () => cancelAnimationFrame(raf)
-  }, [])
+  // title (h2) + Baybayin + paragraph now share one scroll trigger anchored on
+  // the centered header block itself — was gated on page-mount before, which
+  // meant the cascade played (and finished) while Section 2 was still off
+  // desktop's fold, out of sync with the photo collage's own scroll trigger
+  const headerRef = useRef<HTMLDivElement>(null)
+  const titleVisible = useRevealOnScroll(headerRef, 0.3)
 
   // past-performances video vault — each card animates independently as it individually
   // scrolls into view (mirrors the officer board card pattern in AboutClient.tsx),
@@ -63,8 +62,9 @@ export default function CulturalPage() {
       {/* ── SECTION 1 — HERO ──────────────────────────────────────── */}
       <section className="relative w-full h-[40vh] md:h-[600px] overflow-hidden">
 
-        {/* middle layer: cultural-hero.jpg — full-bleed at all sizes */}
-        <div className="absolute inset-0 z-10">
+        {/* middle layer: cultural-hero.jpg — full-bleed at all sizes, settles
+            in from a slight zoom (1.08 → 1.0) as the title lifts on top of it */}
+        <div className="absolute inset-0 z-10" style={{ animation: 'heroPhotoSettle 1200ms cubic-bezier(0.16, 1, 0.3, 1) both' }}>
           <SmoothImage
             src="/cultural-hero.jpg"
             alt="UTD Pamana cultural dance team"
@@ -79,17 +79,15 @@ export default function CulturalPage() {
         {/* dark overlay — mobile only, keeps title readable */}
         <div className="absolute inset-0 bg-black/40 md:hidden z-[2]" />
 
-        {/* Top layer: CULTURAL title + Baybayin, centered over hero photo */}
+        {/* Top layer: CULTURAL title + Baybayin, centered over hero photo — rises
+            up as it fades in, on an ease-out-expo curve for a snappier settle */}
         <AnimatedTitle
           as="div"
-          animation="fadeIn"
-          className="absolute z-30 w-full flex flex-col items-center select-none"
-          style={{
-            left: '50%',
-            top: '50%',
-            transform: 'translate(-50%, -50%)',
-            gap: 'clamp(12px, 1.5vw, 24px)',
-          }}
+          animation="fadeUp"
+          ease="cubic-bezier(0.16, 1, 0.3, 1)"
+          delay={150}
+          className="absolute inset-0 z-30 flex flex-col items-center justify-center select-none"
+          style={{ gap: 'clamp(12px, 1.5vw, 24px)' }}
         >
           <h1
             className="text-center font-display font-black text-white leading-none"
@@ -107,8 +105,9 @@ export default function CulturalPage() {
       {/* ── SECTION 2 — WHAT IS UTD PAMANA? ──────────────────────── */}
       <section className="bg-section-bg py-16 px-6 md:px-8">
 
-        {/* heading + Baybayin stay centered, matching the Sports/Spirit/Modern convention */}
-        <div className="max-w-3xl mx-auto text-center mb-10 md:mb-12">
+        {/* heading + Baybayin stay centered, matching the Sports/Spirit/Modern convention;
+            ref anchors the shared scroll trigger for this whole header→paragraph cascade */}
+        <div ref={headerRef} className="max-w-3xl mx-auto text-center mb-10 md:mb-12">
           <h2
             className="font-display font-black text-white mb-4"
             style={{
@@ -121,9 +120,7 @@ export default function CulturalPage() {
           >
             WHAT IS UTD PAMANA?
           </h2>
-          <div style={{ opacity: titleVisible ? 1 : 0, transition: 'opacity 900ms var(--ease-smooth)', transitionDelay: titleVisible ? '160ms' : '0ms' }}>
-            <BaybayinRule word="ᜃᜓᜎ᜔ᜆᜓᜍ" size="clamp(16px,2vw,27px)" />
-          </div>
+          <BaybayinRule word="ᜃᜓᜎ᜔ᜆᜓᜍ" size="clamp(16px,2vw,27px)" reveal={titleVisible} delayMs={140} />
         </div>
 
         {/* left-justified paragraph + mini Instagram CTA — replaces the old

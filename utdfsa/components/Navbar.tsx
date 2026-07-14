@@ -191,7 +191,7 @@ export default function Navbar({ initialMember }: NavbarProps) {
             alt="UTD FSA Logo"
             width={43}
             height={43}
-            priority
+            preload
             className="rounded-full"
             style={{ width: '43px', height: '43px' }}
           />

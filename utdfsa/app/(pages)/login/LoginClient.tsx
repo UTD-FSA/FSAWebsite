@@ -65,7 +65,7 @@ export default function LoginPage() {
               width={360}
               height={360}
               className="w-full h-full object-contain"
-              priority
+              preload
             />
           </AnimatedTitle>
           <AnimatedTitle

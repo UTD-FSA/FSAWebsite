@@ -49,15 +49,8 @@ export default function MissionStatementSection() {
           OUR MISSION
         </h2>
 
-        <div
-          ref={dividerRef}
-          style={{
-            opacity: dividerVisible ? 1 : 0,
-            transform: dividerVisible ? 'translateY(0)' : 'translateY(12px)',
-            transition: 'opacity 900ms var(--ease-smooth), transform 900ms var(--ease-smooth)',
-          }}
-        >
-          <BaybayinRule word="ᜋᜒᜐ᜔ᜌᜓᜈ᜔" size="clamp(16px,2.6vw,40px)" />
+        <div ref={dividerRef}>
+          <BaybayinRule word="ᜋᜒᜐ᜔ᜌᜓᜈ᜔" size="clamp(16px,2.6vw,40px)" reveal={dividerVisible} delayMs={140} draw />
         </div>
 
         <div ref={copyRef} className="font-sans text-[16px] sm:text-[18px] xl:text-[24px] text-white/60 leading-relaxed max-w-[1100px] mx-auto space-y-6 mt-10 lg:mt-16">

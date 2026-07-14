@@ -202,7 +202,7 @@ function FilterBar({ active, onChange, counts }: {
         <button
           key={f}
           onClick={() => onChange(f)}
-          className={`text-[13px] font-semibold px-3.5 py-1.5 rounded-[10px] border transition-colors ${
+          className={`text-[13px] font-semibold px-3.5 py-1.5 rounded-[10px] border transition-all active:scale-95 ${
             active === f
               ? 'bg-[#9747FF] text-white border-transparent'
               : 'bg-transparent text-[#8c8c8c] border-white/14 hover:border-white/28 hover:text-[#cfcfcf]'
@@ -629,7 +629,7 @@ function ShortcutsDialog({ onClose }: { onClose: () => void }) {
     ['Esc', 'Close modal'],
   ]
   return (
-    <Modal onClose={onClose} size="sm">
+    <Modal onClose={onClose} size="sm" scrollable={false}>
       <div className="bg-[#141414] border border-white/10 rounded-[18px] w-full p-6 shadow-modal" style={{ animation: 'modalIn 0.18s ease-out' }}>
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-[16px] font-bold text-white">Keyboard Shortcuts</h2>
@@ -893,7 +893,7 @@ export default function ApplicationsClient({
           <button
             onClick={() => setShowShortcuts(true)}
             title="Keyboard shortcuts (?)"
-            className="mt-1 shrink-0 text-[12px] font-mono font-semibold text-[#7e7e7e] hover:text-[#cfcfcf] border border-white/10 hover:border-white/22 rounded-[6px] px-2 py-0.5 transition-colors"
+            className="mt-1 shrink-0 text-[12px] font-mono font-semibold text-[#7e7e7e] hover:text-[#cfcfcf] border border-white/10 hover:border-white/22 rounded-[6px] px-2 py-0.5 transition-all active:scale-95"
           >
             ?
           </button>
@@ -954,7 +954,7 @@ export default function ApplicationsClient({
               </div>
               <button
                 onClick={() => exportAdingCSV(filteredAding)}
-                className="order-3 flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 sm:p-2 rounded-[10px] border border-white/16 bg-transparent text-[#8c8c8c] hover:border-white/30 hover:text-[#cfcfcf] transition-colors sm:shrink-0"
+                className="order-3 flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 sm:p-2 rounded-[10px] border border-white/16 bg-transparent text-[#8c8c8c] hover:border-white/30 hover:text-[#cfcfcf] transition-all active:scale-95 sm:shrink-0"
                 title="Export CSV"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
@@ -1035,7 +1035,7 @@ export default function ApplicationsClient({
               </div>
               <button
                 onClick={() => exportKuyateCSV(filteredKuyate)}
-                className="order-3 flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 sm:p-2 rounded-[10px] border border-white/16 bg-transparent text-[#8c8c8c] hover:border-white/30 hover:text-[#cfcfcf] transition-colors sm:shrink-0"
+                className="order-3 flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 sm:p-2 rounded-[10px] border border-white/16 bg-transparent text-[#8c8c8c] hover:border-white/30 hover:text-[#cfcfcf] transition-all active:scale-95 sm:shrink-0"
                 title="Export CSV"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>

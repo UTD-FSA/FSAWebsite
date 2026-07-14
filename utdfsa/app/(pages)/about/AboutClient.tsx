@@ -219,6 +219,13 @@ export default function AboutClient() {
     setOpenYear(prev => prev === year ? '' : year)
   }
 
+  // hero Baybayin draw-in fires on mount (matches the Goodphil subpages' cinematic hero)
+  const [heroIn, setHeroIn] = useState(false)
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => setHeroIn(true))
+    return () => cancelAnimationFrame(raf)
+  }, [])
+
   // ── officer board scroll-triggered animation ──────────────
   const boardTitleRef = useRef<HTMLHeadingElement>(null)
   const boardGridRef = useRef<HTMLDivElement>(null)
@@ -251,11 +258,13 @@ export default function AboutClient() {
     const grid = boardGridRef.current
     if (!title || !grid) return
 
-    const TIMING = '0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-    // hero title (0ms) + description delay (150ms) + duration (900ms) = 1050ms
-    const HERO_DONE_MS = 1050
+    // scaled to 35% of the original timing (0.7s/1050ms/150ms) — cuts title +
+    // first-row render time ~65% while keeping the same relative choreography
+    const TIMING = '0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+    // hero title (0ms) + description delay (150ms) + duration (900ms) = 1050ms, scaled
+    const HERO_DONE_MS = 368
     // title leads the first row by this many ms (appears "just before" cards)
-    const TITLE_LEAD_MS = 150
+    const TITLE_LEAD_MS = 53
     const mountTime = Date.now()
 
     const cards = Array.from(grid.querySelectorAll<HTMLElement>('[data-officer-card]'))
@@ -312,8 +321,10 @@ export default function AboutClient() {
       <section className="relative w-full overflow-hidden"
         style={{ minHeight: 'clamp(320px, 50vh, 620px)' }}>
 
-        {/* background photo — object-center keeps composition */}
-        <div className="absolute inset-0 z-0">
+        {/* background photo — object-center keeps composition; settles in from a
+            slight zoom (1.08 → 1.0) as the title lifts on top of it, matching the
+            cinematic hero on the Goodphil subpages */}
+        <div className="absolute inset-0 z-0" style={{ animation: 'heroPhotoSettle 1200ms cubic-bezier(0.16, 1, 0.3, 1) both' }}>
           <SmoothImage
             src="/about-us-hero.jpg"
             alt="UTD FSA"
@@ -336,14 +347,15 @@ export default function AboutClient() {
             <AnimatedTitle
               as="h1"
               animation="fadeUp"
+              ease="cubic-bezier(0.16, 1, 0.3, 1)"
               className="font-display font-black text-white mb-3"
               style={{ fontSize: 'clamp(36px, 5.5vw, 80px)', letterSpacing: '-0.02em' }}
             >
               ABOUT US
             </AnimatedTitle>
-            <AnimatedTitle as="div" animation="fadeUp" delay={80} className="mb-8">
-              <BaybayinRule word="ᜆᜓᜅ᜔ᜃᜓᜎ᜔" size="clamp(14px,2.2vw,32px)" onPhoto />
-            </AnimatedTitle>
+            <div className="mb-8">
+              <BaybayinRule word="ᜆᜓᜅ᜔ᜃᜓᜎ᜔" size="clamp(14px,2.2vw,32px)" onPhoto reveal={heroIn} delayMs={80} draw />
+            </div>
             <AnimatedTitle
               as="p"
               animation="fadeUp"

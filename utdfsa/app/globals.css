@@ -205,9 +205,31 @@ button:not(:disabled) {
   from { opacity: 0; transform: translateX(60px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+/* hero watermark — one-shot ease-out entrance layered on top of the infinite
+   drift below; their velocities add, so the row eases into cruising speed with
+   no stop and no reverse (see components/HeroWatermark.tsx) */
+@keyframes rowInL {
+  from { opacity: 0; transform: translateX(-70%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes rowInR {
+  from { opacity: 0; transform: translateX(70%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+/* rightward drift — content duplicated ×2, so -50%→0 is a seamless loop
+   (leftward drift reuses the existing `marquee` keyframe above) */
+@keyframes marqueeR {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
 @keyframes videoCardIn {
   from { opacity: 0; transform: translateY(15px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+/* goodphil subpage heroes — photo settles from a slight zoom while the title lifts */
+@keyframes heroPhotoSettle {
+  from { transform: scale(1.08); }
+  to   { transform: scale(1); }
 }
 
 /* spirit page — soft green glow pulse on "Comet pride shines the brightest", once on mount */
@@ -283,9 +305,11 @@ h1, h2, h3, h4 {
 
 /* FIX 3 — nav buttons circular, right-grouped */
 .fc-dark .fc-button,
-.fc-dark .fc-button-primary { background: transparent !important; border: 1px solid rgba(255,255,255,0.3) !important; color: #fff !important; box-shadow: none !important; border-radius: 50% !important; width: 32px !important; height: 32px !important; padding: 0 !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; font-size: 0.75rem !important; }
+.fc-dark .fc-button-primary { background: transparent !important; border: 1px solid rgba(255,255,255,0.3) !important; color: #fff !important; box-shadow: none !important; border-radius: 50% !important; width: 32px !important; height: 32px !important; padding: 0 !important; display: inline-flex !important; align-items: center !important; justify-content: center !important; font-size: 0.75rem !important; transition: background 150ms var(--ease-smooth), border-color 150ms var(--ease-smooth), transform 150ms var(--ease-smooth) !important; }
 .fc-dark .fc-button:hover,
 .fc-dark .fc-button-primary:hover { background: rgba(255,255,255,0.1) !important; border-color: rgba(255,255,255,0.6) !important; }
+.fc-dark .fc-button:active,
+.fc-dark .fc-button-primary:active { transform: scale(0.9) !important; }
 .fc-dark .fc-button:focus,
 .fc-dark .fc-button-primary:focus { outline: none !important; box-shadow: none !important; }
 .fc-dark .fc-button-group { gap: 4px; display: flex !important; }
@@ -379,6 +403,13 @@ input[type="datetime-local"]::-webkit-date-and-time-value {
 }
 .nudge-down {
   animation: nudgeDown 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+
+/* baybayin "ink wipe" — one-shot highlight band sweeping the rule lines as the
+   script unveils (see components/BaybayinRule.tsx draw mode) */
+@keyframes baybayinGlint {
+  from { background-position: 120% 0; }
+  to   { background-position: -20% 0; }
 }
 
 /* scrollbar for this-week strip */

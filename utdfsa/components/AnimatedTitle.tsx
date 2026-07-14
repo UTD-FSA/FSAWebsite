@@ -17,12 +17,14 @@ const KEYFRAME: Record<AnimationType, string> = {
   slideFromRight:  'slideFromRight',
 }
 
-const TIMING = '0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+const DEFAULT_EASE = 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
 
 type Props = {
   as?: 'h1' | 'h2' | 'p' | 'div' | 'span'
   animation: AnimationType
   delay?: number
+  /** overrides the default ease-out-quart-ish curve, e.g. ease-out-expo for a snappier feel */
+  ease?: string
   className?: string
   style?: React.CSSProperties
   children: React.ReactNode
@@ -32,6 +34,7 @@ export default function AnimatedTitle({
   as: Tag = 'div',
   animation,
   delay = 0,
+  ease = DEFAULT_EASE,
   className,
   style,
   children,
@@ -46,7 +49,7 @@ export default function AnimatedTitle({
       if (!el) return
       el.style.animation = 'none'
       void el.offsetHeight
-      el.style.animation = `${name} ${TIMING} ${delay}ms both`
+      el.style.animation = `${name} 0.9s ${ease} ${delay}ms both`
     }
 
     const rafId = requestAnimationFrame(play)
@@ -56,7 +59,7 @@ export default function AnimatedTitle({
       cancelAnimationFrame(rafId)
       window.removeEventListener('pageshow', onPageShow)
     }
-  }, [animation, delay])
+  }, [animation, delay, ease])
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const El = Tag as any

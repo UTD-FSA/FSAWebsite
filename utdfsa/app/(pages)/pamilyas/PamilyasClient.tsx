@@ -12,10 +12,10 @@
 import { useState, useEffect, useRef, type PointerEvent, type MouseEvent } from 'react'
 import Modal from '@/components/Modal'
 import SmoothImage from '@/components/SmoothImage'
-import { BlurInImg } from '@/components/SmoothImage'
 import Link from 'next/link'
 import AnimatedLetters from '@/components/AnimatedLetters'
 import BaybayinRule from '@/components/BaybayinRule'
+import HeroWatermark from '@/components/HeroWatermark'
 import QuickNavRail from '@/components/QuickNavRail'
 import { useRevealOnScroll, useStaggeredReveal } from '@/lib/useRevealOnScroll'
 
@@ -52,24 +52,25 @@ type PosConfig = {
   opacity: number
 }
 
-// flanking idle opacity sits low (0.4–0.5) so hover-to-0.7 reads as an affordance
+// flanking idle opacity sits closer to full (0.65–0.78) so the focused card reads
+// via scale/shadow rather than a hard opacity cliff; hover-to-0.9 still brightens further
 const DESKTOP: PosConfig[] = [
-  { scale: 0.70, translateX: '-90%', zIndex: 30, opacity: 0.40 },
-  { scale: 0.85, translateX: '-55%', zIndex: 40, opacity: 0.50 },
+  { scale: 0.70, translateX: '-90%', zIndex: 30, opacity: 0.65 },
+  { scale: 0.85, translateX: '-55%', zIndex: 40, opacity: 0.78 },
   { scale: 1.03, translateX: '0%',   zIndex: 50, opacity: 1.00 },
-  { scale: 0.85, translateX: '55%',  zIndex: 40, opacity: 0.50 },
-  { scale: 0.70, translateX: '90%',  zIndex: 30, opacity: 0.40 },
+  { scale: 0.85, translateX: '55%',  zIndex: 40, opacity: 0.78 },
+  { scale: 0.70, translateX: '90%',  zIndex: 30, opacity: 0.65 },
 ]
 
 const MOBILE_POS: PosConfig[] = [
-  { scale: 0.65, translateX: '-85%', zIndex: 30, opacity: 0.40 },
-  { scale: 0.82, translateX: '-50%', zIndex: 40, opacity: 0.50 },
+  { scale: 0.65, translateX: '-85%', zIndex: 30, opacity: 0.65 },
+  { scale: 0.82, translateX: '-50%', zIndex: 40, opacity: 0.78 },
   { scale: 1.03, translateX: '0%',   zIndex: 50, opacity: 1.00 },
-  { scale: 0.82, translateX: '50%',  zIndex: 40, opacity: 0.50 },
-  { scale: 0.65, translateX: '85%',  zIndex: 30, opacity: 0.40 },
+  { scale: 0.82, translateX: '50%',  zIndex: 40, opacity: 0.78 },
+  { scale: 0.65, translateX: '85%',  zIndex: 30, opacity: 0.65 },
 ]
 
-const PAM_HOVER_OPACITY = 0.70
+const PAM_HOVER_OPACITY = 0.90
 
 function PamilyasCarousel() {
   const [current, setCurrent] = useState(0)
@@ -490,8 +491,11 @@ export default function PamilyasClient({
 
       {/* ── SECTION 1 — HERO ──────────────────────────────────────── */}
 
-      {/* Mobile hero — simplified single-image layout */}
-      <div className="block lg:hidden">
+      {/* Mobile/compact hero — simplified single-image layout. Covers everything
+          below xl (not just lg) since the watermark hero below is only pixel-
+          accurate at >=1280px per the design handoff; below that this one is
+          the more correct layout, not a compromise. */}
+      <div className="block xl:hidden">
         <div className="relative w-full h-[50vh] overflow-hidden bg-[#1f1f1f]">
           <SmoothImage
             src="/pam-hero.jpg"
@@ -512,59 +516,59 @@ export default function PamilyasClient({
         </div>
       </div>
 
-      {/* Desktop hero */}
-      <section className="hidden lg:block relative w-full overflow-hidden bg-[#1f1f1f] h-[870px]">
+      {/* Desktop hero — watermark hero design (design_handoff_hero_sections/pamilyas-hero.html):
+          drifting "PAMILYAS" watermark + vignette replaces the old pam-hero-bg.png pattern
+          layer; photo and title stay the same live assets, repositioned to the new spec.
+          Fixed pixel values throughout (no clamp/vw/vh) — safe because this only ever
+          renders at >=1280px (xl:), matching the handoff's own fidelity boundary and its
+          660px-tall reference container (adapted from its 100svh model since this page's
+          navbar sits in normal flow above the hero, not overlaid). */}
+      <section className="hidden xl:block relative w-full overflow-hidden bg-[#0b0b0b] h-[660px]">
 
-        {/* pam-hero-bg.jpg — background layer, right 57%, no padding */}
-        <div className="absolute right-0 top-0 h-full z-0" style={{ width: '57%' }}>
-          <BlurInImg
-            src="/pam-hero-bg.png"
-            alt=""
-            aria-hidden="true"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              pointerEvents: 'none',
-              userSelect: 'none',
-            }}
-          />
-        </div>
+        <HeroWatermark word="PAMILYAS" vignetteOrigin="42% 46%" edgeBleed />
 
-        {/* pam-hero.jpg — floating photo card, foreground layer */}
-        {/* left-anchored with padding, overlaps bg pattern slightly on the right */}
+        {/* pam-hero.jpg — left-anchored floating photo card */}
         <div
-          className="absolute z-10 overflow-hidden shadow-2xl"
+          className="absolute z-10 overflow-hidden rounded-[6px]"
           style={{
-            top: '40px',
-            bottom: '40px',
-            left: '40px',
-            width: '52%',
+            left: '72px',
+            top: '96px',
+            width: '640px',
+            height: '440px',
+            boxShadow: '0 30px 80px rgba(0,0,0,0.6)',
+            animation: 'fadeUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) 750ms both',
           }}
         >
           <SmoothImage
             src="/pam-hero.jpg"
             alt="Pamilyas"
             fill
-            className="object-cover object-top"
+            className="object-cover"
+            style={{ objectPosition: '43% 51%' }}
             preload
             quality={85}
-            sizes="52vw"
+            sizes="640px"
           />
         </div>
 
-        {/* PAMILYAS title */}
-        <AnimatedLetters
-          as="h1"
-          text="PAMILYAS"
-          className="absolute font-display font-black text-white leading-none text-right z-10"
-          style={{
-            bottom: '100px',
-            right: '80px',
-            fontSize: 'clamp(60px, 8.5vw, 128px)',
-            letterSpacing: '-0.03em',
-          }}
-        />
+        {/* PAMILYAS title + tagline */}
+        <div
+          className="absolute z-10 flex flex-col items-end text-right"
+          style={{ right: '76px', bottom: '76px', gap: '14px' }}
+        >
+          <AnimatedLetters
+            as="h1"
+            text="PAMILYAS"
+            className="font-display font-black text-white leading-none"
+            style={{ fontSize: '112px', letterSpacing: '-0.02em', lineHeight: 0.98 }}
+          />
+          <span
+            className="font-sans font-semibold uppercase"
+            style={{ fontSize: '16px', letterSpacing: '0.14em', color: '#9a9a9a' }}
+          >
+            Find the pam that feels like home
+          </span>
+        </div>
 
       </section>
 
@@ -575,8 +579,8 @@ export default function PamilyasClient({
           <h2 className="font-display font-black text-[clamp(18px,4.2vw,64px)] text-white text-center whitespace-nowrap mb-4">
             WHAT IS A PAMILYA?
           </h2>
-          <div ref={baybayinRef} className="mb-8" style={{ opacity: baybayinVisible ? 1 : 0, transition: 'opacity 900ms var(--ease-smooth)' }}>
-            <BaybayinRule word="ᜉᜋᜒᜎ᜔ᜌ" size="clamp(16px,2vw,27px)" />
+          <div ref={baybayinRef} className="mb-8">
+            <BaybayinRule word="ᜉᜋᜒᜎ᜔ᜌ" size="clamp(16px,2vw,27px)" reveal={baybayinVisible} delayMs={140} />
           </div>
           <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed text-center max-w-[1218px] mx-auto">
             <span className="font-bold text-accent-green">Pamilyas</span> (&lsquo;<span className="font-bold text-white">pam</span>&rsquo; for short), which is also <span className="font-bold text-accent-gold">the Tagalog word for{' '}

@@ -63,7 +63,7 @@ export default function HeroSection() {
           width={515}
           height={515}
           className="w-full h-full object-contain"
-          priority
+          preload
         />
       </div>
 
