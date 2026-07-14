@@ -222,6 +222,16 @@ export default async function ProfilePage() {
                 </div>
               </>
             )}
+            {/* only renders when shirt_size is set — do not remove this condition */}
+            {member.shirt_size && (
+              <>
+                <div className="w-full h-px bg-white/10" />
+                <div className="flex justify-between items-center">
+                  <span className="font-sans text-sm text-white/50">T-Shirt Size</span>
+                  <span className="font-sans text-sm text-white">{member.shirt_size}</span>
+                </div>
+              </>
+            )}
           </div>
         </section>
 

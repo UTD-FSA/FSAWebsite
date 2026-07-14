@@ -43,7 +43,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
   // supabase: members table — fetch all fields needed for the onboarding gate checks and client props
   const { data: member } = await admin
     .from('members')
-    .select('id, first_name, last_name, phone, year, major, membership_status, membership_expires_at, stripe_checkout_session_id, onboarding_complete, role, member_type')
+    .select('id, first_name, last_name, phone, year, major, shirt_size, membership_status, membership_expires_at, stripe_checkout_session_id, onboarding_complete, role, member_type')
     .eq('email', user.email!)
     .maybeSingle()
 
@@ -150,6 +150,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
         phone: member.phone ?? null,
         year: member.year ?? null,
         major: member.major ?? null,
+        shirt_size: member.shirt_size ?? null,
       }}
     />
   )

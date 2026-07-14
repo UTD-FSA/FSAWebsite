@@ -49,7 +49,7 @@ export default function PrivacyPage() {
               <ul className="list-disc pl-5 flex flex-col gap-2.5">
                 <li>
                   <span className="text-[#e0e0e0] font-semibold">Identity and contact:</span>{' '}
-                  your name, email address, phone number, academic year, and major — collected when you complete your member profile.
+                  your name, email address, phone number, academic year, major, and T-shirt size — collected when you complete your member profile.
                 </li>
                 <li>
                   <span className="text-[#e0e0e0] font-semibold">Ading application responses:</span>{' '}

@@ -1,5 +1,5 @@
 // ── route.ts (onboarding/update-basic-info) ───────────────────────────────────
-// saves name, phone, year, and major for a member who opted out of pamilya.
+// saves name, phone, year, major, and shirt size for a member who opted out of pamilya.
 //
 // data:  members (read via user client, write via admin client)
 // notes: stamps onboarding_complete = true alongside the profile fields —
@@ -10,7 +10,7 @@
 import { createAdminClient } from '@/utils/supabase/server'
 import { requireUser } from '@/lib/auth'
 import { isMembershipActive } from '@/lib/membership'
-import { phoneField } from '@/lib/schemas'
+import { phoneField, shirtSizeField } from '@/lib/schemas'
 import { formatPhone } from '@/lib/format'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -26,10 +26,11 @@ const schema = z.object({
   phone: phoneField.optional(),
   year: z.enum(['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate', '']).optional().nullable(),
   major: z.string().max(100).trim().optional().nullable(),
+  shirt_size: shirtSizeField,
 })
 
 // ── POST /api/onboarding/update-basic-info ────────────────────────────────────
-// saves profile fields (name, phone, year, major) for a member and stamps
+// saves profile fields (name, phone, year, major, shirt size) for a member and stamps
 // onboarding_complete = true (see the write below for why it happens here).
 // used by the /onboarding/basic-info page after a member opts out of the pamilya program.
 export async function POST(req: Request) {
@@ -78,6 +79,7 @@ export async function POST(req: Request) {
       phone: parsed.data.phone ? formatPhone(parsed.data.phone) : null,
       year: parsed.data.year || null,
       major: parsed.data.major ?? null,
+      shirt_size: parsed.data.shirt_size || null,
       onboarding_complete: true,
     })
     .eq('id', member.id)

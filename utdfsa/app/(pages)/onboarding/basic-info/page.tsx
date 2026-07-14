@@ -1,7 +1,7 @@
 // ── page.tsx (onboarding/basic-info) ─────────────────────
 // server component: auth guard + membership check before rendering the basic-info form
 //
-// data:  supabase — members table (select: first_name, last_name, phone, year, major, membership_status)
+// data:  supabase — members table (select: first_name, last_name, phone, year, major, shirt_size, membership_status)
 //        getSettings — kuyateApplicationsOpen, kuyateDeadline (for the not-interested confirmation copy)
 // notes: only active members may access this page; non-members redirect to /membership.
 //        user client is used (not admin) so rls applies to the member's own row.
@@ -28,7 +28,7 @@ export default async function BasicInfoPage() {
   // supabase: members table — fetch existing profile fields for pre-filling the form
   const { data: member } = await supabase
     .from('members')
-    .select('first_name, last_name, phone, year, major, membership_status, membership_expires_at')
+    .select('first_name, last_name, phone, year, major, shirt_size, membership_status, membership_expires_at')
     .eq('email', user.email!)
     .maybeSingle()
 
@@ -57,6 +57,7 @@ export default async function BasicInfoPage() {
         phone: member.phone ?? '',
         year: member.year ?? '',
         major: member.major ?? '',
+        shirt_size: member.shirt_size ?? '',
       }}
     />
   )

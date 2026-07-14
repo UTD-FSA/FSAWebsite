@@ -17,6 +17,7 @@ interface MemberFields {
   phone: string | null
   year: string | null
   major: string | null
+  shirt_size: string | null
   contact_email: string | null
 }
 
@@ -33,7 +34,7 @@ interface Props {
 // ============================================================
 // UI — safe to restyle everything below this line
 // available data:
-//   member — { first_name, last_name, phone, year, major, contact_email }
+//   member — { first_name, last_name, phone, year, major, shirt_size, contact_email }
 //   loginEmail — Google sign-in email (read-only, displayed but not editable)
 //   form   — live form state mirroring member fields
 //   loading (bool) — true while the save API call is in flight
@@ -60,6 +61,7 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
     phone: member.phone ?? '',
     year: member.year ?? '',
     major: member.major ?? '',
+    shirt_size: member.shirt_size ?? '',
     contact_email: member.contact_email ?? '',
   })
 
@@ -81,6 +83,7 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
     else if (form.phone.replace(/\D/g, '').length !== 10) errs.phone = 'Must be 10 digits — e.g. (214) 333-4444'
     if (!form.year) errs.year = 'Required'
     if (!form.major.trim()) errs.major = 'Required'
+    if (!form.shirt_size) errs.shirt_size = 'Required'
     if (Object.keys(errs).length > 0) { setFieldErrors(errs); return }
     setFieldErrors({})
 
@@ -230,6 +233,27 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
               required
             />
             {fieldErrors.major && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.major}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="shirt-size" className={labelCls}>T-Shirt Size <span className="text-[#e8654f]">*</span></label>
+            <div className="relative">
+              <select
+                id="shirt-size"
+                value={form.shirt_size ?? ''}
+                onChange={e => set('shirt_size', e.target.value)}
+                className={`${fieldCls} appearance-none pr-10`}
+                required
+              >
+                <option value="" style={{ color: '#ffffff', backgroundColor: '#141414' }}>Select your size</option>
+                <option value="S" style={{ color: '#ffffff', backgroundColor: '#141414' }}>S</option>
+                <option value="M" style={{ color: '#ffffff', backgroundColor: '#141414' }}>M</option>
+                <option value="L" style={{ color: '#ffffff', backgroundColor: '#141414' }}>L</option>
+                <option value="XL" style={{ color: '#ffffff', backgroundColor: '#141414' }}>XL</option>
+              </select>
+              <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#7a7a7a]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
+            {fieldErrors.shirt_size && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.shirt_size}</p>}
           </div>
 
           {/* only renders when the API returned a server error — do not remove this condition */}

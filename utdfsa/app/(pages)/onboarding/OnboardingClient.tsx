@@ -31,6 +31,7 @@ interface Props {
     phone: string | null
     year: string | null
     major: string | null
+    shirt_size: string | null
   }
 }
 
@@ -138,6 +139,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
     phone: existingProfile.phone ?? '',
     year: existingProfile.year ?? '',
     major: existingProfile.major ?? '',
+    shirt_size: existingProfile.shirt_size ?? '',
   })
 
   // DATA ─────────────────────────────────────────────────────────────────────
@@ -229,6 +231,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
     else if (profileForm.phone.replace(/\D/g, '').length !== 10) errs.phone = 'Must be 10 digits — e.g. (214) 333-4444'
     if (!profileForm.year) errs.year = 'Required'
     if (!profileForm.major.trim()) errs.major = 'Required'
+    if (!profileForm.shirt_size) errs.shirt_size = 'Required'
     return errs
   }
 
@@ -501,7 +504,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
   // ============================================================
   // UI — safe to restyle everything below this line
   // available data (step === 'profile'):
-  //   profileForm — { first_name, last_name, phone, year, major }
+  //   profileForm — { first_name, last_name, phone, year, major, shirt_size }
   //   error (string | null) — validation error from handleProfileSubmit
   // change classnames, layout, colors, and typography freely
   // do not remove or rename the variables being rendered
@@ -602,6 +605,28 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
                 required
               />
               {fieldErrors.major && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.major}</p>}
+            </div>
+
+            <div>
+              <label className={labelCls}>
+                T-Shirt Size <span className="text-[#e8654f]">*</span>
+              </label>
+              <div className="relative">
+                <select
+                  value={profileForm.shirt_size}
+                  onChange={e => setProfileForm(p => ({ ...p, shirt_size: e.target.value }))}
+                  className={`${fieldCls} appearance-none pr-10`}
+                  required
+                >
+                  <option value="" style={{ color: '#ffffff', backgroundColor: '#141414' }}>Select Your Size</option>
+                  <option value="S" style={{ color: '#ffffff', backgroundColor: '#141414' }}>S</option>
+                  <option value="M" style={{ color: '#ffffff', backgroundColor: '#141414' }}>M</option>
+                  <option value="L" style={{ color: '#ffffff', backgroundColor: '#141414' }}>L</option>
+                  <option value="XL" style={{ color: '#ffffff', backgroundColor: '#141414' }}>XL</option>
+                </select>
+                <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#7a7a7a]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+              </div>
+              {fieldErrors.shirt_size && <p role="alert" className="font-sans text-xs text-red-400 mt-1">{fieldErrors.shirt_size}</p>}
             </div>
 
             {/* only renders when the API returned a server error — do not remove this condition */}

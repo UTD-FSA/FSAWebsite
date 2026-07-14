@@ -112,6 +112,9 @@ function nullIfEmpty(v: unknown) {
   return v === '' || v === null || v === undefined ? null : v
 }
 
+// t-shirt size — empty string from an unselected dropdown is coerced to null at write time
+export const shirtSizeField = z.enum(['S', 'M', 'L', 'XL', '']).optional().nullable()
+
 // 10-digit phone — accepts formatted or raw; stores as (xxx) xxx-xxxx
 export const phoneField = z.preprocess(
   nullIfEmpty,

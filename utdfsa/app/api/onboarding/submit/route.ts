@@ -11,7 +11,7 @@
 import { createAdminClient } from '@/utils/supabase/server'
 import { requireUser } from '@/lib/auth'
 import { isMembershipActive } from '@/lib/membership'
-import { adingApplicationSchema, kuyateApplicationSchema, phoneField } from '@/lib/schemas'
+import { adingApplicationSchema, kuyateApplicationSchema, phoneField, shirtSizeField } from '@/lib/schemas'
 import { formatPhone } from '@/lib/format'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -31,6 +31,7 @@ const schema = z.object({
     phone: phoneField.optional(),
     year: z.enum(['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate', '']).optional().nullable(),
     major: z.string().max(100).trim().optional().nullable(),
+    shirt_size: shirtSizeField,
   }),
   // applicationForm is typed loosely here — we validate it separately below
   // based on which member type was selected
@@ -103,6 +104,7 @@ export async function POST(req: Request) {
       phone: profileForm.phone ? formatPhone(profileForm.phone) : null,
       year: profileForm.year || null,
       major: profileForm.major ?? null,
+      shirt_size: profileForm.shirt_size || null,
     })
     .eq('id', member.id)
 

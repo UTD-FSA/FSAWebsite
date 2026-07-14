@@ -37,6 +37,7 @@ export interface Member {
   phone: string | null
   year: string | null
   major: string | null
+  shirt_size: 'S' | 'M' | 'L' | 'XL' | null
   pamilya: string | null
   payment_provider: PaymentProvider | null
   stripe_checkout_session_id: string | null

@@ -22,6 +22,7 @@ interface BasicInfoForm {
   phone: string
   year: string
   major: string
+  shirt_size: string
 }
 
 interface Props {
@@ -67,6 +68,10 @@ export default function BasicInfoClient({ initial, firstName, deadlineText }: Pr
     }
     if (!form.major.trim()) {
       setError('Major is required')
+      return
+    }
+    if (!form.shirt_size) {
+      setError('Please select your t-shirt size')
       return
     }
     setLoading(true)
@@ -344,6 +349,26 @@ export default function BasicInfoClient({ initial, firstName, deadlineText }: Pr
                 className={fieldCls}
                 placeholder="e.g. Computer Science"
               />
+            </div>
+
+            <div>
+              <label className={labelCls}>
+                T-Shirt Size <span className="text-[#e8654f]">*</span>
+              </label>
+              <div className="relative">
+                <select
+                  value={form.shirt_size}
+                  onChange={e => set('shirt_size', e.target.value)}
+                  className={`${fieldCls} appearance-none pr-10`}
+                >
+                  <option value="" style={{ color: '#ffffff', backgroundColor: '#141414' }}>Select Your Size</option>
+                  <option value="S" style={{ color: '#ffffff', backgroundColor: '#141414' }}>S</option>
+                  <option value="M" style={{ color: '#ffffff', backgroundColor: '#141414' }}>M</option>
+                  <option value="L" style={{ color: '#ffffff', backgroundColor: '#141414' }}>L</option>
+                  <option value="XL" style={{ color: '#ffffff', backgroundColor: '#141414' }}>XL</option>
+                </select>
+                <svg className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[#7a7a7a]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+              </div>
             </div>
 
             {/* only renders when there is a validation or API error — do not remove this condition */}

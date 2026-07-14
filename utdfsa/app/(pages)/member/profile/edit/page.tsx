@@ -1,7 +1,7 @@
 // ── page.tsx ─────────────────────────────────────────────────
 // server component — fetches the current member profile and passes it to ProfileEditClient
 //
-// data:  members (first_name, last_name, phone, year, major, contact_email)
+// data:  members (first_name, last_name, phone, year, major, shirt_size, contact_email)
 // deps:  supabase (respects rls — user client)
 // notes: loginEmail is the google oauth email; it is passed read-only and cannot
 //        be changed by the user — only contact_email is editable
@@ -18,7 +18,7 @@ export default async function ProfileEditPage() {
   // members table — fetch only the editable profile fields
   const { data: member } = await supabase
     .from('members')
-    .select('first_name, last_name, phone, year, major, contact_email')
+    .select('first_name, last_name, phone, year, major, shirt_size, contact_email')
     .eq('email', user.email!)
     .maybeSingle()
 
