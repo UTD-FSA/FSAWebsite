@@ -124,7 +124,7 @@ export default function ModernPage() {
           >
             WHAT IS UTD MAHARLIKA?
           </h2>
-          <BaybayinRule word="ᜋᜓᜇᜒᜍ᜔ᜈ᜔" size="clamp(16px,2vw,27px)" reveal={titleVisible} delayMs={140} />
+          <BaybayinRule word="ᜋᜓᜇᜒᜍ᜔ᜈ᜔" size="clamp(16px,2vw,27px)" reveal={titleVisible} delayMs={140} draw />
         </div>
 
         {/* left-justified paragraph + mini Instagram CTA — same pattern as the

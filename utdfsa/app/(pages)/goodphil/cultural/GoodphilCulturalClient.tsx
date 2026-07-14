@@ -120,7 +120,7 @@ export default function CulturalPage() {
           >
             WHAT IS UTD PAMANA?
           </h2>
-          <BaybayinRule word="ᜃᜓᜎ᜔ᜆᜓᜍ" size="clamp(16px,2vw,27px)" reveal={titleVisible} delayMs={140} />
+          <BaybayinRule word="ᜃᜓᜎ᜔ᜆᜓᜍ" size="clamp(16px,2vw,27px)" reveal={titleVisible} delayMs={140} draw />
         </div>
 
         {/* left-justified paragraph + mini Instagram CTA — replaces the old

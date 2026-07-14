@@ -132,7 +132,7 @@ export default function SportsPage() {
           >
             WHAT IS UTD FSA SPORTS?
           </h2>
-          <BaybayinRule word="ᜉᜎᜃᜐᜈ᜔" size="clamp(16px,2vw,27px)" reveal={titleVisible} delayMs={140} />
+          <BaybayinRule word="ᜉᜎᜃᜐᜈ᜔" size="clamp(16px,2vw,27px)" reveal={titleVisible} delayMs={140} draw />
         </div>
 
         {/* left-justified paragraph + captain CTA stack — same wide-grid pattern

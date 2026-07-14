@@ -23,7 +23,7 @@ type Props = {
   delayMs?: number
   /** "ink wipe" mode — the script is masked and unveils left→right as if brushed
       on (plus a one-shot sheen travelling the rule lines). Only meaningful with
-      `reveal`; reserved for slow storytelling sections, not the fast GP heroes. */
+      `reveal`; used on every BaybayinRule site-wide. */
   draw?: boolean
 }
 

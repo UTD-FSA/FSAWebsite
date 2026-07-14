@@ -580,7 +580,7 @@ export default function PamilyasClient({
             WHAT IS A PAMILYA?
           </h2>
           <div ref={baybayinRef} className="mb-8">
-            <BaybayinRule word="ᜉᜋᜒᜎ᜔ᜌ" size="clamp(16px,2vw,27px)" reveal={baybayinVisible} delayMs={140} />
+            <BaybayinRule word="ᜉᜋᜒᜎ᜔ᜌ" size="clamp(16px,2vw,27px)" reveal={baybayinVisible} delayMs={140} draw />
           </div>
           <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed text-center max-w-[1218px] mx-auto">
             <span className="font-bold text-accent-green">Pamilyas</span> (&lsquo;<span className="font-bold text-white">pam</span>&rsquo; for short), which is also <span className="font-bold text-accent-gold">the Tagalog word for{' '}

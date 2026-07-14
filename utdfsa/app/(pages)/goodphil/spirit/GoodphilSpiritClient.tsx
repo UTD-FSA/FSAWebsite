@@ -128,7 +128,7 @@ export default function SpiritPage() {
           >
             WHAT IS UTD SPIRIT?
           </h2>
-          <BaybayinRule word="ᜇᜒᜏ" size="clamp(16px,2vw,27px)" reveal={titleVisible} delayMs={140} />
+          <BaybayinRule word="ᜇᜒᜏ" size="clamp(16px,2vw,27px)" reveal={titleVisible} delayMs={140} draw />
         </div>
 
         {/* left-justified paragraph + mini Instagram CTA — same pattern as
