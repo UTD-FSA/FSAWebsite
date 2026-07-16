@@ -1122,7 +1122,7 @@ export default function ApplicationsClient({
 
         {/* Kuyate confirmation modal — z-50 so it layers above the detail modal */}
         {pendingStatus && (
-          <Modal onClose={() => setPendingStatus(null)} size="sm">
+          <Modal onClose={() => setPendingStatus(null)} size="sm" scrollable={false}>
             <div
               className="bg-[#141414] border border-white/10 rounded-[18px] w-full p-7 shadow-modal"
               style={{ animation: 'modalIn 0.18s ease-out' }}
