@@ -5,15 +5,15 @@
 // deps:  supabase (respects rls — user client)
 // notes: loginEmail is the google oauth email; it is passed read-only and cannot
 //        be changed by the user — only contact_email is editable
-import { requireUser } from '@/lib/auth'
+import { requireActiveMember } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import ProfileEditClient from './ProfileEditClient'
 
 export default async function ProfileEditPage() {
-  // respects rls — only returns rows the caller owns
-  const ctx = await requireUser()
-  if (!ctx) redirect('/login')
-  const { supabase, user } = ctx
+  // respects rls — only returns rows the caller owns. requireActiveMember() also
+  // re-verifies paid/officer status server-side (defense-in-depth mirror of the
+  // middleware gate — see lib/auth.ts), redirecting to /membership if neither holds
+  const { supabase, user } = await requireActiveMember()
 
   // members table — fetch only the editable profile fields
   const { data: member } = await supabase

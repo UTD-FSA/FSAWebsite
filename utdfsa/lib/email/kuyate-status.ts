@@ -5,18 +5,7 @@
 //        two branches — accepted (with optional pamilya name) and rejected;
 //        inline styles are required for email client compatibility
 
-// ── helpers ───────────────────────────────────────────────
-
-// escapes the five HTML-special characters so user-controlled values
-// cannot inject tags or attributes into the email body
-function escHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
+import { escHtml } from '@/lib/email/escape'
 
 // ── template function ─────────────────────────────────────
 

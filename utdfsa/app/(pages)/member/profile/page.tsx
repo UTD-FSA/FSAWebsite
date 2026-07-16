@@ -5,7 +5,7 @@
 // deps:  supabase (respects rls — user client), getSettings (kuyateApplicationsOpen flag)
 // notes: meeting and risk management counts are derived in js from one attendance+events
 //        query instead of three round trips — mirrors the pattern in member/attendance/page.tsx
-import { requireUser } from '@/lib/auth'
+import { requireActiveMember } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getSettings } from '@/lib/settings'
 import Link from 'next/link'
@@ -18,10 +18,10 @@ export default async function ProfilePage() {
   // and reads kuyateApplicationsOpen from settings to conditionally
   // render the re-apply section for not_interested members.
   // ============================================================
-  // respects rls — only returns rows the caller owns
-  const ctx = await requireUser()
-  if (!ctx) redirect('/login')
-  const { supabase, user } = ctx
+  // respects rls — only returns rows the caller owns. requireActiveMember() also
+  // re-verifies paid/officer status server-side (defense-in-depth mirror of the
+  // middleware gate — see lib/auth.ts), redirecting to /membership if neither holds
+  const { supabase, user } = await requireActiveMember()
 
   // members table — fetch the full member row for display on the profile page
   const { data: member } = await supabase

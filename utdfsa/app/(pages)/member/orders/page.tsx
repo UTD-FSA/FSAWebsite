@@ -7,7 +7,7 @@
 //        explicit constraints in the supabase schema; eventsData is passed as a
 //        record keyed by id for O(1) lookups in the client component
 import { createAdminClient } from '@/utils/supabase/server'
-import { requireUser } from '@/lib/auth'
+import { requireActiveMember } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import OrdersClient from './OrdersClient'
 
@@ -24,11 +24,10 @@ export default async function OrdersPage({
   // ?success=true is appended by stripe on redirect after a completed checkout
   const { success } = await searchParams
 
-  // respects rls — only used for the auth check; all data reads use the admin client below
-  const ctx = await requireUser()
-  // route: /login — redirects unauthenticated users to sign in — do not change this path
-  if (!ctx) redirect('/login')
-  const { user } = ctx
+  // respects rls — only used for the auth check; all data reads use the admin client below.
+  // requireActiveMember() also re-verifies paid/officer status server-side (defense-in-depth
+  // mirror of the middleware gate — see lib/auth.ts), redirecting to /membership if neither holds
+  const { user } = await requireActiveMember()
 
   // bypass rls — safe because every query below is scoped to this member's
   // own id/email; no other member's data is ever read here

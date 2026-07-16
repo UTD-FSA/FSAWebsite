@@ -11,6 +11,13 @@ import { getSettings } from '@/lib/settings'
 import { isMembershipActive } from '@/lib/membership'
 import { NextResponse } from 'next/server'
 import { fail } from '@/lib/api-response'
+import { isRateLimited } from '@/lib/rate-limit'
+
+// ponytail: in-memory rate limit — per-instance backstop only, same pattern as
+// events/register. real gate should be a matching Vercel Firewall rule on this path.
+// keyed by user email (authenticated route) rather than IP.
+const RATE_LIMIT = 10
+const RATE_WINDOW_MS = 60_000
 
 export async function POST() {
   // ============================================================
@@ -24,6 +31,14 @@ export async function POST() {
   const ctx = await requireUser()
   if (!ctx) return fail('Unauthorized', 401)
   const { supabase, user } = ctx
+
+  // ── rate limiting ─────────────────────────────────────────
+  // authenticated but otherwise unthrottled — loopable to create unbounded stripe
+  // checkout sessions without this
+  if (isRateLimited(`membership-checkout:${user.email}`, RATE_LIMIT, RATE_WINDOW_MS)) {
+    console.warn('[security] rate-limit hit', { route: '/api/membership/checkout', email: user.email, ts: new Date().toISOString() })
+    return fail('Too many requests', 429)
+  }
 
   // ── member lookup ─────────────────────────────────────────
   // respects rls — user client; verifies effective membership (status + expiry) before proceeding

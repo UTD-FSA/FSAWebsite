@@ -19,13 +19,20 @@ const MEMBER_ROUTES = ['/member']
 // only officers and admins can access these routes
 const OFFICER_ROUTES = ['/officer', '/api/officer']
 
-// unpaid users can still reach these without being bounced to /membership —
-// matters because '/membership' itself matches the '/member' prefix above.
-// (only '/membership' can actually start with '/member' — '/onboarding', '/auth',
-// and '/login' never reach this check, since it only runs under needsMember)
+// unpaid users can still reach these without being bounced to /membership.
+// kept as an explicit allowlist for clarity even though matchesPrefix() below no
+// longer makes '/membership' collide with '/member' by accident — a genuine future
+// carve-out (e.g. a new route unpaid users need) still belongs here, deliberately.
 const ALLOWED_UNPAID_PATHS = [
   '/membership',
 ]
+
+// true only when pathname IS prefix, or is a sub-path of it at a segment boundary —
+// plain startsWith would let '/member' match '/membership' too (route-gating bug:
+// a future '/membership-*' route could slip past a guard it should've hit)
+function matchesPrefix(pathname: string, prefix: string): boolean {
+  return pathname === prefix || pathname.startsWith(prefix + '/')
+}
 
 // ── session refresh + auth guards ─────────────────────────
 
@@ -66,8 +73,10 @@ export async function updateSession(request: NextRequest, cspInfo?: CspInfo) {
             request.cookies.set(name, value)
           )
           supabaseResponse = NextResponse.next({ request: { headers: forwardedHeaders() } })
+          // sameSite defaults to 'lax' — matches server.ts's explicit default so the
+          // two cookie writers (middleware vs. server component) can't silently drift
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, { sameSite: 'lax', ...options })
           )
         },
       },
@@ -82,8 +91,8 @@ export async function updateSession(request: NextRequest, cspInfo?: CspInfo) {
   const { data: { user } } = await supabase.auth.getUser()
   const pathname = request.nextUrl.pathname
 
-  const needsMember = MEMBER_ROUTES.some(r => pathname.startsWith(r))
-  const needsOfficer = OFFICER_ROUTES.some(r => pathname.startsWith(r))
+  const needsMember = MEMBER_ROUTES.some(r => matchesPrefix(pathname, r))
+  const needsOfficer = OFFICER_ROUTES.some(r => matchesPrefix(pathname, r))
 
   // protects member and officer routes — redirects to /login (with ?next=) if not authenticated
   if ((needsMember || needsOfficer) && !user) {
@@ -128,7 +137,7 @@ export async function updateSession(request: NextRequest, cspInfo?: CspInfo) {
 
     if (!isPaid) {
       // allow exceptions (onboarding, auth routes) so the payment flow itself isn't blocked
-      const isAllowed = ALLOWED_UNPAID_PATHS.some(p => pathname.startsWith(p))
+      const isAllowed = ALLOWED_UNPAID_PATHS.some(p => matchesPrefix(pathname, p))
 
       if (!isAllowed) {
         const url = request.nextUrl.clone()

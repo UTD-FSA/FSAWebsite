@@ -84,10 +84,27 @@ export default async function OnboardingPage({ searchParams }: Props) {
       // invalid or expired session id — fall through to the membership redirect below
     }
 
+    // payment_status: 'paid' covers normal card payments; 'no_payment_required' covers
+    // 100%-off promotion codes (giveaways, officer fee-bypass — legitimate, intentionally
+    // still supported here). anything else is not a finished payment.
+    const paidOrFree =
+      stripeSession?.payment_status === 'paid' || stripeSession?.payment_status === 'no_payment_required'
+
+    // security: metadata.type/member_id checks are load-bearing, not redundant with the
+    // replay guard below. without them, ANY paid stripe session id activates membership —
+    // e.g. a guest event-ticket checkout's session id (type: 'event_ticket', handed back in
+    // the /events success url) or another member's membership session id shared between
+    // friends. the replay guard alone only stops reusing the SAME member's own prior session.
     // replay guard: if this session id is already recorded on the member row, the
     // webhook has fulfilled it once — an expired member re-visiting their old success
     // url must not be able to re-activate without paying again
-    if (stripeSession?.payment_status === 'paid' && stripeSession.id !== member.stripe_checkout_session_id) {
+    if (
+      stripeSession &&
+      paidOrFree &&
+      stripeSession.metadata?.type === 'membership' &&
+      stripeSession.metadata?.member_id === member.id &&
+      stripeSession.id !== member.stripe_checkout_session_id
+    ) {
       // payment confirmed by stripe directly; activate membership now.
       // the stripe webhook will also fire and update, but this prevents a blank onboarding screen.
       let membershipExpiry: Date

@@ -11,27 +11,19 @@ import { eventRegisterSchema } from '@/lib/schemas'
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { fail, failValidation } from '@/lib/api-response'
+import { isRateLimited } from '@/lib/rate-limit'
 
 // ponytail: in-memory rate limit — per-instance backstop only. the real gate is the
 // Vercel Firewall rate-limit rule on this path (global, runs at the edge). kept generous
 // so shared campus-NAT bursts (many attendees, one egress IP) aren't throttled.
-const ipHits = new Map<string, number[]>()
 const RATE_LIMIT = 30
 const RATE_WINDOW_MS = 60_000
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now()
-  const hits = (ipHits.get(ip) ?? []).filter(t => now - t < RATE_WINDOW_MS)
-  hits.push(now)
-  ipHits.set(ip, hits)
-  return hits.length > RATE_LIMIT
-}
 
 export async function POST(req: Request) {
   // ── rate limiting ─────────────────────────────────────────
   const headerStore = await headers()
   const ip = headerStore.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
-  if (isRateLimited(ip)) {
+  if (isRateLimited(`register:${ip}`, RATE_LIMIT, RATE_WINDOW_MS)) {
     console.warn('[security] rate-limit hit', { route: '/api/events/register', ip, ts: new Date().toISOString() })
     return NextResponse.json({ error: 'Too many requests' }, {
       status: 429,
@@ -228,12 +220,19 @@ export async function POST(req: Request) {
       .eq('guest_email', tickets[0].email)
       .maybeSingle()
 
-    if (existingGuestRow?.payment_status === 'paid') {
-      return fail('This email is already registered for this event.', 409)
+    // security: 'paid' AND 'pending' both reject with the SAME generic message. a guest
+    // row is located by attacker-suppliable email alone — anyone who knows a victim's
+    // email could otherwise overwrite their live in-flight registration (names, attendee
+    // emails, ticket count) and delete its ticket rows. only a 'failed' row (killed by the
+    // checkout.session.expired webhook — genuinely dead, no live stripe session) is safe
+    // to reuse in place; the legitimate owner of a 'pending' row still has their open
+    // checkout link and doesn't need this endpoint to resume it.
+    if (existingGuestRow?.payment_status === 'paid' || existingGuestRow?.payment_status === 'pending') {
+      return fail('This email already has a registration for this event.', 409)
     }
 
     if (existingGuestRow) {
-      // stale/pending row from an abandoned or expired attempt — update in place
+      // 'failed' row from a stripe-expired abandoned attempt — safe to reuse in place
       const { data: updated, error: updateError } = await admin
         .from('event_registrations')
         .update({
@@ -280,7 +279,7 @@ export async function POST(req: Request) {
         // 23505 = unique_violation — a case-variant email or a race slipped past the
         // exact-match lookup above and hit unique_guest_event_registration
         if (insertError.code === '23505') {
-          return fail('This email is already registered for this event.', 409)
+          return fail('This email already has a registration for this event.', 409)
         }
         console.error('Registration insert error:', insertError)
         return fail('Failed to create registration.', 500)
@@ -365,15 +364,21 @@ export async function POST(req: Request) {
 
   // save the stripe session id immediately so the success page can resolve tickets by session id
   // before the webhook fires. for upserts this also replaces the stale abandoned session id.
+  // security: this write must succeed and block the redirect — the webhook now requires an
+  // exact stripe_checkout_session_id match before fulfilling (see stripe-webhook/route.ts), so
+  // a silently-failed write here would leave the row unfulfillable even after a real payment.
   const { error: sessionIdError } = await admin
     .from('event_registrations')
     .update({ stripe_checkout_session_id: session.id })
     .eq('id', registration.id)
 
   if (sessionIdError) {
-    // don't block redirect — stripe session already exists, user must still reach checkout.
-    // webhook fulfillment still works via metadata.registration_id even if this write failed.
     console.error('[register] stripe_checkout_session_id write failed for registration', registration.id, sessionIdError)
+    // cancel the now-orphaned stripe session so it can't later pay for an unfulfillable row
+    await stripe.checkout.sessions.expire(session.id).catch(err =>
+      console.error('[register] failed to expire orphaned session', session.id, err)
+    )
+    return fail('Failed to prepare checkout. Please try again.', 500)
   }
 
   return NextResponse.json({ url: session.url })

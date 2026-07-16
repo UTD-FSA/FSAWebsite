@@ -70,25 +70,17 @@ export async function PATCH(req: Request, { params }: RouteContext) {
   }
 
   if (!updatedRow) {
-    // optimistic lock failed: another officer changed the status between our read and this write
+    // optimistic lock failed: another officer changed the status between our read and this write.
+    // security: message is role-neutral — no reviewer identity lookup/exposure (even
+    // officer-to-officer, PII doesn't belong in a conflict-response string)
     const { data: currentRow } = await ctx.admin
       .from('kuyate_applications')
-      .select('status, reviewed_by')
+      .select('status')
       .eq('id', id)
       .maybeSingle()
 
-    let reviewerName = 'Another officer'
-    if (currentRow?.reviewed_by) {
-      const { data: reviewer } = await ctx.admin
-        .from('members')
-        .select('first_name, last_name')
-        .eq('id', currentRow.reviewed_by)
-        .maybeSingle()
-      if (reviewer) reviewerName = `${reviewer.first_name} ${reviewer.last_name}`
-    }
-
     return fail('conflict', 409, {
-      message: `${reviewerName} already reviewed this as ${currentRow?.status ?? 'unknown'}`,
+      message: `This application was already reviewed as ${currentRow?.status ?? 'unknown'}.`,
       currentStatus: currentRow?.status ?? null,
     })
   }

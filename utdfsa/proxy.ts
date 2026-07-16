@@ -18,10 +18,14 @@ export async function proxy(request: NextRequest) {
     default-src 'self';
     script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ''};
     style-src 'self' 'unsafe-inline';
-    img-src 'self' data: https://lh3.googleusercontent.com https://*.amazonaws.com;
+    img-src 'self' data: https://lh3.googleusercontent.com https://cover-photos-gal.s3.us-east-2.amazonaws.com;
     font-src 'self';
     connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL} https://api.stripe.com;
     frame-src https://www.youtube-nocookie.com;
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+    frame-ancestors 'none';
   `
   const csp = cspHeader.replace(/\s{2,}/g, ' ').trim()
 

@@ -6,11 +6,12 @@
 // notes: key is deterministic per event id (overwriting on re-upload);
 //        officer/admin only
 import { requireOfficer } from '@/lib/auth'
-import { uploadToS3 } from '@/utils/s3'
+import { uploadToS3, deleteFromS3 } from '@/utils/s3'
 import { imageMagicBytesMatch } from '@/utils/validate-image'
 import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
 import { fail } from '@/lib/api-response'
+import { z } from 'zod'
 
 // accepted mime types for event cover photos
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
@@ -23,6 +24,12 @@ export async function POST(req: Request, { params }: RouteContext) {
   if (!ctx) return fail('Forbidden', 403)
 
   const { id } = await params
+
+  // validate before this id ever reaches an S3 key — a non-uuid id (e.g. containing
+  // '/' or '..') could otherwise pollute the covers/events/ key namespace
+  if (!z.string().uuid().safeParse(id).success) {
+    return fail('Invalid event id.', 400)
+  }
 
   // reject before reading body if Content-Length already exceeds limit
   const contentLength = Number(req.headers.get('content-length') ?? 0)
@@ -69,14 +76,24 @@ export async function POST(req: Request, { params }: RouteContext) {
     return fail('Upload failed. Please try again.', 500)
   }
 
-  const { error: dbError } = await ctx.admin
+  const { data: updated, error: dbError } = await ctx.admin
     .from('events')
     .update({ cover_photo_url: publicUrl })
     .eq('id', id)
+    .select('id')
+    .maybeSingle()
 
   if (dbError) {
     console.error('[events/[id]/cover] db update error:', dbError)
     return fail('Failed to save cover photo.', 500)
+  }
+
+  if (!updated) {
+    // event doesn't exist — clean up the orphaned upload instead of leaving a public,
+    // unreferenced object behind (a bare .update() with no matching row succeeds with
+    // 0 rows affected and no error, so this has to be checked explicitly)
+    await deleteFromS3(key).catch(err => console.error('[events/[id]/cover] orphan cleanup error:', err))
+    return fail('Event not found.', 404)
   }
 
   // bust the cached public events listing (see lib/data/events.ts)

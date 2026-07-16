@@ -18,7 +18,10 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '*.amazonaws.com',
+        // pinned to the exact cover-photos bucket (utils/s3.ts builds this same host) —
+        // a wildcard *.amazonaws.com let next/image proxy/optimize/cache ANY S3 bucket
+        // on the internet through this origin (bandwidth abuse, cache poisoning)
+        hostname: 'cover-photos-gal.s3.us-east-2.amazonaws.com',
       },
       {
         protocol: 'https',
@@ -46,13 +49,29 @@ const nextConfig: NextConfig = {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },
-          // enforce HTTPS for 2 years; include subdomains
+          // enforce HTTPS for 2 years; include subdomains; preload-eligible
+          // (max-age exceeds the 1-year minimum, includeSubDomains present) —
+          // actual hstspreload.org submission is a separate manual step
           {
             key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains',
+            value: 'max-age=63072000; includeSubDomains; preload',
           },
           // Content-Security-Policy moved to proxy.ts — it now needs a fresh per-request
           // nonce for script-src, which only proxy/middleware can generate
+        ],
+      },
+      {
+        // proxy.ts's middleware matcher excludes image extensions (no per-request nonce
+        // needed there — perf), so those paths get no CSP from the block above. today
+        // every upload goes to S3, so this is pre-emptive: if a user-uploaded SVG is
+        // ever served from an app route, it still gets a maximally restrictive CSP
+        // instead of none.
+        source: '/:path*.(svg|png|jpg|jpeg|gif|webp)',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: "default-src 'none'",
+          },
         ],
       },
     ]

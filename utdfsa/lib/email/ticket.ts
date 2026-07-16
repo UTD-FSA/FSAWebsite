@@ -10,15 +10,7 @@
 //        called once per ticket per registration after payment succeeds.
 
 import { fmtTimeRange } from '@/lib/format'
-
-function escHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-}
+import { escHtml } from '@/lib/email/escape'
 
 export function ticketEmailHtml({
   attendeeName,

@@ -4,7 +4,7 @@
 //
 // data:  members, events, event_registrations, registration_tickets,
 //        attendance, photos, galleries, settings, ading_applications,
-//        kuyate_applications, goodphil_eligibility (view)
+//        kuyate_applications, goodphil_eligibility (view), stripe_events
 // notes: keep in sync with supabase migrations; nullable fields
 //        reflect columns that allow null in the db
 
@@ -223,6 +223,16 @@ export interface KuyateApplication {
   why_kuyate: string
   acknowledges_responsibilities: boolean
   additional_notes: string | null
+}
+
+// ── stripe events ─────────────────────────────────────────
+
+// idempotency ledger — one row per processed stripe webhook event.id;
+// service-role only (see stripe-webhook/route.ts and the ledger migration)
+export interface StripeEvent {
+  id: string
+  type: string
+  processed_at: string
 }
 
 // ── goodphil eligibility ──────────────────────────────────

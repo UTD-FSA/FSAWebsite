@@ -13,6 +13,19 @@ import { NextResponse } from 'next/server'
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import { isMembershipActive } from '@/lib/membership'
 
+// google avatar urls are always served from this host — matches the CSP img-src
+// allowlist (proxy.ts) exactly, so arbitrary oauth-provider metadata can't seed a
+// tracking-pixel/IP-logging url into a trusted table via user_metadata.avatar_url
+function isTrustedAvatarUrl(url: unknown): url is string {
+  if (typeof url !== 'string') return false
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === 'https:' && parsed.hostname === 'lh3.googleusercontent.com'
+  } catch {
+    return false
+  }
+}
+
 // ── GET /auth/callback ────────────────────────────────────────────────────────
 
 export async function GET(request: Request) {
@@ -53,12 +66,14 @@ export async function GET(request: Request) {
 
   // first time signing in — create the member row from oauth metadata
   if (!member) {
-    const firstName = user.user_metadata?.given_name
+    // cap length — unbounded oauth-metadata strings written straight into the row;
+    // matches the 50-char cap already enforced on member-edited names in update-profile
+    const firstName = (user.user_metadata?.given_name
       ?? user.user_metadata?.full_name?.split(' ')[0]
-      ?? ''
-    const lastName = user.user_metadata?.family_name
+      ?? '').slice(0, 50)
+    const lastName = (user.user_metadata?.family_name
       ?? user.user_metadata?.full_name?.split(' ').slice(1).join(' ')
-      ?? ''
+      ?? '').slice(0, 50)
 
     const { data: newMember } = await admin
       .from('members')
@@ -68,7 +83,7 @@ export async function GET(request: Request) {
         last_name: lastName,
         role: 'member',
         membership_status: 'pending',
-        avatar_url: user.user_metadata?.avatar_url ?? null,
+        avatar_url: isTrustedAvatarUrl(user.user_metadata?.avatar_url) ? user.user_metadata.avatar_url : null,
         contact_email: user.email!,
       })
       .select('id, membership_status, membership_expires_at, onboarding_complete, role')

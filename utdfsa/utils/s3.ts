@@ -6,7 +6,7 @@
 // notes: bucket must be configured for public read access;
 //        credentials are loaded from environment variables server-side only
 
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 
 // ── s3 client ─────────────────────────────────────────────
 
@@ -38,4 +38,27 @@ export async function uploadToS3(
 
   // constructs the standard path-style public url for the uploaded object
   return `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`
+}
+
+// ── delete helper ─────────────────────────────────────────
+
+// best-effort cleanup — callers should catch/log, not fail their own request on error
+// (the db row is always the source of truth; an orphaned object is a cleanup miss)
+export async function deleteFromS3(key: string): Promise<void> {
+  await s3.send(
+    new DeleteObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET!,
+      Key: key,
+    }),
+  )
+}
+
+// extracts the object key back out of a url previously returned by uploadToS3;
+// returns null (never throws) if the url doesn't match this bucket's host —
+// defensive against a stored url that predates a bucket/region change
+export function s3KeyFromUrl(url: string | null | undefined): string | null {
+  if (!url) return null
+  const prefix = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/`
+  if (!url.startsWith(prefix)) return null
+  return url.slice(prefix.length)
 }

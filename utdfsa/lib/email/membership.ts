@@ -5,6 +5,10 @@
 //        apple mail). no external css or images — fully inline styles.
 //        called by the stripe-webhook route after a membership payment succeeds.
 //        stripe sends its own receipt separately — this email is the fsa welcome.
+//        firstName is member-controlled (via /api/member/update-profile) — must
+//        be escaped before interpolation, same as ticket.ts and kuyate-status.ts.
+
+import { escHtml } from '@/lib/email/escape'
 
 export function membershipEmailHtml({
   firstName,
@@ -15,6 +19,10 @@ export function membershipEmailHtml({
   membershipYear: string
   expiryDate: string
 }): string {
+  const safeFirstName = escHtml(firstName)
+  const safeMembershipYear = escHtml(membershipYear)
+  const safeExpiryDate = escHtml(expiryDate)
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -62,12 +70,12 @@ export function membershipEmailHtml({
         <!-- body -->
         <tr>
           <td style="padding:40px 44px 44px;">
-            <p style="margin:0 0 18px;color:#2b2b2b;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">Hi ${firstName},</p>
+            <p style="margin:0 0 18px;color:#2b2b2b;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">Hi ${safeFirstName},</p>
             <p style="margin:0 0 18px;color:#2b2b2b;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
-              Welcome to UTD FSA! Your membership for the <strong style="color:#2b2b2b;font-weight:700;">${membershipYear}</strong> school year has been confirmed.
+              Welcome to UTD FSA! Your membership for the <strong style="color:#2b2b2b;font-weight:700;">${safeMembershipYear}</strong> school year has been confirmed.
             </p>
             <p style="margin:0 0 30px;color:#2b2b2b;font-size:16px;line-height:1.7;font-family:Arial,Helvetica,sans-serif;">
-              Your membership is valid through <strong style="color:#2b2b2b;font-weight:700;">${expiryDate}</strong>.
+              Your membership is valid through <strong style="color:#2b2b2b;font-weight:700;">${safeExpiryDate}</strong>.
             </p>
 
             <!-- next steps box -->

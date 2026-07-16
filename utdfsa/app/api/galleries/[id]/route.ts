@@ -8,7 +8,7 @@
 //        photo is optional (omitting it keeps the existing one).
 import { requireOfficer } from '@/lib/auth'
 import { updateGallerySchema } from '@/lib/schemas'
-import { uploadToS3 } from '@/utils/s3'
+import { uploadToS3, deleteFromS3, s3KeyFromUrl } from '@/utils/s3'
 import { imageMagicBytesMatch } from '@/utils/validate-image'
 import { NextResponse } from 'next/server'
 import { fail, failValidation } from '@/lib/api-response'
@@ -27,6 +27,13 @@ export async function DELETE(
   if (!ctx) return fail('Forbidden', 403)
   const { admin } = ctx
 
+  // fetch the cover url before deleting the row — needed to clean up the S3 object after
+  const { data: existing } = await admin
+    .from('galleries')
+    .select('cover_photo_url')
+    .eq('id', id)
+    .maybeSingle()
+
   const { error } = await admin
     .from('galleries')
     .delete()
@@ -35,6 +42,13 @@ export async function DELETE(
   if (error) {
     console.error('[galleries] delete error:', error)
     return fail('Failed to delete gallery', 500)
+  }
+
+  // best-effort — db row is already gone (source of truth); an orphaned object here
+  // is a cleanup miss, not worth failing an already-successful delete over
+  const key = s3KeyFromUrl(existing?.cover_photo_url)
+  if (key) {
+    await deleteFromS3(key).catch(err => console.error('[galleries] S3 cleanup error:', err))
   }
 
   return NextResponse.json({ success: true })
@@ -49,6 +63,13 @@ export async function PATCH(
   const ctx = await requireOfficer()
   if (!ctx) return fail('Forbidden', 403)
   const { admin } = ctx
+
+  // reject before reading body if Content-Length already exceeds limit — mirrors the
+  // check on the sibling POST /api/galleries and the officer event-cover route
+  const contentLength = Number(req.headers.get('content-length') ?? 0)
+  if (contentLength > MAX_COVER_BYTES + 65536) {
+    return fail('Request too large.', 413)
+  }
 
   const formData = await req.formData()
   const coverFile = formData.get('cover') as File | null
@@ -77,6 +98,10 @@ export async function PATCH(
     ...(is_published != null ? { is_published: is_published === 'true' } : {}),
   }
 
+  // fetch the existing cover url before any upload — needed to clean up the
+  // replaced object after a successful update, only relevant when replacing it
+  let oldCoverUrl: string | null = null
+
   if (coverFile && coverFile.size > 0) {
     if (coverFile.size > MAX_COVER_BYTES) {
       return fail('Image must be under 20MB.', 400)
@@ -84,6 +109,14 @@ export async function PATCH(
     if (!ALLOWED_IMAGE_TYPES.includes(coverFile.type)) {
       return fail('Invalid file type. Only JPEG, PNG, WEBP, and GIF images are accepted.', 400)
     }
+
+    const { data: existing } = await admin
+      .from('galleries')
+      .select('cover_photo_url')
+      .eq('id', id)
+      .maybeSingle()
+    oldCoverUrl = existing?.cover_photo_url ?? null
+
     const ext = MIME_EXT[coverFile.type] ?? 'jpg'
     const key = `covers/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
     const buffer = Buffer.from(await coverFile.arrayBuffer())
@@ -113,6 +146,15 @@ export async function PATCH(
   if (updateError) {
     console.error('[galleries] update error:', updateError)
     return fail('Failed to update gallery', 500)
+  }
+
+  // best-effort cleanup of the replaced cover — only after the db confirms the new url,
+  // and only when it actually changed (title/description-only edits leave oldCoverUrl unset)
+  if (oldCoverUrl && oldCoverUrl !== gallery.cover_photo_url) {
+    const oldKey = s3KeyFromUrl(oldCoverUrl)
+    if (oldKey) {
+      await deleteFromS3(oldKey).catch(err => console.error('[galleries] old cover cleanup error:', err))
+    }
   }
 
   return NextResponse.json({ gallery })

@@ -6,7 +6,14 @@
 //        failure action (401 json for routes, redirect for pages).
 //        requireOfficer() layers a role check on top; returns null for both
 //        "not logged in" and "wrong role" — callers respond with one status.
+//        requireActiveMember() is a PAGE-ONLY helper (calls redirect() itself,
+//        doesn't return a status) — defense-in-depth mirror of the middleware
+//        paid-membership gate (utils/supabase/middleware.ts), same pattern the
+//        officer pages already use for the role gate. never call from a route
+//        handler.
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
+import { isMembershipActive } from '@/lib/membership'
+import { redirect } from 'next/navigation'
 import type { User } from '@supabase/supabase-js'
 
 type UserClient = Awaited<ReturnType<typeof createUserClient>>
@@ -38,4 +45,25 @@ export async function requireOfficer(): Promise<{
 
   if (!member || (member.role !== 'officer' && member.role !== 'admin')) return null
   return { admin, user: ctx.user, member }
+}
+
+export async function requireActiveMember(): Promise<{ supabase: UserClient; user: User }> {
+  const ctx = await requireUser()
+  if (!ctx) redirect('/login')
+  const { supabase, user } = ctx
+
+  // respects rls — only returns the row matching the caller's own email
+  const { data: member } = await supabase
+    .from('members')
+    .select('role, membership_status, membership_expires_at')
+    .eq('email', user.email!)
+    .maybeSingle()
+
+  if (!member) redirect('/login')
+
+  // officers/admins are exempt, same as the middleware gate — they don't pay dues
+  const isOfficer = member.role === 'officer' || member.role === 'admin'
+  if (!isMembershipActive(member) && !isOfficer) redirect('/membership')
+
+  return { supabase, user }
 }
