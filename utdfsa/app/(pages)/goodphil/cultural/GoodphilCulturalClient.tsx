@@ -293,7 +293,7 @@ export default function CulturalPage() {
               transitionDelay: ctaVisible ? '140ms' : '0ms',
             }}
           >
-<span className="font-bold text-accent-green">No dance experience? No problem.</span> Our workshops are open to anyone interested in learning more about Filipino culture through dance. Whether you&apos;re trying something completely new or looking to perform this season, <span className="font-bold text-white">we&apos;d love to have you join us.</span>
+<span className="font-bold text-accent-green">No dance experience? No problem!</span> Our workshops are open to anyone interested in learning more about Filipino culture through dance. Whether you&apos;re trying something completely new or looking to perform this season, <span className="font-bold text-white">we&apos;d love to have you join us!</span>
           </p>
           <a
             href="https://forms.gle/X4o8v3Qjq3CnULRf9"

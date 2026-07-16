@@ -151,7 +151,7 @@ export default function SportsPage() {
           >
             <span className="font-bold text-white">UTD FSA Sports</span>
             {' '}is where UTD FSA&apos;s <span className="font-bold text-accent-green">competitive spirit comes alive.</span> Throughout the weekend, members represent UTD in a variety of sports while competing against Filipino Student Associations from across Texas.
-            From first-time players to seasoned competitors, <span className="font-bold text-accent-green">there's a place for everyone.</span> You'll build friendships, challenge yourself, and experience the excitement of representing UTD alongside your FSA family. Whether you're <span className="font-bold text-accent-gold">chasing a championship or trying a new sport with friends</span>, it's all about teamwork, sportsmanship, and <span className="font-bold text-accent-green">creating lasting memories both on and off the court.</span>
+            From first-time players to seasoned competitors, <span className="font-bold text-accent-green">there's a place for everyone!</span> You'll build friendships, challenge yourself, and experience the excitement of representing UTD alongside your FSA family. Whether you're <span className="font-bold text-accent-gold">chasing a championship or trying a new sport with friends</span>, it's all about teamwork, sportsmanship, and <span className="font-bold text-accent-green">creating lasting memories both on and off the court.</span>
           </p>
 
           <div ref={headingRef} className="flex flex-col gap-6 mx-auto lg:mx-0 w-full max-w-[460px]">
@@ -385,7 +385,7 @@ export default function SportsPage() {
                 <span className="text-6xl">❓</span>
               </div>
               <div className="px-5 py-[18px]">
-                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Wildcard Sport: TBD</h3>
+                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Mystery Sport: TBD</h3>
               </div>
             </div>
 

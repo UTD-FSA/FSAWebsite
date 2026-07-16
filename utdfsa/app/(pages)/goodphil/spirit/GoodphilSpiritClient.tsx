@@ -152,7 +152,7 @@ export default function SpiritPage() {
             <span className="font-bold text-accent-green">stepping onto the stage for the first time</span>, Spirit welcomes anyone ready to have fun and be part of
             something bigger. From the first rehearsal to the final performance, it&apos;s an experience built on{' '}
             <span className="font-bold text-accent-gold">teamwork, laughter, and representing your school together.</span> This is where{' '}
-            <span className="font-bold text-accent-green spirit-glow">Comet pride shines the brightest.</span>
+            <span className="font-bold text-accent-green spirit-glow">Comet pride shines the brightest!</span>
           </p>
 
           <div ref={headingRef} className="flex flex-col items-center lg:items-stretch gap-7 mx-auto lg:mx-0 w-full max-w-[460px]">

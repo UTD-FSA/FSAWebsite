@@ -298,7 +298,7 @@ export default function ModernPage() {
               transitionDelay: ctaVisible ? '140ms' : '0ms',
             }}
           >
-Every season starts somewhere, and our workshops are the perfect place to <span className="font-bold text-accent-green">meet the team, learn our style, and see what Maharlika is all about.</span> <span className="font-bold text-white">Fill out our interest form</span> to stay updated on workshops, auditions, and everything happening this season.
+Every season starts somewhere, and our workshops are the perfect place to <span className="font-bold text-accent-green">meet the team, learn our style, and see what Maharlika is all about!</span> <span className="font-bold text-white">Fill out our interest form</span> to stay updated on workshops, auditions, and everything happening this season.
           </p>
           <a
             href="https://forms.gle/adY8cCiyYHcLSmgz8"
