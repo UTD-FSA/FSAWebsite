@@ -7,7 +7,7 @@
 //        explicit constraints in the supabase schema; eventsData is passed as a
 //        record keyed by id for O(1) lookups in the client component
 import { createAdminClient } from '@/utils/supabase/server'
-import { requireActiveMember } from '@/lib/auth'
+import { requireUser, assertActiveMember } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import OrdersClient from './OrdersClient'
 
@@ -24,25 +24,28 @@ export default async function OrdersPage({
   // ?success=true is appended by stripe on redirect after a completed checkout
   const { success } = await searchParams
 
-  // respects rls — only used for the auth check; all data reads use the admin client below.
-  // requireActiveMember() also re-verifies paid/officer status server-side (defense-in-depth
-  // mirror of the middleware gate — see lib/auth.ts), redirecting to /membership if neither holds
-  const { user } = await requireActiveMember()
+  // respects rls — only used for the auth check; all data reads use the admin client below
+  const ctx = await requireUser()
+  if (!ctx) redirect('/login')
+  const { user } = ctx
 
   // bypass rls — safe because every query below is scoped to this member's
   // own id/email; no other member's data is ever read here
   const admin = createAdminClient()
 
-  // members table — fetch id and contact_email for this user
-  // contact_email is the preferred notification address; falls back to Google login email
+  // members table — fetch id, contact_email, and role/membership_status/membership_expires_at
+  // so assertActiveMember() below can re-verify paid/officer status server-side
+  // (defense-in-depth mirror of the middleware gate — see lib/auth.ts) without a
+  // second members round-trip. contact_email is the preferred notification address;
+  // falls back to Google login email
   const { data: member } = await admin
     .from('members')
-    .select('id, contact_email')
+    .select('id, contact_email, role, membership_status, membership_expires_at')
     .eq('email', user.email!)
     .maybeSingle()
 
-  // redirect to /login if no member row (account not fully set up)
-  if (!member) redirect('/login')
+  // redirect to /login if no member row (account not fully set up), /membership if unpaid
+  assertActiveMember(member)
 
   // the email address that qr ticket confirmation was sent to
   const contactEmail = member.contact_email ?? user.email!

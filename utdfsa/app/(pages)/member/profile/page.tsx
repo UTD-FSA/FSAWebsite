@@ -5,7 +5,7 @@
 // deps:  supabase (respects rls — user client), getSettings (kuyateApplicationsOpen flag)
 // notes: meeting and risk management counts are derived in js from one attendance+events
 //        query instead of three round trips — mirrors the pattern in member/attendance/page.tsx
-import { requireActiveMember } from '@/lib/auth'
+import { requireUser, assertActiveMember } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getSettings } from '@/lib/settings'
 import Link from 'next/link'
@@ -18,20 +18,23 @@ export default async function ProfilePage() {
   // and reads kuyateApplicationsOpen from settings to conditionally
   // render the re-apply section for not_interested members.
   // ============================================================
-  // respects rls — only returns rows the caller owns. requireActiveMember() also
-  // re-verifies paid/officer status server-side (defense-in-depth mirror of the
-  // middleware gate — see lib/auth.ts), redirecting to /membership if neither holds
-  const { supabase, user } = await requireActiveMember()
+  // respects rls — only returns rows the caller owns
+  const ctx = await requireUser()
+  if (!ctx) redirect('/login')
+  const { supabase, user } = ctx
 
-  // members table — fetch the full member row for display on the profile page
+  // members table — fetch the full member row for display on the profile page.
+  // includes role/membership_status/membership_expires_at so assertActiveMember()
+  // below can re-verify paid/officer status server-side (defense-in-depth mirror
+  // of the middleware gate — see lib/auth.ts) without a second members round-trip
   const { data: member } = await supabase
     .from('members')
-    .select('id, email, first_name, last_name, role, membership_status, membership_expires_at, points, phone, year, major, shirt_size, pamilya, avatar_url, member_type')
+    .select('id, email, contact_email, first_name, last_name, role, membership_status, membership_expires_at, points, phone, year, major, shirt_size, pamilya, avatar_url, member_type')
     .eq('email', user.email!)
     .maybeSingle()
 
-  // redirect to /login if member row doesn't exist
-  if (!member) redirect('/login')
+  // redirect to /login if member row doesn't exist, /membership if unpaid
+  assertActiveMember(member)
 
   // parallel: settings + attendance history (both independent of each other)
   const [
@@ -190,7 +193,7 @@ export default async function ProfilePage() {
                 <span className="font-sans text-sm text-white/50 block">Contact Email</span>
                 <span className="font-sans text-xs text-white/30">used for emails and other notifications from the website</span>
               </div>
-              <span className="font-sans text-sm text-white text-right shrink-0">{member.email}</span>
+              <span className="font-sans text-sm text-white text-right shrink-0">{member.contact_email ?? member.email}</span>
             </div>
             {/* only renders when phone is set — do not remove this condition */}
             {member.phone && (

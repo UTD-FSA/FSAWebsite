@@ -5,7 +5,7 @@
 // deps:  supabase (respects rls — user client)
 // notes: meetingCount and riskMgmtCount are derived in js from attendanceRecords (already
 //        fetched below) instead of two extra count queries — same events embed, one less round trip
-import { requireActiveMember } from '@/lib/auth'
+import { requireUser, assertActiveMember } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import AttendanceClient from './AttendanceClient'
 
@@ -19,20 +19,23 @@ export default async function AttendancePage() {
   //   meetingCount — total General Meeting + Risk Management sessions attended
   //   riskMgmtCount — Risk Management sessions attended specifically
   // ============================================================
-  // respects rls — only returns rows the caller owns. requireActiveMember() also
-  // re-verifies paid/officer status server-side (defense-in-depth mirror of the
-  // middleware gate — see lib/auth.ts), redirecting to /membership if neither holds
-  const { supabase, user } = await requireActiveMember()
+  // respects rls — only returns rows the caller owns
+  const ctx = await requireUser()
+  if (!ctx) redirect('/login')
+  const { supabase, user } = ctx
 
-  // members table — fetch id and current point total for this user
+  // members table — fetch id, current point total, and role/membership_status/
+  // membership_expires_at so assertActiveMember() below can re-verify paid/officer
+  // status server-side (defense-in-depth mirror of the middleware gate — see
+  // lib/auth.ts) without a second members round-trip
   const { data: member } = await supabase
     .from('members')
-    .select('id, points')
+    .select('id, points, role, membership_status, membership_expires_at')
     .eq('email', user.email!)
     .maybeSingle()
 
-  // redirect to /login if no member row exists (e.g. account not set up yet)
-  if (!member) redirect('/login')
+  // redirect to /login if no member row exists (e.g. account not set up yet), /membership if unpaid
+  assertActiveMember(member)
 
   // attendance history — events embed already carries event_type, so meeting/risk-mgmt
   // counts are derived from this one result below instead of two extra count queries
