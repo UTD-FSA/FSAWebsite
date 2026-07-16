@@ -583,10 +583,10 @@ export default function PamilyasClient({
             <BaybayinRule word="ᜉᜋᜒᜎ᜔ᜌ" size="clamp(16px,2vw,27px)" reveal={baybayinVisible} delayMs={140} draw />
           </div>
           <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed text-center max-w-[1218px] mx-auto">
-            <span className="font-bold text-accent-green">Pamilyas</span> (&lsquo;<span className="font-bold text-white">pam</span>&rsquo; for short), which is also <span className="font-bold text-accent-gold">the Tagalog word for{' '}
-            family</span>, are smaller groups
-            within <span className="font-bold text-white">UTD FSA</span> where members build lasting friendships, receive{' '}
-            guidance, and find <span className="font-bold text-accent-green">a place to belong.</span>
+            <span className="font-bold text-accent-green">Pamilyas</span> (&lsquo;<span className="font-bold text-white">pam</span>&rsquo; for short), which is also{' '}
+            <span className="font-bold text-accent-gold">the Tagalog word for family</span>, are smaller groups within{' '}
+            <span className="font-bold text-white">UTD FSA</span> where members{' '}
+            <span className="font-bold text-accent-green">form friendships, learn from one another, and create memories that last well beyond college.</span>
           </p>
         </div>
 
@@ -595,14 +595,14 @@ export default function PamilyasClient({
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed mb-8">
               Each <span className="font-bold text-white">pam</span> consists of <span className="font-bold text-accent-green">Kuyas</span> (older brothers), <span className="font-bold text-accent-green">Ates</span> (older sisters), and <span className="font-bold text-accent-green">Adings</span> (younger siblings).
-              By treating others like family, <span className="font-bold text-white">regardless of blood relation</span>, pamilyas help members turn UTD FSA
-              into a second home throughout their college years.
+              Built on the idea that <span className="font-bold text-white">family goes beyond blood</span>, pamilyas create lifelong bonds
+              through shared experiences, traditions, and support.
             </p>
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed mb-8">
-              Each pamilya is different, consisting of <span className="font-bold text-accent-gold">different hobbies, interests, and people!</span> The Pamilya Chair
-              and UTD FSA Officer Board does their best to ensure that each ading is paired with a pam that best
-              suits them, providing a positive experience in UTD FSA.
+              Every pamilya is different, consisting of <span className="font-bold text-accent-gold">different hobbies, interests, and personalities!</span> The Pamilya Chair
+              and UTD FSA Officer Board work carefully to match each ading with a pamilya where they can feel comfortable,
+              get involved, and make the most of their time in UTD FSA.
             </p>
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed">

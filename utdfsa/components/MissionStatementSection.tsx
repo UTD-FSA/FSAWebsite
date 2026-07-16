@@ -55,9 +55,9 @@ export default function MissionStatementSection() {
 
         <div ref={copyRef} className="font-sans text-[16px] sm:text-[18px] xl:text-[24px] text-white/60 leading-relaxed max-w-[1100px] mx-auto space-y-6 mt-10 lg:mt-16">
           <p>
-            The <span className="font-bold text-accent-green">Filipino Student Association</span> at the{' '}
-            <span className="font-bold text-accent-gold">University of Texas at Dallas</span> was founded in 2001,
-            aiming to cultivate a community that empowers, uplifts student voices, and celebrates Filipino culture through{' '}
+            Founded in 2001, the <span className="font-bold text-accent-green">Filipino Student Association</span> at{' '}
+            <span className="font-bold text-accent-gold">The University of Texas at Dallas</span> is committed to promoting
+            Filipino culture while empowering students to{' '}
             <span
               className="relative z-0 inline-block font-bold text-white"
               style={{ paddingInline: '0.22em', marginInline: '-0.22em' }}
@@ -76,14 +76,14 @@ export default function MissionStatementSection() {
                   transitionDelay: pillarsVisible ? '300ms' : '0ms',
                 }}
               />
-              service, leadership, and unity.
+              grow as leaders, serve their communities, and make a significant impact on campus.
             </span>
           </p>
           <p>
-            <span className="font-bold text-white">All students are welcomed</span>, regardless of race, ethnicity, sexual orientation, religion, or
-            background. Through community outreach, social engagement, and cultural awareness, UTD FSA
-            strives to ensure pride in Filipino identity, whilst offering a space for students to{' '}
-            <span className="font-bold text-white">belong, grow, and lead</span> towards a brighter future.
+            Through cultural education, volunteer initiatives, and leadership opportunities, we strive to{' '}
+            <span className="font-bold text-white">inspire pride in our heritage</span> while encouraging{' '}
+            <span className="font-bold text-white">collaboration, respect, and personal growth</span> among students of
+            all backgrounds.
           </p>
         </div>
       </div>

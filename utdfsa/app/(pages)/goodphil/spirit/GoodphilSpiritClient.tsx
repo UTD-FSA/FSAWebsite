@@ -145,9 +145,14 @@ export default function SpiritPage() {
               transitionDelay: titleVisible ? '510ms' : '0ms',
             }}
           >
-            <span className="font-bold text-white">Spirit</span>
-            {' '}is UTD FSA&apos;s performance category in Goodphil, bringing together school pride, <span className="font-bold text-white">Filipino culture</span>, and <span className="font-bold text-accent-green">pure crowd energy.</span> From chants and skits to <span className="font-bold text-accent-gold">unforgettable performances</span>, Spirit is all about creating moments that get everyone on their feet. 
-            <span className="font-bold text-accent-green"> No performance experience? No problem.</span> Spirit is one of the best ways to meet new people, <span className="font-bold text-accent-gold">make lasting memories</span>, and share plenty of laughs while preparing for one of the biggest weekends of the year. Whether you're performing or cheering from the sidelines, this is where <span className="font-bold text-accent-green spirit-glow">Comet pride shines the brightest</span> and the entire FSA community comes together.
+            <span className="font-bold text-white">Spirit</span> is UTD FSA&apos;s performance category at GoodPhil, where{' '}
+            <span className="font-bold text-accent-green">creativity, school pride, and Filipino culture</span> come together in one high-energy performance. Every
+            year, our team creates an original routine filled with <span className="font-bold text-accent-gold">choreography, skits, music, and plenty of unexpected moments</span>{' '}
+            that capture what it means to <span className="font-bold text-white">represent UTD.</span> Whether you&apos;ve been performing for years or are{' '}
+            <span className="font-bold text-accent-green">stepping onto the stage for the first time</span>, Spirit welcomes anyone ready to have fun and be part of
+            something bigger. From the first rehearsal to the final performance, it&apos;s an experience built on{' '}
+            <span className="font-bold text-accent-gold">teamwork, laughter, and representing your school together.</span> This is where{' '}
+            <span className="font-bold text-accent-green spirit-glow">Comet pride shines the brightest.</span>
           </p>
 
           <div ref={headingRef} className="flex flex-col items-center lg:items-stretch gap-7 mx-auto lg:mx-0 w-full max-w-[460px]">
@@ -294,7 +299,7 @@ export default function SpiritPage() {
               transitionDelay: ctaVisible ? '140ms' : '0ms',
             }}
           >
-            Whether you love performing, making people laugh, or just bringing the energy, Spirit is one of the most exciting parts of Goodphil. Our next Spirit season kicks off in the spring, so follow us on Instagram and be the first to hear about auditions, updates, and everything leading up to the biggest weekend of the year.
+Spirit auditions begin each <span className="font-bold text-accent-green">Spring</span> as GoodPhil season kicks off. Follow us on Instagram to stay up to date on auditions, rehearsals, and <span className="font-bold text-white">everything you&apos;ll need to join this year&apos;s team.</span>
           </p>
           <a
             href="https://instagram.com/fsautd"

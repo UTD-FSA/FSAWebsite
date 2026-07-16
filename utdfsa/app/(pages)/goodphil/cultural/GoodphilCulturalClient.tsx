@@ -2,7 +2,7 @@
 // goodphil cultural page — utd pamana dance team profile
 //
 // notes: fully static; photos:
-//        cultural-hero.jpg, cultural-logo.svg, cult-1.jpg, cult-2.jpg, cult-3.jpg (all in /public);
+//        cultural-hero.jpg, cultural-logo.png, cult-1.jpg, cult-2.jpg, cult-3.jpg (all in /public);
 //        youtube video ids hardcoded in the past-performances
 //        section; cta links to @utdpamana on instagram
 // ──────────────────────────────────────────────────────────
@@ -141,8 +141,14 @@ export default function CulturalPage() {
               transitionDelay: titleVisible ? '510ms' : '0ms',
             }}
           >
-            <span className="font-bold text-white">UTD Pamana</span>
-            , the Tagalog word for <span className="font-bold italic text-accent-green">&ldquo;legacy&rdquo; or &ldquo;inheritance,&rdquo;</span> represents the traditions and stories passed down from generation to generation. As UTD FSA&apos;s cultural dance team, Pamana honors Filipino heritage through performances <span className="font-bold text-accent-gold">inspired by the country&rsquo;s rich history, music, and traditions.</span> Every fall, the team spends <span className="font-bold text-white">2–3 months</span> rehearsing before taking the stage at Isang Mahal, where they perform alongside cultural dance teams from Filipino Student Associations across Texas. They also proudly represent UTD FSA at Goodphil, <span className="font-bold text-accent-green">carrying on a legacy</span> that continues to inspire every new generation of dancers.
+            <span className="font-bold text-white">UTD Pamana</span>, the Tagalog word for{' '}
+            <span className="font-bold italic text-accent-green">&ldquo;legacy&rdquo; or &ldquo;inheritance,&rdquo;</span>{' '}represents the traditions and stories passed
+            down from generation to generation. As UTD FSA&apos;s cultural dance team, Pamana brings those stories to life through{' '}
+            <span className="font-bold text-accent-gold">traditional Filipino folk dances inspired by the country&rsquo;s diverse regions, history, and traditions.</span>{' '}
+            Each fall, members spend the semester <span className="font-bold text-white">learning choreography, exploring the meaning behind every dance</span>, and
+            preparing for Isang Mahal, where cultural dance teams from Filipino Student Associations across Texas come together to perform. The journey continues into
+            GoodPhil, where Pamana proudly represents UTD while <span className="font-bold text-accent-green">sharing the beauty of Filipino culture</span> with audiences
+            from across the state.
           </p>
 
           <div ref={headingRef} className="flex flex-col items-center lg:items-stretch gap-7 mx-auto lg:mx-0 w-full max-w-[460px]">
@@ -185,7 +191,7 @@ export default function CulturalPage() {
                   }}
                 >
                   <SmoothImage
-                    src="/cultural-logo.svg"
+                    src="/cultural-logo.png"
                     alt="UTD Pamana logo"
                     fill
                     className="object-cover"
@@ -274,7 +280,7 @@ export default function CulturalPage() {
               transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
             }}
           >
-            Come Celebrate Filipino Culture With Us!
+            Interested in Joining Pamana?
           </h2>
           <p
             className="font-sans leading-relaxed text-white/60 mx-auto mb-8"
@@ -287,7 +293,7 @@ export default function CulturalPage() {
               transitionDelay: ctaVisible ? '140ms' : '0ms',
             }}
           >
-            Whether you&apos;re reconnecting with your heritage or discovering it for the first time, Pamana welcomes members who are ready to learn, perform, and celebrate the stories that make our culture unique.
+<span className="font-bold text-accent-green">No dance experience? No problem.</span> Our workshops are open to anyone interested in learning more about Filipino culture through dance. Whether you&apos;re trying something completely new or looking to perform this season, <span className="font-bold text-white">we&apos;d love to have you join us.</span>
           </p>
           <a
             href="https://forms.gle/X4o8v3Qjq3CnULRf9"

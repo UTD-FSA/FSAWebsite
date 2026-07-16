@@ -2,7 +2,7 @@
 // goodphil modern page — utd maharlika dance team profile
 //
 // notes: fully static; photos:
-//        modern-hero.jpg, modern-logo.svg, mod-1/2/3.jpg (all in /public);
+//        modern-hero.jpg, modern-logo.png, mod-1/2/3.jpg (all in /public);
 //        youtube video ids hardcoded in the past-performances
 //        section; cta links to @utdmaharlika on instagram
 // ──────────────────────────────────────────────────────────
@@ -142,7 +142,7 @@ export default function ModernPage() {
             }}
           >
             <span className="font-bold text-white">UTD Maharlika</span>
-            {' '}comes from the Tagalog word referring to the{' '}
+            {' '}takes its name from the Tagalog word referring to the{' '}
             <span
               ref={nobleRef}
               className="font-bold"
@@ -150,7 +150,11 @@ export default function ModernPage() {
             >
               noble warrior class
             </span>
-            {' '}of pre-colonial Philippines—a name that reflects confidence, strength, and pride. Established in 2002, UTD FSA&apos;s modern dance team brings those qualities to life through <span className="font-bold text-accent-gold">hip hop and a variety of contemporary dance styles.</span> Each fall, the team dedicates <span className="font-bold text-white">2–3 months</span> of intense rehearsals in preparation for Isang Mahal, where they perform alongside modern dance teams from Filipino Student Associations across Texas, before taking that same passion to the Goodphil stage. Beyond the performances, Maharlika is built on <span className="font-bold text-accent-green">teamwork, resilience, and the friendships formed</span> through every late-night practice.
+            {' '}of the pre-colonial Philippines—a symbol of confidence, strength, and resilience. Since 2002, UTD FSA&apos;s modern dance team has brought that spirit to life through{' '}
+            <span className="font-bold text-accent-gold">hip-hop and a wide range of contemporary dance styles.</span> Each semester, members spend months training,
+            refining choreography, and pushing each other to prepare for performances at Isang Mahal and GoodPhil alongside Filipino Student Associations from across Texas.
+            Beyond the stage, Maharlika is a place to <span className="font-bold text-accent-green">grow as a dancer, challenge yourself, and become part of a team</span>{' '}
+            that&apos;s built on <span className="font-bold text-white">trust, dedication, and shared ambition.</span>
           </p>
 
           <div ref={headingRef} className="flex flex-col items-center lg:items-stretch gap-7 mx-auto lg:mx-0 w-full max-w-[460px]">
@@ -192,7 +196,7 @@ export default function ModernPage() {
                   }}
                 >
                   <SmoothImage
-                    src="/modern-logo.svg"
+                    src="/modern-logo.png"
                     alt="UTD Maharlika logo"
                     fill
                     className="object-cover"
@@ -294,7 +298,7 @@ export default function ModernPage() {
               transitionDelay: ctaVisible ? '140ms' : '0ms',
             }}
           >
-            Whether you&apos;re an experienced dancer or trying something new, Maharlika welcomes members who are ready to grow, perform, and discover what they&apos;re capable of.
+Every season starts somewhere, and our workshops are the perfect place to <span className="font-bold text-accent-green">meet the team, learn our style, and see what Maharlika is all about.</span> <span className="font-bold text-white">Fill out our interest form</span> to stay updated on workshops, auditions, and everything happening this season.
           </p>
           <a
             href="https://forms.gle/adY8cCiyYHcLSmgz8"

@@ -354,7 +354,7 @@ export default function AboutClient() {
               ABOUT US
             </AnimatedTitle>
             <div className="mb-8">
-              <BaybayinRule word="ᜆᜓᜅ᜔ᜃᜓᜎ᜔" size="clamp(14px,2.2vw,32px)" onPhoto reveal={heroIn} delayMs={80} draw />
+              <BaybayinRule word="ᜆᜓᜅ᜔ᜃᜓᜎ᜔" size="clamp(14px,2.2vw,32px)" reveal={heroIn} delayMs={80} draw />
             </div>
             <AnimatedTitle
               as="p"
@@ -363,9 +363,9 @@ export default function AboutClient() {
               className="font-sans text-white leading-relaxed max-w-2xl mx-auto"
               style={{ fontSize: 'clamp(15px, 1.5vw, 18px)' }}
             >
-              Founded on the values of community, culture, and leadership, UTD FSA strives to create meaningful experiences that empower students both on and off campus. 
-              Through cultural showcases, pamilya programs, athletic initiatives, volunteer opportunities, and social events, we aim to foster a strong sense of belonging while celebrating the richness of Filipino heritage. 
-              Our mission is to build a community where students can grow, connect, and proudly display their culture.
+              Throughout the year, UTD FSA offers a wide variety of opportunities for members to get involved both on and off campus. 
+              From our Pamilya program, GoodPhil and Isang Mahal performances, cultural showcases, and some of our most anticipated social events, there's always something to look forward to. 
+              No matter your interests, every experience is an opportunity to meet new people, try something new, and become part of traditions that continue long after the semester ends.
 
             </AnimatedTitle>
 
@@ -382,7 +382,7 @@ export default function AboutClient() {
             className="font-display font-black text-white text-center mb-12"
             style={{ fontSize: 'clamp(16px, 2.2vw, 32px)', letterSpacing: '0.02em' }}
           >
-            2026-2027 OFFICER BOARD
+            2026 - 2027 OFFICER BOARD
           </h2>
           <div ref={boardGridRef} className="flex flex-col gap-6">
             {/* leadership row — President + VP always share their own row, 2-up at every breakpoint */}
@@ -472,7 +472,7 @@ export default function AboutClient() {
             style={{ fontSize: 'clamp(14px, 1.4vw, 17px)' }}
           >
             Have questions about UTD FSA? Reach out to us on Instagram — we respond to DMs and
-            are happy to help with anything from membership questions to event details.
+            are happy to help with anything from membership questions to event details!
           </p>
           <a
             href="https://instagram.com/fsautd"

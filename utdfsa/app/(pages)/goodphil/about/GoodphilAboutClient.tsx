@@ -261,7 +261,7 @@ export default function GoodphilAboutPage() {
         <div className="max-w-[1218px] mx-auto px-8 py-16 text-center">
 
           <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed mb-6">
-            <span className="font-bold text-white">Goodphil</span>, also known as the GoodPhil Games, is an <span className="font-bold text-accent-gold">intercollegiate four-day competition</span> where {' '}
+            <span className="font-bold text-white">GoodPhil</span>, also known as the GoodPhil Games, brings Filipino Student Associations{' '}
             <span
               ref={highlightRef}
               className="relative z-0 inline-block font-bold text-white"
@@ -281,9 +281,11 @@ export default function GoodphilAboutPage() {
                   transitionDelay: highlightVisible ? '300ms' : '0ms',
                 }}
               />
-              Filipino Student Associations across Texas and Oklahoma
+              from across Texas and Oklahoma
             </span>
-            {' '}compete in a variety of sports and performances. More than just a competition, Goodphil celebrates school pride, Filipino culture, lifelong friendships, and <span className="font-bold text-accent-green">unforgettable memories.</span>
+            {' '}together for <span className="font-bold text-accent-gold">four days of sports, performances, friendly competition, and guest performances!</span> Every
+            school spends months preparing for this weekend, <span className="font-bold text-accent-green">creating traditions, strengthening friendships, and building school pride</span>{' '}
+            before finally coming together to <span className="font-bold text-white">compete, cheer each other on, and celebrate as one FSA community.</span>
           </p>
 
           <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed">
