@@ -365,51 +365,58 @@ export default function Navbar({ initialMember }: NavbarProps) {
         />
       )}
 
-      {/* Mobile menu panel — slides in below navbar */}
+      {/* Mobile menu panel — slides in below navbar
+          height uses svh (small viewport height, toolbar-shown) instead of vh so the
+          panel never extends behind iOS Safari's bottom bar — vh there resolves to the
+          large/toolbar-hidden viewport and covers whatever sits at the very bottom */}
       {mobileMenuOpen && (
-        <div className="fixed top-20 left-0 right-0 z-60 bg-brand-bg border-t border-white/10 overflow-y-auto max-h-[calc(100vh-5rem)] xl:hidden">
-          <ul>
-            {/* route: /about — About Us page — do not change this path */}
-            <li><Link href="/about" className={mobileNavLink(isActive('/about'))} onClick={closeMobileMenu}>About Us</Link></li>
-            {/* route: /pamilyas — Pamilyas info page — do not change this path */}
-            <li><Link href="/pamilyas" className={mobileNavLink(isActive('/pamilyas'))} onClick={closeMobileMenu}>Pamilyas</Link></li>
+        <div
+          className="fixed top-20 left-0 right-0 z-60 bg-brand-bg border-t border-white/10 flex flex-col xl:hidden"
+          style={{ height: 'calc(100svh - 5rem)' }}
+        >
+          {/* scroll region — everything except Log Out/Sign In, which are pinned below
+              so an officer's long link list never buries the sign-out action off-screen */}
+          <div className="overflow-y-auto flex-1">
+            <ul>
+              {/* route: /about — About Us page — do not change this path */}
+              <li><Link href="/about" className={mobileNavLink(isActive('/about'))} onClick={closeMobileMenu}>About Us</Link></li>
+              {/* route: /pamilyas — Pamilyas info page — do not change this path */}
+              <li><Link href="/pamilyas" className={mobileNavLink(isActive('/pamilyas'))} onClick={closeMobileMenu}>Pamilyas</Link></li>
 
-            {/* Goodphil with inline expandable submenu */}
-            <li>
-              <button
-                className={`w-full text-left flex items-center justify-between ${mobileNavLink(isActive('/goodphil'))}`}
-                onClick={() => setMobileGoodphilOpen(prev => !prev)}
-              >
-                Goodphil
-                <span className="text-sm">{mobileGoodphilOpen ? '▴' : '▾'}</span>
-              </button>
-              {mobileGoodphilOpen && (
-                <ul className="bg-white/5">
-                  {/* route: /goodphil/about — About Goodphil page — do not change this path */}
-                  <li><Link href="/goodphil/about" className={mobileSubLink(isActive('/goodphil/about'))} onClick={closeMobileMenu}>About Goodphil</Link></li>
-                  {/* route: /goodphil/spirit — Spirit Goodphil branch page — do not change this path */}
-                  <li><Link href="/goodphil/spirit" className={mobileSubLink(isActive('/goodphil/spirit'))} onClick={closeMobileMenu}>Spirit</Link></li>
-                  {/* route: /goodphil/cultural — Cultural Goodphil branch page — do not change this path */}
-                  <li><Link href="/goodphil/cultural" className={mobileSubLink(isActive('/goodphil/cultural'))} onClick={closeMobileMenu}>Cultural</Link></li>
-                  {/* route: /goodphil/modern — Modern Goodphil branch page — do not change this path */}
-                  <li><Link href="/goodphil/modern" className={mobileSubLink(isActive('/goodphil/modern'))} onClick={closeMobileMenu}>Modern</Link></li>
-                  {/* route: /goodphil/sports — Sports Goodphil branch page — do not change this path */}
-                  <li><Link href="/goodphil/sports" className={mobileSubLink(isActive('/goodphil/sports'))} onClick={closeMobileMenu}>Sports</Link></li>
-                </ul>
-              )}
-            </li>
+              {/* Goodphil with inline expandable submenu */}
+              <li>
+                <button
+                  className={`w-full text-left flex items-center justify-between ${mobileNavLink(isActive('/goodphil'))}`}
+                  onClick={() => setMobileGoodphilOpen(prev => !prev)}
+                >
+                  Goodphil
+                  <span className="text-sm">{mobileGoodphilOpen ? '▴' : '▾'}</span>
+                </button>
+                {mobileGoodphilOpen && (
+                  <ul className="bg-white/5">
+                    {/* route: /goodphil/about — About Goodphil page — do not change this path */}
+                    <li><Link href="/goodphil/about" className={mobileSubLink(isActive('/goodphil/about'))} onClick={closeMobileMenu}>About Goodphil</Link></li>
+                    {/* route: /goodphil/spirit — Spirit Goodphil branch page — do not change this path */}
+                    <li><Link href="/goodphil/spirit" className={mobileSubLink(isActive('/goodphil/spirit'))} onClick={closeMobileMenu}>Spirit</Link></li>
+                    {/* route: /goodphil/cultural — Cultural Goodphil branch page — do not change this path */}
+                    <li><Link href="/goodphil/cultural" className={mobileSubLink(isActive('/goodphil/cultural'))} onClick={closeMobileMenu}>Cultural</Link></li>
+                    {/* route: /goodphil/modern — Modern Goodphil branch page — do not change this path */}
+                    <li><Link href="/goodphil/modern" className={mobileSubLink(isActive('/goodphil/modern'))} onClick={closeMobileMenu}>Modern</Link></li>
+                    {/* route: /goodphil/sports — Sports Goodphil branch page — do not change this path */}
+                    <li><Link href="/goodphil/sports" className={mobileSubLink(isActive('/goodphil/sports'))} onClick={closeMobileMenu}>Sports</Link></li>
+                  </ul>
+                )}
+              </li>
 
-            {/* route: /archives — public photo archives page — do not change this path */}
-            <li><Link href="/archives" className={mobileNavLink(isActive('/archives'))} onClick={closeMobileMenu}>Archives</Link></li>
-            {/* route: /events — public events listing page — do not change this path */}
-            <li><Link href="/events" className={mobileNavLink(isActive('/events'))} onClick={closeMobileMenu}>Events</Link></li>
-          </ul>
+              {/* route: /archives — public photo archives page — do not change this path */}
+              <li><Link href="/archives" className={mobileNavLink(isActive('/archives'))} onClick={closeMobileMenu}>Archives</Link></li>
+              {/* route: /events — public events listing page — do not change this path */}
+              <li><Link href="/events" className={mobileNavLink(isActive('/events'))} onClick={closeMobileMenu}>Events</Link></li>
+            </ul>
 
-          {/* Profile section at bottom of mobile menu */}
-          <div className="border-t border-white/10 mt-2">
-            {/* only renders the member section when signed in — do not remove this condition */}
-            {member ? (
-              <>
+            {/* Profile section — only renders when signed in — do not remove this condition */}
+            {member && (
+              <div className="border-t border-white/10 mt-2">
                 {/* route: /member/profile — member profile page — do not change this path */}
                 <Link href="/member/profile" className={mobileNavLink(isActive('/member/profile'))} onClick={closeMobileMenu}>Profile</Link>
                 {/* route: /member/orders — member ticket order history page — do not change this path */}
@@ -433,15 +440,23 @@ export default function Navbar({ initialMember }: NavbarProps) {
                     <Link href="/officer/applications" className={mobileNavLink(isActive('/officer/applications'))} onClick={closeMobileMenu}>Review Applications</Link>
                   </>
                 )}
+              </div>
+            )}
+          </div>
 
-                <div className="border-t border-white/10 mx-6 my-1" />
-                <button
-                  onClick={() => { closeMobileMenu(); handleLogout() }}
-                  className="block w-full text-left py-4 px-6 text-lg font-display font-semibold text-red-400 uppercase tracking-wider hover:bg-white/10 transition-colors"
-                >
-                  Log Out
-                </button>
-              </>
+          {/* pinned footer — Log Out / Sign In always visible above the iOS safe area,
+              never scrolled out of reach by a long officer link list */}
+          <div
+            className="border-t border-white/10 flex-none"
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+          >
+            {member ? (
+              <button
+                onClick={() => { closeMobileMenu(); handleLogout() }}
+                className="block w-full text-left py-4 px-6 text-lg font-display font-semibold text-red-400 uppercase tracking-wider hover:bg-white/10 transition-colors"
+              >
+                Log Out
+              </button>
             ) : (
               /* route: /login?next=<pathname> — sign-in page; ?next causes a redirect back here after auth — do not change this path */
               <div className="px-6 py-4">

@@ -11,7 +11,7 @@
 //        re-fetches the gallery list from the server without a full navigation.
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo, useEffect } from 'react'
 import Modal from '@/components/Modal'
 import { useRouter } from 'next/navigation'
 import type { Gallery } from '@/types/database'
@@ -50,6 +50,17 @@ const EMPTY_EDIT_FORM: EditForm = {
   year: '',
   is_published: true,
 }
+
+// used to rank semesters within a year for sorting (higher = later in the year)
+const SEM_RANK: Record<string, number> = { Spring: 1, Summer: 2, Fall: 3 }
+
+type SortMode = 'newest' | 'oldest' | 'az' | 'za'
+const SORT_OPTS: { value: SortMode; label: string; short: string }[] = [
+  { value: 'newest', label: 'Newest first', short: 'Newest' },
+  { value: 'oldest', label: 'Oldest first', short: 'Oldest' },
+  { value: 'az', label: 'A–Z', short: 'A–Z' },
+  { value: 'za', label: 'Z–A', short: 'Z–A' },
+]
 
 // ============================================================
 // UI — safe to restyle everything below this line
@@ -97,6 +108,53 @@ export default function OfficerGalleryClient({ galleries }: Props) {
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [editFieldErrors, setEditFieldErrors] = useState<Record<string, string>>({})
   const editFileInputRef = useRef<HTMLInputElement>(null)
+
+  // search / sort controls above the gallery list
+  const [search, setSearch] = useState('')
+  const [sortMode, setSortMode] = useState<SortMode>('newest')
+  const [sortMenuOpen, setSortMenuOpen] = useState(false)
+  const sortRef = useRef<HTMLDivElement>(null)
+
+  // close the sort dropdown when clicking outside — same pattern as Navbar's dropdowns
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // search, applied before the published/drafts split
+  const filteredGalleries = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return galleries
+    return galleries.filter(g => {
+      const haystack = `${g.title} ${g.description ?? ''} ${g.semester ?? ''} ${g.year ?? ''}`.toLowerCase()
+      return haystack.includes(q)
+    })
+  }, [galleries, search])
+
+  // sorts a gallery list in place per sortMode; inlined into the useMemos below (rather
+  // than called as a shared closure) so the React Compiler can track its dependencies
+  const galleryScore = (g: Gallery) => (g.year ?? 0) * 10 + (g.semester ? SEM_RANK[g.semester] ?? 0 : 0)
+
+  const publishedGalleries = useMemo(() => {
+    const sorted = filteredGalleries.filter(g => g.is_published)
+    if (sortMode === 'az') sorted.sort((a, b) => a.title.localeCompare(b.title))
+    else if (sortMode === 'za') sorted.sort((a, b) => b.title.localeCompare(a.title))
+    else sorted.sort((a, b) => sortMode === 'newest' ? galleryScore(b) - galleryScore(a) : galleryScore(a) - galleryScore(b))
+    return sorted
+  }, [filteredGalleries, sortMode])
+
+  const draftGalleries = useMemo(() => {
+    const sorted = filteredGalleries.filter(g => !g.is_published)
+    if (sortMode === 'az') sorted.sort((a, b) => a.title.localeCompare(b.title))
+    else if (sortMode === 'za') sorted.sort((a, b) => b.title.localeCompare(a.title))
+    else sorted.sort((a, b) => sortMode === 'newest' ? galleryScore(b) - galleryScore(a) : galleryScore(a) - galleryScore(b))
+    return sorted
+  }, [filteredGalleries, sortMode])
 
   function closeModal() {
     setModalOpen(false)
@@ -371,7 +429,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
   return (
     <main className="min-h-screen bg-[#070707] px-6 md:px-10 py-10">
       <div className="max-w-5xl mx-auto">
-        {/* page header */}
+        {/* page header — "New Archive" is desktop-only; mobile gets the floating + button below */}
         <div className="flex items-start justify-between gap-6 mb-8">
           <div>
             <h1 className="font-display font-black text-[32px] text-white tracking-tight leading-[1.02] mb-2">
@@ -381,7 +439,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
           </div>
           <button
             onClick={() => setModalOpen(true)}
-            className="sm:flex-shrink-0 flex items-center gap-2 px-5 py-3 min-h-[44px] border-none rounded-[13px] bg-[#9747FF] hover:bg-[#a85eff] text-white text-sm font-bold cursor-pointer transition-colors"
+            className="hidden sm:inline-flex flex-shrink-0 items-center gap-2 px-5 py-3 min-h-[44px] border-none rounded-[13px] bg-[#9747FF] hover:bg-[#a85eff] text-white text-sm font-bold cursor-pointer transition-colors"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
               <path d="M12 5v14M5 12h14"/>
@@ -390,73 +448,110 @@ export default function OfficerGalleryClient({ galleries }: Props) {
           </button>
         </div>
 
-        {/* existing galleries header */}
-        <div className="flex items-center gap-3 mb-5">
-          <span className="font-display font-bold text-[15px] text-white">Existing Galleries</span>
-          <span className="h-px flex-1 bg-white/7" />
-          <span className="text-[13px] text-text-muted font-medium">{galleries.length} archive{galleries.length !== 1 ? 's' : ''}</span>
+        {/* controls — search (flexes to fill available width) + sort */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="relative flex-1">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" strokeWidth={2}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+              <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search archives"
+              className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-[#141414] border border-white/10 text-white text-sm placeholder:text-[#8c8c8c] focus:outline-none focus:border-[#9747FF] transition-colors"
+            />
+          </div>
+
+          <div className="ml-auto relative flex-shrink-0" ref={sortRef}>
+            <button
+              onClick={() => setSortMenuOpen(prev => !prev)}
+              aria-expanded={sortMenuOpen}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/12 bg-[#141414] text-white text-sm font-semibold hover:border-white/24 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M4 6h16M7 12h10M10 18h4"/>
+              </svg>
+              <span className="md:hidden">{SORT_OPTS.find(o => o.value === sortMode)?.short}</span>
+              <span className="hidden md:inline">{SORT_OPTS.find(o => o.value === sortMode)?.label}</span>
+            </button>
+            {/* only renders when the sort button has been clicked — do not remove this condition */}
+            {sortMenuOpen && (
+              <div className="absolute right-0 mt-2 w-44 bg-dropdown-bg border border-white/10 rounded-xl py-1 z-30 shadow-xl">
+                {SORT_OPTS.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setSortMode(opt.value); setSortMenuOpen(false) }}
+                    className={`block w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${sortMode === opt.value ? 'text-[#bb9eff]' : 'text-white/80 hover:text-white'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* gallery list */}
+        {/* gallery list — split into Published / Drafts sections */}
         {/* only renders when no galleries exist yet — do not remove this condition */}
         {galleries.length === 0 ? (
           <p className="text-[#5e5e5e] text-sm text-center py-16">No archives yet. Create one above.</p>
+        ) : publishedGalleries.length === 0 && draftGalleries.length === 0 ? (
+          <p className="text-[#5e5e5e] text-sm text-center py-16">No archives match your search.</p>
         ) : (
-          <div className="flex flex-col gap-3">
-            {galleries.map((gallery) => (
-              <div
-                key={gallery.id}
-                className="flex flex-col sm:flex-row gap-3 sm:gap-5 bg-[#121212] border border-white/8 rounded-2xl p-4 hover:border-white/16 transition-colors group"
-              >
-                {/* cover thumbnail */}
-                <div className="w-[72px] h-[72px] rounded-[13px] overflow-hidden flex-shrink-0 bg-[#0d0d0d] border border-white/8 sm:self-center sm:mt-0.5">
-                  <img
-                    src={gallery.cover_photo_url}
-                    alt={gallery.title}
-                    className="w-full h-full object-cover"
-                  />
+          <>
+            {/* only renders when at least one published archive matches the current search/filter — do not remove this condition */}
+            {publishedGalleries.length > 0 && (
+              <section>
+                <div className="flex items-center gap-3 mt-2 mb-4">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#4ade80] flex-shrink-0" />
+                  <h2 className="font-display font-bold text-[15px] text-white">
+                    Published · {publishedGalleries.length}
+                  </h2>
+                  <span className="h-px flex-1 bg-white/8" />
                 </div>
+                <div className="flex flex-col gap-3">
+                  {publishedGalleries.map(gallery => (
+                    <GalleryRow key={gallery.id} gallery={gallery} onEdit={openEdit} />
+                  ))}
+                </div>
+              </section>
+            )}
 
-                {/* info */}
-                <div className="flex-1 min-w-0 sm:self-center">
-                  <h2 className="font-bold text-[16px] text-white truncate leading-snug">{gallery.title}</h2>
-                  {/* only renders when at least one of semester/year is set — do not remove this condition */}
-                  {(gallery.semester || gallery.year) && (
-                    <p className="text-[13px] text-[#8c8c8c] font-medium mt-0.5">
-                      {[gallery.semester, gallery.year].filter(Boolean).join(' ')}
-                    </p>
-                  )}
-                  {/* only renders when the gallery has a description — do not remove this condition */}
-                  {gallery.description && (
-                    <p className="text-[13px] text-text-muted font-medium mt-1 line-clamp-1">{gallery.description}</p>
-                  )}
+            {/* only renders when at least one draft archive matches the current search/filter — do not remove this condition */}
+            {draftGalleries.length > 0 && (
+              <section>
+                <div className="flex items-center gap-3 mt-8 mb-4">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#6e6e6e] flex-shrink-0" />
+                  <h2 className="font-display font-bold text-[15px] text-white">
+                    Drafts · {draftGalleries.length}
+                  </h2>
+                  <span className="h-px flex-1 bg-white/8" />
                 </div>
-
-                {/* actions — badge pins top-right, edit pins bottom-right */}
-                <div className="flex sm:flex-col sm:justify-between sm:items-end gap-2 sm:flex-shrink-0 sm:self-stretch">
-                  {gallery.is_published ? (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-[0.05em] uppercase bg-[rgba(74,222,128,0.1)] text-[#4ade80] border border-[rgba(74,222,128,0.22)]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#4ade80]" />
-                      Published
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-[0.05em] uppercase bg-white/5 text-text-muted border border-white/10">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#6e6e6e]" />
-                      Draft
-                    </span>
-                  )}
-                  <button
-                    onClick={() => openEdit(gallery)}
-                    className="min-h-[44px] flex items-center text-[13px] font-semibold text-[#5fa8e8] hover:text-[#8ec5f5] transition-colors"
-                  >
-                    Edit
-                  </button>
+                <div className="flex flex-col gap-3">
+                  {draftGalleries.map(gallery => (
+                    <GalleryRow key={gallery.id} gallery={gallery} onEdit={openEdit} draft />
+                  ))}
                 </div>
-              </div>
-            ))}
-          </div>
+              </section>
+            )}
+          </>
         )}
       </div>
+
+      {/* mobile-only floating action button — replaces the header "New Archive" pill below sm.
+          shadow is a plain neutral drop shadow ONLY — no colored/purple glow, per design direction */}
+      <button
+        onClick={() => setModalOpen(true)}
+        aria-label="New Archive"
+        className="sm:hidden fixed z-40 w-14 h-14 rounded-2xl bg-[#9747FF] hover:bg-[#a85eff] active:scale-95 flex items-center justify-center text-white transition-transform shadow-[0_8px_24px_rgba(0,0,0,0.45)]"
+        style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1.25rem)', right: 'calc(env(safe-area-inset-right) + 1.25rem)' }}
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </button>
 
       {/* only renders when the officer has opened the New Archive modal — do not remove this condition */}
       {modalOpen && (
@@ -931,5 +1026,53 @@ export default function OfficerGalleryClient({ galleries }: Props) {
         </Modal>
       )}
     </main>
+  )
+}
+
+// single row in the Published/Drafts list — draft rows get a dashed border instead of a solid fill
+function GalleryRow({ gallery, onEdit, draft }: { gallery: Gallery; onEdit: (g: Gallery) => void; draft?: boolean }) {
+  return (
+    <div
+      className={`flex gap-4 rounded-2xl p-4 transition-colors ${draft ? 'border border-dashed border-white/15 hover:border-white/25' : 'bg-[#121212] border border-white/8 hover:border-white/16'}`}
+    >
+      {/* cover thumbnail — falls back to a placeholder tile when the archive has no cover yet */}
+      <div className="w-16 h-16 sm:w-[68px] sm:h-[68px] rounded-[14px] overflow-hidden flex-shrink-0 self-center bg-[#1a1a1a] border border-white/8">
+        {gallery.cover_photo_url ? (
+          <img src={gallery.cover_photo_url} alt={gallery.title} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth={1.7}>
+              <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.7"/>
+              <path d="M21 15l-5-5L4 21"/>
+            </svg>
+          </div>
+        )}
+      </div>
+
+      {/* info */}
+      <div className="flex-1 min-w-0 self-center">
+        <h3 className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 leading-snug">
+          <span className="font-bold text-[16px] text-white truncate min-w-0 max-w-full">{gallery.title}</span>
+          {/* only renders when both semester and year are set — do not remove this condition */}
+          {gallery.semester && gallery.year != null && (
+            <span className="text-[11px] font-bold tracking-[0.06em] uppercase text-[#bb9eff] whitespace-nowrap">
+              {gallery.semester} {gallery.year}
+            </span>
+          )}
+        </h3>
+        {/* only renders when the gallery has a description — do not remove this condition */}
+        {gallery.description && (
+          <p className="text-[13px] text-[#8c8c8c] font-medium mt-1 line-clamp-1">{gallery.description}</p>
+        )}
+      </div>
+
+      {/* edit */}
+      <button
+        onClick={() => onEdit(gallery)}
+        className="self-center flex-shrink-0 min-h-[44px] px-5 rounded-xl border border-white/16 text-[#cfcfcf] text-sm font-semibold hover:border-white/32 hover:text-white transition-colors"
+      >
+        Edit
+      </button>
+    </div>
   )
 }

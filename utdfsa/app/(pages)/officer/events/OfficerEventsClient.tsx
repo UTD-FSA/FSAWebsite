@@ -9,7 +9,7 @@
 //        attendance qr open/close is optimistic with a revert on error.
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 
 import type { Event } from '@/types/database'
 import Image from 'next/image'
@@ -29,6 +29,23 @@ import { getBadge } from '@/utils/eventTypes'
 // ── constants ─────────────────────────────────────────────────────────────────
 
 const EVENT_TYPES = ['General Meeting', 'Risk Management', 'Party', 'GP Event', 'Regular Event', 'Other'] as const
+
+// sort control on the event list — module-level (stable reference) so the
+// useMemo comparators below can call it without invalidating memoization every render
+type SortMode = 'soonest' | 'latest' | 'az' | 'za'
+const SORT_LABELS: Record<SortMode, string> = { soonest: 'Soonest', latest: 'Latest', az: 'A–Z', za: 'Z–A' }
+function eventTime(e: Event) { return new Date(e.event_date).getTime() }
+
+// module-level (not a component-body closure) so useMemo callbacks that call it keep
+// stable dependencies — a component-body closure here broke React Compiler's
+// memoization tracking the same way once already this session (gallery's sortGalleries)
+function sortEvents(list: Event[], mode: SortMode) {
+  const sorted = [...list]
+  if (mode === 'az') sorted.sort((a, b) => a.name.localeCompare(b.name))
+  else if (mode === 'za') sorted.sort((a, b) => b.name.localeCompare(a.name))
+  else sorted.sort((a, b) => mode === 'soonest' ? eventTime(a) - eventTime(b) : eventTime(b) - eventTime(a))
+  return sorted
+}
 
 /**
  * Ticketed events: Party, Other
@@ -78,6 +95,10 @@ function fmtDateTime(iso: string) {
     hour: 'numeric', minute: '2-digit', second: '2-digit',
     timeZone: 'America/Chicago',
   })
+}
+
+function fmtTime(iso: string) {
+  return new Date(iso).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Chicago' })
 }
 
 function toDatetimeLocal(iso: string | null | undefined) {
@@ -929,6 +950,45 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
   // cover file staged during the edit flow — uploaded only after Save Changes succeeds
   const [pendingEditCoverFile, setPendingEditCoverFile] = useState<File | null>(null)
 
+  // search / sort controls above the event list
+  const [search, setSearch] = useState('')
+  const [sortMode, setSortMode] = useState<SortMode>('soonest')
+  const [sortMenuOpen, setSortMenuOpen] = useState(false)
+  const sortRef = useRef<HTMLDivElement>(null)
+
+  // close the sort dropdown when clicking outside — same pattern as Navbar's dropdowns
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  // search, applied before the upcoming/past split
+  const filteredEvents = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return events
+    return events.filter(e => {
+      const haystack = `${e.name} ${e.description ?? ''} ${e.location ?? ''} ${e.event_type}`.toLowerCase()
+      return haystack.includes(q)
+    })
+  }, [events, search])
+
+  // React Compiler flags the bare Date.now() global as impure; new Date() (used elsewhere
+  // in this file, e.g. qrEffectivelyOpen) isn't — same idiom, avoids the lint error
+  const upcomingEvents = useMemo(() => {
+    const now = new Date().getTime()
+    return sortEvents(filteredEvents.filter(e => eventTime(e) >= now), sortMode)
+  }, [filteredEvents, sortMode])
+
+  const pastEvents = useMemo(() => {
+    const now = new Date().getTime()
+    return sortEvents(filteredEvents.filter(e => eventTime(e) < now), sortMode)
+  }, [filteredEvents, sortMode])
+
   function upsert(updated: Event) {
     setEvents(prev => {
       const idx = prev.findIndex(e => e.id === updated.id)
@@ -1000,7 +1060,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
           {!creating && (
             <button
               onClick={() => { setCreateInitial(emptyForm()); setCreating(true); setEditingId(null) }}
-              className="sm:flex-shrink-0 w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 min-h-[44px] border-none rounded-[13px] bg-[#9747FF] hover:bg-[#a85eff] text-white text-sm font-bold cursor-pointer transition-colors"
+              className="hidden sm:inline-flex flex-shrink-0 items-center gap-2 px-5 py-3 min-h-[44px] border-none rounded-[13px] bg-[#9747FF] hover:bg-[#a85eff] text-white text-sm font-bold cursor-pointer transition-colors"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
                 <path d="M12 5v14M5 12h14"/>
@@ -1042,102 +1102,120 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
           </Modal>
         )}
 
-        {/* existing events header */}
-        <div className="flex items-center gap-3 mb-5">
-          <span className="font-display font-bold text-[15px] text-white">Existing Events</span>
-          <span className="h-px flex-1 bg-white/7" />
-          <span className="text-[13px] text-text-muted font-medium">{events.length} event{events.length !== 1 ? 's' : ''}</span>
+        {/* controls — search (flexes to fill available width) + sort */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="relative flex-1">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" strokeWidth={2}
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
+              <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search events"
+              className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-[#141414] border border-white/10 text-white text-sm placeholder:text-[#8c8c8c] focus:outline-none focus:border-[#9747FF] transition-colors"
+            />
+          </div>
+
+          <div className="ml-auto relative flex-shrink-0" ref={sortRef}>
+            <button
+              onClick={() => setSortMenuOpen(prev => !prev)}
+              aria-expanded={sortMenuOpen}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/12 bg-[#141414] text-white text-sm font-semibold hover:border-white/24 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M4 6h16M7 12h10M10 18h4"/>
+              </svg>
+              {SORT_LABELS[sortMode]}
+            </button>
+            {/* only renders when the sort button has been clicked — do not remove this condition */}
+            {sortMenuOpen && (
+              <div className="absolute right-0 mt-2 w-40 bg-dropdown-bg border border-white/10 rounded-xl py-1 z-30 shadow-xl">
+                {(Object.keys(SORT_LABELS) as SortMode[]).map(mode => (
+                  <button
+                    key={mode}
+                    onClick={() => { setSortMode(mode); setSortMenuOpen(false) }}
+                    className={`block w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${sortMode === mode ? 'text-[#bb9eff]' : 'text-white/80 hover:text-white'}`}
+                  >
+                    {SORT_LABELS[mode]}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* event list */}
+        {/* event list — split into Upcoming / Past sections */}
         {events.length === 0 ? (
           <p className="text-[#5e5e5e] text-sm text-center py-12">No events yet. Create your first one!</p>
+        ) : upcomingEvents.length === 0 && pastEvents.length === 0 ? (
+          <p className="text-[#5e5e5e] text-sm text-center py-12">No events match your search.</p>
         ) : (
-          <div className="flex flex-col gap-4">
-            {events.map(event => {
-              const ticketed = isTicketed(event.event_type)
-              const isEditing = editingId === event.id
-              const badge = getBadge(event.event_type)
-
-              return (
-                <div
-                  key={event.id}
-                  className={`rounded-2xl overflow-hidden transition-[border-color] duration-150 ${
-                    isEditing
-                      ? 'bg-[#121212] border border-[rgba(151,71,255,0.3)]'
-                      : 'bg-[#121212] border border-white/8 hover:border-white/16'
-                  } ${!event.is_visible ? 'opacity-80' : ''}`}
-                >
-                  {/* summary row */}
-                  <div className="p-5 pb-[18px]">
-                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2.5 flex-wrap mb-2">
-                          <h3 className="font-bold text-[17px] text-white tracking-[-0.01em] line-clamp-2">{event.name}</h3>
-                          <span
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-[0.05em] uppercase"
-                            style={{ color: badge.text, background: badge.bg, border: `1px solid ${badge.border}` }}
-                          >
-                            {badge.label}
-                          </span>
-                        </div>
-
-                        <p className="text-sm text-[#8c8c8c] font-medium mb-1">
-                          {fmtDate(event.event_date)}
-                          {event.location && ` · ${event.location}`}
-                        </p>
-
-                        <p className="text-sm text-[#9a9a9a] font-medium">
-                          {ticketed
-                            ? `Members ${fmt(event.price_cents_members)} · Non-members ${fmt(event.price_cents_nonmembers)}${
-                                event.eb_price_members != null
-                                  ? ` · EB ${fmt(event.eb_price_members)}/${fmt(event.eb_price_nonmembers!)}`
-                                  : ''
-                              }${isHybrid(event.event_type) && event.points ? ` · +${event.points} pts` : ''}`
-                            : event.points
-                              ? `+${event.points} attendance pts`
-                              : 'Free attendance'
-                          }
-                        </p>
-                      </div>
-
-                      <div className="flex sm:flex-col items-start sm:items-end gap-2 sm:flex-shrink-0">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-bold ${
-                          event.is_visible
-                            ? 'bg-[rgba(95,207,143,0.12)] border border-[rgba(95,207,143,0.28)] text-[#5fcf8f]'
-                            : 'bg-white/5 border border-white/12 text-[#8c8c8c]'
-                        }`}>
-                          {event.is_visible ? (
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#5fcf8f]" />
-                          ) : (
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" strokeWidth={2}>
-                              <path d="M17.94 17.94A10 10 0 0 1 12 20c-7 0-11-8-11-8a18 18 0 0 1 5.06-5.94M9.9 4.24A9 9 0 0 1 12 4c7 0 11 8 11 8a18 18 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"/>
-                            </svg>
-                          )}
-                          {event.is_visible ? 'Active' : 'Hidden'}
-                        </span>
-
-                        <div className="flex items-center gap-4 sm:gap-3">
-                          <button
-                            onClick={() => { setCreateInitial(duplicateForm(event)); setCreating(true); setEditingId(null); setPendingCoverFile(null) }}
-                            className="bg-transparent border-none text-[#8c8c8c] text-[14px] font-bold cursor-pointer hover:text-white transition-colors p-2 -m-2 min-h-[44px] flex items-center">
-                            Duplicate
-                          </button>
-                          <button
-                            onClick={() => { setEditingId(isEditing ? null : event.id); setPendingEditCoverFile(null) }}
-                            className="bg-transparent border-none text-[#5fa8e8] text-[14px] font-bold cursor-pointer hover:text-[#8ec5f5] transition-colors p-2 -m-2 min-h-[44px] flex items-center">
-                            {isEditing ? 'Close' : 'Edit'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+          <>
+            {/* only renders when at least one upcoming event matches the current search/filter — do not remove this condition */}
+            {upcomingEvents.length > 0 && (
+              <section>
+                <div className="flex items-center gap-3 mt-2 mb-4">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#4ade80] flex-shrink-0" />
+                  <h2 className="font-display font-bold text-[15px] text-white">Upcoming · {upcomingEvents.length}</h2>
+                  <span className="h-px flex-1 bg-white/8" />
                 </div>
-              )
-            })}
-          </div>
+                <div className="flex flex-col gap-4">
+                  {upcomingEvents.map(event => (
+                    <EventRow
+                      key={event.id}
+                      event={event}
+                      isEditing={editingId === event.id}
+                      onEdit={() => { setEditingId(editingId === event.id ? null : event.id); setPendingEditCoverFile(null) }}
+                      onDuplicate={() => { setCreateInitial(duplicateForm(event)); setCreating(true); setEditingId(null); setPendingCoverFile(null) }}
+                      onDeleteRequest={() => setDeleteTarget({ id: event.id, name: event.name })}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* only renders when at least one past event matches the current search/filter — do not remove this condition */}
+            {pastEvents.length > 0 && (
+              <section>
+                <div className="flex items-center gap-3 mt-8 mb-4">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#6e6e6e] flex-shrink-0" />
+                  <h2 className="font-display font-bold text-[15px] text-white">Past · {pastEvents.length}</h2>
+                  <span className="h-px flex-1 bg-white/8" />
+                </div>
+                <div className="flex flex-col gap-4">
+                  {pastEvents.map(event => (
+                    <EventRow
+                      key={event.id}
+                      event={event}
+                      isEditing={editingId === event.id}
+                      onEdit={() => { setEditingId(editingId === event.id ? null : event.id); setPendingEditCoverFile(null) }}
+                      onDuplicate={() => { setCreateInitial(duplicateForm(event)); setCreating(true); setEditingId(null); setPendingCoverFile(null) }}
+                      onDeleteRequest={() => setDeleteTarget({ id: event.id, name: event.name })}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
         )}
       </div>
+
+      {/* mobile-only floating action button — replaces the header "New Event" pill below sm.
+          shadow is a plain neutral drop shadow ONLY — no colored/purple glow, per design direction */}
+      {!creating && (
+        <button
+          onClick={() => { setCreateInitial(emptyForm()); setCreating(true); setEditingId(null) }}
+          aria-label="New Event"
+          className="sm:hidden fixed z-40 w-14 h-14 rounded-2xl bg-[#9747FF] hover:bg-[#a85eff] active:scale-95 flex items-center justify-center text-white transition-transform shadow-[0_8px_24px_rgba(0,0,0,0.45)]"
+          style={{ bottom: 'calc(env(safe-area-inset-bottom) + 1.25rem)', right: 'calc(env(safe-area-inset-right) + 1.25rem)' }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+        </button>
+      )}
 
       {/* edit form modal — centralized so only one instance exists regardless of which card triggered it */}
       {(() => {
@@ -1175,14 +1253,6 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
                       {showQR && <AttendanceQR event={editingEvent} onUpdate={upsert} />}
                     </>
                   }
-                  leftButtons={
-                    <button
-                      type="button"
-                      onClick={() => setDeleteTarget({ id: editingEvent.id, name: editingEvent.name })}
-                      className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 rounded-[11px] bg-transparent border border-[rgba(239,111,111,0.4)] text-[#ef6f6f] text-sm font-bold cursor-pointer hover:bg-[rgba(239,111,111,0.1)] transition-colors">
-                      Delete Event
-                    </button>
-                  }
                 />
               </div>
             </div>
@@ -1203,5 +1273,152 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
         />
       )}
     </main>
+  )
+}
+
+// ── EventRow ──────────────────────────────────────────────────────────────────
+// single row in the Upcoming/Past list — date block carries the event-type color
+// (a tinted fill, not a side-stripe border — see design guidance's absolute bans)
+// instead of the reference comp's colored left-edge border.
+
+const MONTH_ABBR = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+
+function EventRow({
+  event,
+  isEditing,
+  onEdit,
+  onDuplicate,
+  onDeleteRequest,
+}: {
+  event: Event
+  isEditing: boolean
+  onEdit: () => void
+  onDuplicate: () => void
+  onDeleteRequest: () => void
+}) {
+  const ticketed = isTicketed(event.event_type)
+  const badge = getBadge(event.event_type)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  // close the kebab menu when clicking outside — same pattern as the sort dropdown
+  useEffect(() => {
+    if (!menuOpen) return
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuOpen])
+
+  const date = new Date(event.event_date)
+
+  // pricing/points line — null when the event is free with no points, so the
+  // subtext row skips rendering rather than stating the obvious ("Free attendance")
+  const priceLine = ticketed
+    ? `Members ${fmt(event.price_cents_members)} · Non-members ${fmt(event.price_cents_nonmembers)}${
+        event.eb_price_members != null
+          ? ` · EB ${fmt(event.eb_price_members)}/${fmt(event.eb_price_nonmembers!)}`
+          : ''
+      }${isHybrid(event.event_type) && event.points ? ` · +${event.points} pts` : ''}`
+    : event.points
+      ? `+${event.points} attendance pts`
+      : null
+
+  return (
+    // no overflow-hidden here — this row has no image content to clip, and clipping was
+    // hiding the kebab dropdown menu whenever it extended past the card's bottom edge.
+    // left-edge color accent is an explicit user-requested override of the side-stripe-
+    // border design ban, alongside the tinted date block (not a replacement for it).
+    <div
+      className={`rounded-2xl transition-[border-color] duration-150 ${
+        isEditing
+          ? 'bg-[#121212] border border-[rgba(151,71,255,0.3)]'
+          : 'bg-[#121212] border border-white/8 hover:border-white/16'
+      } ${!event.is_visible ? 'opacity-80' : ''}`}
+      style={{ borderLeft: `4px solid ${badge.dot}` }}
+    >
+      <div className="p-5 pb-[18px] flex gap-4">
+        {/* date — no box, left stripe carries the type color; month colored, day white */}
+        <div className="w-14 flex-shrink-0 flex flex-col items-center justify-center py-2 gap-0.5">
+          <span className="text-[11px] font-bold tracking-[0.06em] uppercase" style={{ color: badge.text }}>{MONTH_ABBR[date.getMonth()]}</span>
+          <span className="text-[20px] font-black leading-none text-white">{date.getDate()}</span>
+        </div>
+
+        <div className="flex-1 min-w-0 flex flex-row items-center justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-2">
+              <h3 className="font-bold text-[17px] text-white tracking-[-0.01em] line-clamp-2">{event.name}</h3>
+              <span
+                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-[0.05em] uppercase"
+                style={{ color: badge.text, background: badge.bg, border: `1px solid ${badge.border}` }}
+              >
+                {badge.label}
+              </span>
+              {/* only renders when the event is hidden from members — visible ones stay unmarked to keep the row quiet */}
+              {!event.is_visible && (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-white/5 border border-white/12 text-[#8c8c8c]">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#8c8c8c" strokeWidth={2}>
+                    <path d="M17.94 17.94A10 10 0 0 1 12 20c-7 0-11-8-11-8a18 18 0 0 1 5.06-5.94M9.9 4.24A9 9 0 0 1 12 4c7 0 11 8 11 8a18 18 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24M1 1l22 22"/>
+                  </svg>
+                  Hidden
+                </span>
+              )}
+            </div>
+
+            <p className="hidden sm:block text-sm text-[#8c8c8c] font-medium mb-1">
+              {fmtDate(event.event_date)} · {fmtTime(event.event_date)}{event.event_end && `–${fmtTime(event.event_end)}`}
+              {event.location && ` · ${event.location}`}
+            </p>
+
+            {/* only renders when there's pricing or points to show — free/no-points events skip this line entirely */}
+            {priceLine && (
+              <p className="hidden sm:block text-sm text-[#9a9a9a] font-medium">
+                {priceLine}
+              </p>
+            )}
+          </div>
+
+          {/* actions — edit + kebab (duplicate/delete) */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={onEdit}
+              className="min-h-[44px] sm:min-h-0 sm:h-9 px-5 rounded-xl border border-white/16 text-[#cfcfcf] text-sm font-semibold hover:border-white/32 hover:text-white transition-colors"
+            >
+              {isEditing ? 'Close' : 'Edit'}
+            </button>
+            <div className="relative flex-shrink-0" ref={menuRef}>
+              <button
+                onClick={() => setMenuOpen(prev => !prev)}
+                aria-label="More options"
+                aria-expanded={menuOpen}
+                className="w-9 h-9 min-h-[44px] sm:min-h-0 flex items-center justify-center rounded-xl border border-white/16 text-[#cfcfcf] hover:border-white/32 hover:text-white transition-colors"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/>
+                </svg>
+              </button>
+              {/* only renders when the kebab button has been clicked — do not remove this condition */}
+              {menuOpen && (
+                <div className="absolute right-0 mt-2 w-40 bg-dropdown-bg border border-white/10 rounded-xl py-1 z-30 shadow-xl">
+                  <button
+                    onClick={() => { setMenuOpen(false); onDuplicate() }}
+                    className="block w-full text-left px-4 py-2.5 text-sm font-medium text-white/80 hover:text-white transition-colors"
+                  >
+                    Duplicate
+                  </button>
+                  <button
+                    onClick={() => { setMenuOpen(false); onDeleteRequest() }}
+                    className="block w-full text-left px-4 py-2.5 text-sm font-medium text-[#ef6f6f] hover:text-[#ff8a8a] transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
