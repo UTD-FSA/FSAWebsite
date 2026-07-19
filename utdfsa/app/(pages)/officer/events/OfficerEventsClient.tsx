@@ -1122,7 +1122,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
             <button
               onClick={() => setSortMenuOpen(prev => !prev)}
               aria-expanded={sortMenuOpen}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/12 bg-[#141414] text-white text-sm font-semibold hover:border-white/24 transition-colors"
+              className="flex items-center justify-center gap-2 w-32 px-1 py-2.5 rounded-xl border border-white/12 bg-[#141414] text-white text-sm font-semibold hover:border-white/24 transition-colors"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                 <path d="M4 6h16M7 12h10M10 18h4"/>

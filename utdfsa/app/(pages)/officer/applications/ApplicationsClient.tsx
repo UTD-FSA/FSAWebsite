@@ -197,12 +197,12 @@ function FilterBar({ active, onChange, counts }: {
     all: 'All', pending: 'Pending', accepted: 'Accepted', rejected: 'Rejected',
   }
   return (
-    <div className="flex gap-2 flex-wrap">
+    <div className="flex gap-2 flex-nowrap overflow-x-auto sm:flex-wrap sm:overflow-visible pills-scroll -mx-0.5 px-0.5">
       {filters.map(f => (
         <button
           key={f}
           onClick={() => onChange(f)}
-          className={`text-[13px] font-semibold px-3.5 py-1.5 rounded-[10px] border transition-all active:scale-95 ${
+          className={`shrink-0 text-[13px] font-semibold px-3.5 py-1.5 rounded-[10px] border transition-all active:scale-95 ${
             active === f
               ? 'bg-[#9747FF] text-white border-transparent'
               : 'bg-transparent text-[#8c8c8c] border-white/14 hover:border-white/28 hover:text-[#cfcfcf]'
@@ -211,6 +211,55 @@ function FilterBar({ active, onChange, counts }: {
           {labels[f]} <span className={`${active === f ? 'opacity-70' : 'opacity-50'}`}>({counts[f]})</span>
         </button>
       ))}
+    </div>
+  )
+}
+
+const SORT_LABELS: Record<SortOption, string> = {
+  newest: 'Newest first',
+  oldest: 'Oldest first',
+  'name-az': 'A-Z',
+  'name-za': 'Z-A',
+}
+
+function SortMenu({ value, onChange }: { value: SortOption; onChange: (v: SortOption) => void }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [open])
+
+  return (
+    <div className="relative w-full sm:w-36 shrink-0" ref={ref}>
+      <button
+        onClick={() => setOpen(prev => !prev)}
+        aria-expanded={open}
+        className="flex items-center justify-center gap-2 w-full text-[13px] font-semibold px-3.5 py-1.5 rounded-[10px] border border-white/12 bg-[#141414] text-white hover:border-white/24 transition-colors"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path d="M4 6h16M7 12h10M10 18h4"/>
+        </svg>
+        {SORT_LABELS[value]}
+      </button>
+      {open && (
+        <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-full sm:w-44 bg-dropdown-bg border border-white/10 rounded-xl py-1 z-30 shadow-xl">
+          {(Object.keys(SORT_LABELS) as SortOption[]).map(opt => (
+            <button
+              key={opt}
+              onClick={() => { onChange(opt); setOpen(false) }}
+              className={`block w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${value === opt ? 'text-[#bb9eff]' : 'text-white/80 hover:text-white'}`}
+            >
+              {SORT_LABELS[opt]}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -927,16 +976,7 @@ export default function ApplicationsClient({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-5">
               <div className="order-1 sm:order-1 flex flex-col sm:flex-row sm:items-center gap-3">
                 <FilterBar active={tabState.ading.filter} onChange={f => patchTab('ading', { filter: f, page: 1 })} counts={tabCounts(adingApps)} />
-                <select
-                  value={tabState.ading.sort}
-                  onChange={e => patchTab('ading', { sort: e.target.value as SortOption, page: 1 })}
-                  className="w-full sm:w-auto text-[12px] font-semibold border border-white/12 rounded-[9px] px-2.5 py-1.5 text-[#8c8c8c] bg-[#0d0d0d] hover:border-white/22 hover:text-[#cfcfcf] focus:outline-none focus:border-white/24 officer-select appearance-none pr-7 font-[inherit] transition-colors"
-                >
-                  <option value="newest">Newest first</option>
-                  <option value="oldest">Oldest first</option>
-                  <option value="name-az">Name A→Z</option>
-                  <option value="name-za">Name Z→A</option>
-                </select>
+                <SortMenu value={tabState.ading.sort} onChange={sort => patchTab('ading', { sort, page: 1 })} />
               </div>
               <div className="relative order-2 sm:order-2 sm:flex-1 sm:min-w-0">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none">
@@ -949,7 +989,7 @@ export default function ApplicationsClient({
                   value={tabState.ading.search}
                   onChange={e => patchTab('ading', { search: e.target.value, page: 1 })}
                   placeholder="Search by name… ( / )"
-                  className="w-full pl-8 pr-3.5 py-2 rounded-[10px] bg-[#0d0d0d] border border-white/10 text-[13px] text-white placeholder:text-text-muted focus:outline-none focus:border-white/24 transition-[border-color] font-[inherit]"
+                  className="w-full pl-8 pr-3.5 py-2 rounded-[10px] bg-[#0d0d0d] border border-white/10 text-[13px] text-white placeholder:text-text-muted focus:outline-none focus:border-[#9747FF] transition-[border-color] font-[inherit]"
                 />
               </div>
               <button
@@ -1008,16 +1048,7 @@ export default function ApplicationsClient({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-5">
               <div className="order-1 sm:order-1 flex flex-col sm:flex-row sm:items-center gap-3">
                 <FilterBar active={tabState.kuyate.filter} onChange={f => patchTab('kuyate', { filter: f, page: 1 })} counts={tabCounts(kuyateApps)} />
-                <select
-                  value={tabState.kuyate.sort}
-                  onChange={e => patchTab('kuyate', { sort: e.target.value as SortOption, page: 1 })}
-                  className="w-full sm:w-auto text-[12px] font-semibold border border-white/12 rounded-[9px] px-2.5 py-1.5 text-[#8c8c8c] bg-[#0d0d0d] hover:border-white/22 hover:text-[#cfcfcf] focus:outline-none focus:border-white/24 officer-select appearance-none pr-7 font-[inherit] transition-colors"
-                >
-                  <option value="newest">Newest first</option>
-                  <option value="oldest">Oldest first</option>
-                  <option value="name-az">Name A→Z</option>
-                  <option value="name-za">Name Z→A</option>
-                </select>
+                <SortMenu value={tabState.kuyate.sort} onChange={sort => patchTab('kuyate', { sort, page: 1 })} />
               </div>
               <div className="relative order-2 sm:order-2 sm:flex-1 sm:min-w-0">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none">
@@ -1030,7 +1061,7 @@ export default function ApplicationsClient({
                   value={tabState.kuyate.search}
                   onChange={e => patchTab('kuyate', { search: e.target.value, page: 1 })}
                   placeholder="Search by name… ( / )"
-                  className="w-full pl-8 pr-3.5 py-2 rounded-[10px] bg-[#0d0d0d] border border-white/10 text-[13px] text-white placeholder:text-text-muted focus:outline-none focus:border-white/24 transition-[border-color] font-[inherit]"
+                  className="w-full pl-8 pr-3.5 py-2 rounded-[10px] bg-[#0d0d0d] border border-white/10 text-[13px] text-white placeholder:text-text-muted focus:outline-none focus:border-[#9747FF] transition-[border-color] font-[inherit]"
                 />
               </div>
               <button
