@@ -55,7 +55,7 @@ export default function GoodphilAboutPage() {
   const hostSchoolsVisible = useRevealOnScroll(hostSchoolsRef, 0.2)
 
   // "Filipino Student Associations..." clause — green highlight sweeps in behind the text on scroll
-  const highlightRef = useRef<HTMLSpanElement>(null)
+  const highlightRef = useRef<HTMLElement>(null)
   const [highlightVisible, setHighlightVisible] = useState(false)
 
   useEffect(() => {
@@ -261,8 +261,8 @@ export default function GoodphilAboutPage() {
         <div className="max-w-[1218px] mx-auto px-8 py-16 text-center">
 
           <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed mb-6">
-            <span className="font-bold text-white">GoodPhil</span>, also known as the GoodPhil Games, brings Filipino Student Associations{' '}
-            <span
+            <strong className="font-bold text-white">GoodPhil</strong>, also known as the GoodPhil Games, brings Filipino Student Associations{' '}
+            <strong
               ref={highlightRef}
               className="relative z-0 inline-block font-bold text-white"
               style={{ paddingInline: '0.22em', marginInline: '-0.22em' }}
@@ -282,10 +282,10 @@ export default function GoodphilAboutPage() {
                 }}
               />
               from across Texas and Oklahoma
-            </span>
-            {' '}together for <span className="font-bold text-accent-gold">four days of sports, performances, friendly competition, and guest performances!</span> Every
-            school spends months preparing for this weekend, <span className="font-bold text-accent-green">creating traditions, strengthening friendships, and building school pride</span>{' '}
-            before finally coming together to <span className="font-bold text-white">compete, cheer each other on, and celebrate as one FSA community.</span>
+            </strong>
+            {' '}together for <strong className="font-bold text-accent-gold">four days of sports, performances, friendly competition, and guest performances!</strong> Every
+            school spends months preparing for this weekend, <strong className="font-bold text-accent-green">creating traditions, strengthening friendships, and building school pride</strong>{' '}
+            before finally coming together to <strong className="font-bold text-white">compete, cheer each other on, and celebrate as one FSA community.</strong>
           </p>
 
           <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed">
@@ -353,7 +353,7 @@ export default function GoodphilAboutPage() {
           <div className="max-w-[1218px] mx-auto px-8 py-16 text-center">
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed mb-16">
-              All Goodphil participants must be <span className="font-bold text-accent-green">members in good standing </span> with the FSA they are affiliated in. In order to assure that participants represent their respective school&rsquo;s organization, certain requirements must be met in order to participate in Goodphil.
+              All Goodphil participants must be <strong className="font-bold text-accent-green">members in good standing </strong> with the FSA they are affiliated in. In order to assure that participants represent their respective school&rsquo;s organization, certain requirements must be met in order to participate in Goodphil.
             </p>
 
             {/* Requirements card — fades in and scales up slightly once scrolled into view */}
@@ -398,7 +398,7 @@ export default function GoodphilAboutPage() {
             </div>
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed">
-              Unless specifically specified by the host school, spectating Goodphil <span className="font-bold text-accent-green">is free!</span> Come out and support UTD FSA as we compete across <span className="font-bold text-white">sports, spirit, modern, and cultural events!</span>
+              Unless specifically specified by the host school, spectating Goodphil <strong className="font-bold text-accent-green">is free!</strong> Come out and support UTD FSA as we compete across <strong className="font-bold text-white">sports, spirit, modern, and cultural events!</strong>
             </p>
 
           </div>

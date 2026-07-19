@@ -224,7 +224,7 @@ function PamilyasCarousel() {
           aria-label="Previous slide"
           className="p-3 text-white hover:opacity-70 transition-opacity"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
@@ -247,7 +247,7 @@ function PamilyasCarousel() {
           aria-label="Next slide"
           className="p-3 text-white hover:opacity-70 transition-opacity"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M9 18l6-6-6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
@@ -583,10 +583,10 @@ export default function PamilyasClient({
             <BaybayinRule word="ᜉᜋᜒᜎ᜔ᜌ" size="clamp(16px,2vw,27px)" reveal={baybayinVisible} delayMs={140} draw />
           </div>
           <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed text-center max-w-[1218px] mx-auto">
-            <span className="font-bold text-accent-green">Pamilyas</span> (&lsquo;<span className="font-bold text-white">pam</span>&rsquo; for short), which is also{' '}
-            <span className="font-bold text-accent-gold">the Tagalog word for family</span>, are smaller groups within{' '}
-            <span className="font-bold text-white">UTD FSA</span> where members{' '}
-            <span className="font-bold text-accent-green">form friendships, learn from one another, and create memories that last well beyond college.</span>
+            <strong className="font-bold text-accent-green">Pamilyas</strong> (&lsquo;<strong className="font-bold text-white">pam</strong>&rsquo; for short), which is also{' '}
+            <strong className="font-bold text-accent-gold">the Tagalog word for family</strong>, are smaller groups within{' '}
+            <strong className="font-bold text-white">UTD FSA</strong> where members{' '}
+            <strong className="font-bold text-accent-green">form friendships, learn from one another, and create memories that last well beyond college.</strong>
           </p>
         </div>
 
@@ -594,19 +594,19 @@ export default function PamilyasClient({
           <div className="max-w-[1218px] mx-auto px-8 pt-12 pb-6 text-center">
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed mb-8">
-              Each <span className="font-bold text-white">pam</span> consists of <span className="font-bold text-accent-green">Kuyas</span> (older brothers), <span className="font-bold text-accent-green">Ates</span> (older sisters), and <span className="font-bold text-accent-green">Adings</span> (younger siblings).
-              Built on the idea that <span className="font-bold text-white">family goes beyond blood</span>, pamilyas create lifelong bonds
+              Each <strong className="font-bold text-white">pam</strong> consists of <strong className="font-bold text-accent-green">Kuyas</strong> (older brothers), <strong className="font-bold text-accent-green">Ates</strong> (older sisters), and <strong className="font-bold text-accent-green">Adings</strong> (younger siblings).
+              Built on the idea that <strong className="font-bold text-white">family goes beyond blood</strong>, pamilyas create lifelong bonds
               through shared experiences, traditions, and support.
             </p>
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed mb-8">
-              Every pamilya is different, consisting of <span className="font-bold text-accent-gold">different hobbies, interests, and personalities!</span> The Pamilya Chair
+              Every pamilya is different, consisting of <strong className="font-bold text-accent-gold">different hobbies, interests, and personalities!</strong> The Pamilya Chair
               and UTD FSA Officer Board work carefully to match each ading with a pamilya where they can feel comfortable,
               get involved, and make the most of their time in UTD FSA.
             </p>
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed">
-              The pamilya system is <span className="font-bold text-white">exclusive to UTD FSA members only.</span>
+              The pamilya system is <strong className="font-bold text-white">exclusive to UTD FSA members only.</strong>
             </p>
 
             <a href="#signup" className="pamilya-cta-glow group inline-block mt-6 rounded-2xl border border-accent-green/30 bg-accent-green/10 px-6 py-4 sm:px-8 sm:py-5 transition-colors hover:bg-accent-green/15">

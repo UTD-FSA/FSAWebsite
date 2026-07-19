@@ -141,13 +141,13 @@ export default function CulturalPage() {
               transitionDelay: titleVisible ? '510ms' : '0ms',
             }}
           >
-            <span className="font-bold text-white">UTD Pamana</span>, the Tagalog word for{' '}
-            <span className="font-bold italic text-accent-green">&ldquo;legacy&rdquo; or &ldquo;inheritance,&rdquo;</span>{' '}represents the traditions and stories passed
+            <strong className="font-bold text-white">UTD Pamana</strong>, the Tagalog word for{' '}
+            <strong className="font-bold italic text-accent-green">&ldquo;legacy&rdquo; or &ldquo;inheritance,&rdquo;</strong>{' '}represents the traditions and stories passed
             down from generation to generation. As UTD FSA&apos;s cultural dance team, Pamana brings those stories to life through{' '}
-            <span className="font-bold text-accent-gold">traditional Filipino folk dances inspired by the country&rsquo;s diverse regions, history, and traditions.</span>{' '}
-            Each fall, members spend the semester <span className="font-bold text-white">learning choreography, exploring the meaning behind every dance</span>, and
+            <strong className="font-bold text-accent-gold">traditional Filipino folk dances inspired by the country&rsquo;s diverse regions, history, and traditions.</strong>{' '}
+            Each fall, members spend the semester <strong className="font-bold text-white">learning choreography, exploring the meaning behind every dance</strong>, and
             preparing for Isang Mahal, where cultural dance teams from Filipino Student Associations across Texas come together to perform. The journey continues into
-            GoodPhil, where Pamana proudly represents UTD while <span className="font-bold text-accent-green">sharing the beauty of Filipino culture</span> with audiences
+            GoodPhil, where Pamana proudly represents UTD while <strong className="font-bold text-accent-green">sharing the beauty of Filipino culture</strong> with audiences
             from across the state.
           </p>
 
@@ -293,7 +293,7 @@ export default function CulturalPage() {
               transitionDelay: ctaVisible ? '140ms' : '0ms',
             }}
           >
-<span className="font-bold text-accent-green">No dance experience? No problem!</span> Our workshops are open to anyone interested in learning more about Filipino culture through dance. Whether you&apos;re trying something completely new or looking to perform this season, <span className="font-bold text-white">we&apos;d love to have you join us!</span>
+<strong className="font-bold text-accent-green">No dance experience? No problem!</strong> Our workshops are open to anyone interested in learning more about Filipino culture through dance. Whether you&apos;re trying something completely new or looking to perform this season, <strong className="font-bold text-white">we&apos;d love to have you join us!</strong>
           </p>
           <a
             href="https://forms.gle/X4o8v3Qjq3CnULRf9"

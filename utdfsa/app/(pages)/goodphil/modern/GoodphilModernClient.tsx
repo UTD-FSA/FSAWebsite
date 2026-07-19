@@ -35,7 +35,7 @@ export default function ModernPage() {
   const titleVisible = useRevealOnScroll(headerRef, 0.3)
 
   // "noble warrior class" — color eases from white to green as it enters the viewport
-  const nobleRef = useRef<HTMLSpanElement>(null)
+  const nobleRef = useRef<HTMLElement>(null)
   const nobleVisible = useRevealOnScroll(nobleRef, 0.6)
 
   // past-performances video vault — each card animates independently as it individually
@@ -141,20 +141,20 @@ export default function ModernPage() {
               transitionDelay: titleVisible ? '510ms' : '0ms',
             }}
           >
-            <span className="font-bold text-white">UTD Maharlika</span>
+            <strong className="font-bold text-white">UTD Maharlika</strong>
             {' '}takes its name from the Tagalog word referring to the{' '}
-            <span
+            <strong
               ref={nobleRef}
               className="font-bold"
               style={{ color: nobleVisible ? 'var(--accent-green)' : '#fff', transition: 'color 900ms var(--ease-smooth)' }}
             >
               noble warrior class
-            </span>
+            </strong>
             {' '}of the pre-colonial Philippines—a symbol of confidence, strength, and resilience. Since 2002, UTD FSA&apos;s modern dance team has brought that spirit to life through{' '}
-            <span className="font-bold text-accent-gold">hip-hop and a wide range of contemporary dance styles.</span> Each semester, members spend months training,
+            <strong className="font-bold text-accent-gold">hip-hop and a wide range of contemporary dance styles.</strong> Each semester, members spend months training,
             refining choreography, and pushing each other to prepare for performances at Isang Mahal and GoodPhil alongside Filipino Student Associations from across Texas.
-            Beyond the stage, Maharlika is a place to <span className="font-bold text-accent-green">grow as a dancer, challenge yourself, and become part of a team</span>{' '}
-            that&apos;s built on <span className="font-bold text-white">trust, dedication, and shared ambition.</span>
+            Beyond the stage, Maharlika is a place to <strong className="font-bold text-accent-green">grow as a dancer, challenge yourself, and become part of a team</strong>{' '}
+            that&apos;s built on <strong className="font-bold text-white">trust, dedication, and shared ambition.</strong>
           </p>
 
           <div ref={headingRef} className="flex flex-col items-center lg:items-stretch gap-7 mx-auto lg:mx-0 w-full max-w-[460px]">
@@ -298,7 +298,7 @@ export default function ModernPage() {
               transitionDelay: ctaVisible ? '140ms' : '0ms',
             }}
           >
-Every season starts somewhere, and our workshops are the perfect place to <span className="font-bold text-accent-green">meet the team, learn our style, and see what Maharlika is all about!</span> <span className="font-bold text-white">Fill out our interest form</span> to stay updated on workshops, auditions, and everything happening this season.
+Every season starts somewhere, and our workshops are the perfect place to <strong className="font-bold text-accent-green">meet the team, learn our style, and see what Maharlika is all about!</strong> <strong className="font-bold text-white">Fill out our interest form</strong> to stay updated on workshops, auditions, and everything happening this season.
           </p>
           <a
             href="https://forms.gle/adY8cCiyYHcLSmgz8"

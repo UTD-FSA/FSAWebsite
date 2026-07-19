@@ -46,12 +46,12 @@ export default function WhoAreWeText() {
           transitionDelay: visible ? '180ms' : '0ms',
         }}
       >
-        <span className="font-bold text-white">UTD FSA</span> is a student-led organization dedicated to{' '}
-        <span className="font-bold text-accent-green">building friendships, celebrating Filipino culture, and creating a welcoming community for everyone!</span>{' '}
+        <strong className="font-bold text-white">UTD FSA</strong> is a student-led organization dedicated to{' '}
+        <strong className="font-bold text-accent-green">building friendships, celebrating Filipino culture, and creating a welcoming community for everyone!</strong>{' '}
         As one of UTD&rsquo;s largest student organizations, we bring together students from all backgrounds through{' '}
-        <span className="font-bold text-accent-gold">social events, cultural traditions, sports, dance, and our close-knit Pamilya program.</span>{' '}
+        <strong className="font-bold text-accent-gold">social events, cultural traditions, sports, dance, and our close-knit Pamilya program.</strong>{' '}
         Whether you&rsquo;re new to UTD or simply interested in meeting new people and trying something new, you&rsquo;ll find plenty of opportunities to get involved, form meaningful connections, and{' '}
-        <span className="font-bold text-white">make UTD feel a little more like home.</span>
+        <strong className="font-bold text-white">make UTD feel a little more like home.</strong>
       </p>
     </div>
   )

@@ -214,7 +214,7 @@ export default function PhotoCarousel() {
           aria-label="Previous slide"
           className="p-3 text-white hover:opacity-70 transition-opacity"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M15 18l-6-6 6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
@@ -237,7 +237,7 @@ export default function PhotoCarousel() {
           aria-label="Next slide"
           className="p-3 text-white hover:opacity-70 transition-opacity"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M9 18l6-6-6-6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>

@@ -102,7 +102,7 @@ export default async function Home() {
       </section>
 
       {/* ── MARQUEE ───────────────────────────────────────────────── */}
-      <div className="bg-brand-bg h-[42px] sm:h-[52px] md:h-[59px] flex items-center overflow-hidden">
+      <div className="bg-brand-bg h-[42px] sm:h-[52px] md:h-[59px] flex items-center overflow-hidden" aria-hidden="true">
         {/* 8 copies so the loop seam is never visible — animation slides to -50% */}
         <div className="flex gap-[34px] whitespace-nowrap w-max animate-marquee">
           {Array.from({ length: 8 }).map((_, i) => (
