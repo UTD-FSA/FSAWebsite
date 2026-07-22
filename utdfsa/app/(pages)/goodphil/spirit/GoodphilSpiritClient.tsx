@@ -148,8 +148,8 @@ export default function SpiritPage() {
             <strong className="font-bold text-white">Spirit</strong> is UTD FSA&apos;s performance category at GoodPhil, where{' '}
             <strong className="font-bold text-accent-green">creativity, school pride, and Filipino culture</strong> come together in one high-energy performance. Every
             year, our team creates an original routine filled with <strong className="font-bold text-accent-gold">choreography, skits, music, and plenty of unexpected moments</strong>{' '}
-            that capture what it means to <strong className="font-bold text-white">represent UTD.</strong> Whether you&apos;ve been performing for years or are{' '}
-            <strong className="font-bold text-accent-green">stepping onto the stage for the first time</strong>, Spirit welcomes anyone ready to have fun and be part of
+            that capture what it means to <strong className="font-bold text-white">represent UTD.</strong>{' '}
+            <strong className="font-bold text-accent-green">No experience needed</strong> — Spirit welcomes anyone ready to have fun and be part of
             something bigger. From the first rehearsal to the final performance, it&apos;s an experience built on{' '}
             <strong className="font-bold text-accent-gold">teamwork, laughter, and representing your school together.</strong> This is where{' '}
             <strong className="font-bold text-accent-green spirit-glow">Comet pride shines the brightest!</strong>
@@ -299,7 +299,7 @@ export default function SpiritPage() {
               transitionDelay: ctaVisible ? '140ms' : '0ms',
             }}
           >
-Spirit auditions begin each <strong className="font-bold text-accent-green">Spring</strong> as GoodPhil season kicks off. Follow us on Instagram to stay up to date on auditions, rehearsals, and <strong className="font-bold text-white">everything you&apos;ll need to join this year&apos;s team.</strong>
+Spirit auditions begin each <strong className="font-bold text-accent-green">Spring</strong> as GoodPhil season kicks off. Follow us on Instagram to stay up to date on auditions, rehearsals, and <strong className="font-bold text-white">everything you&apos;ll need to join this year&apos;s team!</strong>
           </p>
           <a
             href="https://instagram.com/fsautd"

@@ -600,7 +600,7 @@ export default function PamilyasClient({
             </p>
 
             <p className="font-sans text-[clamp(16px,2vw,29px)] text-white/60 leading-relaxed mb-8">
-              Every pamilya is different, consisting of <strong className="font-bold text-accent-gold">different hobbies, interests, and personalities!</strong> The Pamilya Chair
+              Every pamilya <strong className="font-bold text-accent-gold">has its own mix of hobbies and interests!</strong> The Pamilya Chair
               and UTD FSA Officer Board work carefully to match each ading with a pamilya where they can feel comfortable,
               get involved, and make the most of their time in UTD FSA.
             </p>

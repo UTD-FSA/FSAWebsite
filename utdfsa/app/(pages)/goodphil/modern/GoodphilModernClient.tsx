@@ -154,7 +154,7 @@ export default function ModernPage() {
             <strong className="font-bold text-accent-gold">hip-hop and a wide range of contemporary dance styles.</strong> Each semester, members spend months training,
             refining choreography, and pushing each other to prepare for performances at Isang Mahal and GoodPhil alongside Filipino Student Associations from across Texas.
             Beyond the stage, Maharlika is a place to <strong className="font-bold text-accent-green">grow as a dancer, challenge yourself, and become part of a team</strong>{' '}
-            that&apos;s built on <strong className="font-bold text-white">trust, dedication, and shared ambition.</strong>
+            that&apos;s built on <strong className="font-bold text-white">trust and real dedication.</strong>
           </p>
 
           <div ref={headingRef} className="flex flex-col items-center lg:items-stretch gap-7 mx-auto lg:mx-0 w-full max-w-[460px]">

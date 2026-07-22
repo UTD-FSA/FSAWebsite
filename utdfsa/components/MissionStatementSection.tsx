@@ -81,9 +81,8 @@ export default function MissionStatementSection() {
           </p>
           <p>
             Through cultural education, volunteer initiatives, and leadership opportunities, we strive to{' '}
-            <strong className="font-bold text-white">inspire pride in our heritage</strong> while encouraging{' '}
-            <strong className="font-bold text-white">collaboration, respect, and personal growth</strong> among students of
-            all backgrounds.
+            <strong className="font-bold text-white">inspire pride in our heritage</strong> while helping students of all
+            backgrounds <strong className="font-bold text-white">grow and support one another.</strong>
           </p>
         </div>
       </div>

@@ -284,7 +284,7 @@ export default function GoodphilAboutPage() {
               from across Texas and Oklahoma
             </strong>
             {' '}together for <strong className="font-bold text-accent-gold">four days of sports, performances, friendly competition, and guest performances!</strong> Every
-            school spends months preparing for this weekend, <strong className="font-bold text-accent-green">creating traditions, strengthening friendships, and building school pride</strong>{' '}
+            school spends months preparing for this weekend, <strong className="font-bold text-accent-green">building traditions and school pride</strong>{' '}
             before finally coming together to <strong className="font-bold text-white">compete, cheer each other on, and celebrate as one FSA community.</strong>
           </p>
 
