@@ -6,10 +6,8 @@
 
 'use client'
 
-import { useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRevealOnScroll } from '@/lib/useRevealOnScroll'
 
 // ── social links ─────────────────────────────────────────
 const SOCIALS = [
@@ -21,9 +19,6 @@ const SOCIALS = [
 ]
 
 export default function Footer() {
-  const socialsRef = useRef<HTMLDivElement>(null)
-  const socialsVisible = useRevealOnScroll(socialsRef, 0.4)
-
   return (
     <footer className="w-full border-t border-white/10 bg-brand-bg mt-auto">
       <div className="px-6 py-6 flex items-center justify-between md:grid md:grid-cols-[1fr_auto_1fr] gap-8">
@@ -60,15 +55,7 @@ export default function Footer() {
 
         {/* right: social links + slogan */}
         <div className="flex flex-col items-end gap-3">
-          <div
-            ref={socialsRef}
-            className="flex items-center gap-3"
-            style={{
-              opacity: socialsVisible ? 1 : 0,
-              transform: socialsVisible ? 'none' : 'translateY(12px)',
-              transition: 'opacity 600ms var(--ease-smooth), transform 600ms var(--ease-smooth)',
-            }}
-          >
+          <div className="flex items-center gap-3">
             {SOCIALS.map(({ href, label, icon }) => (
               <a
                 key={label}

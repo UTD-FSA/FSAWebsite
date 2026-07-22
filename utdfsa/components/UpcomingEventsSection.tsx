@@ -87,7 +87,7 @@ export default function UpcomingEventsSection({ events, isMember, member, regist
 
         {/* horizontal scrollable strip — matches "This Week" style on events page */}
         {/* fewer than 4 events (incl. "See More" card) reads as sparse left-aligned; center it instead */}
-        <div ref={stripRef} className={`tw-scroll flex gap-4 overflow-x-auto pb-4 ${events.length < 3 ? 'justify-center' : ''}`}>
+        <div ref={stripRef} className={`tw-scroll flex gap-4 overflow-x-auto overflow-y-hidden pb-4 ${events.length < 3 ? 'justify-center' : ''}`}>
           {events.map(event => {
             const badge = getBadge(event.event_type)
             return (
