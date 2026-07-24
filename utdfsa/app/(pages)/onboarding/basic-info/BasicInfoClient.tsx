@@ -177,12 +177,12 @@ export default function BasicInfoClient({ initial, firstName, deadlineText }: Pr
 
           {/* heading */}
           <h1 className="relative z-10 font-display font-black text-[clamp(42px,8vw,62px)] leading-[0.94] tracking-[-0.03em] text-white">
-            WELCOME TO FSA
+            WELCOME TO UTD FSA
           </h1>
 
           {/* subtext */}
           <p className="relative z-10 max-w-[480px] text-[17px] leading-[1.6] text-[#9a9a9a] font-medium mt-5">
-            No pressure at all, {firstName} — we won&rsquo;t sign you up as an ading or kuya/ate this cycle, but the door stays wide open if you change your mind.
+            No pressure at all, {firstName}. We won&rsquo;t sign you up as an ading or kuya/ate this cycle, but the door stays wide open if you change your mind!
           </p>
 
           {/* door stays open */}

@@ -375,7 +375,7 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
           </h1>
 
           <p className="relative z-10 max-w-[560px] text-lg leading-[1.6] text-[#9a9a9a] font-medium mt-6">
-            You&rsquo;re officially part of the UTD FSA family! Before we get started, let us know which role fits you best.
+            You&rsquo;re officially part of UTD FSA! Before we get started, let us know which role fits you best.
           </p>
 
           {/* step hint */}
@@ -461,35 +461,21 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
 
           </div>
 
-          {/* not interested — text link when kuyate is open, prominent card when closed */}
-          {/* do not remove this condition */}
-          {isKuyateOpen ? (
-            <button
-              onClick={handleNotInterested}
-              disabled={loading}
-              className="relative z-10 mt-9 text-[14px] font-semibold text-[#8e8e8e] hover:text-[#cfcfcf] cursor-pointer disabled:cursor-not-allowed inline-flex items-center gap-2 transition-colors duration-200 disabled:opacity-50"
-            >
-              {loading ? 'saving...' : (
-                <>
-                  Not interested in the pamilya program
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14M13 6l6 6-6 6" />
-                  </svg>
-                </>
-              )}
-            </button>
-          ) : (
-            <button
-              onClick={handleNotInterested}
-              disabled={loading}
-              className="relative z-10 mt-9 p-6 border-2 border-white/20 rounded-[22px] text-left hover:border-white/40 transition-colors disabled:opacity-50 bg-brand-bg w-full max-w-[920px]"
-            >
-              <h2 className="font-display font-black text-base text-white uppercase mb-1">Not Interested</h2>
-              <p className="font-sans text-sm text-white/50">
-                I&rsquo;ll sit out the pamilya program for now. I can still apply later if I change my mind.
-              </p>
-            </button>
-          )}
+          {/* not interested — kept minimal in both states, nudges members toward applying */}
+          <button
+            onClick={handleNotInterested}
+            disabled={loading}
+            className="relative z-10 mt-9 text-[14px] font-semibold text-[#8e8e8e] hover:text-[#cfcfcf] cursor-pointer disabled:cursor-not-allowed inline-flex items-center gap-2 transition-colors duration-200 disabled:opacity-50"
+          >
+            {loading ? 'saving...' : (
+              <>
+                Not interested in the pamilya program
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+              </>
+            )}
+          </button>
 
           {/* only renders when handleNotInterested returns an API error — do not remove this condition */}
           {serverError && (

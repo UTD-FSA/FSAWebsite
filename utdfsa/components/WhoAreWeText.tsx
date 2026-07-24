@@ -51,7 +51,7 @@ export default function WhoAreWeText() {
         As one of UTD&rsquo;s largest student organizations, we bring together students from all backgrounds through{' '}
         <strong className="font-bold text-accent-gold">social events, cultural traditions, sports, dance, and our close-knit Pamilya program.</strong>{' '}
         New to UTD or just looking to meet people? You&rsquo;ll find plenty of opportunities to get involved, form meaningful connections, and{' '}
-        <strong className="font-bold text-white">make UTD feel a little more like home.</strong>
+        <strong className="font-bold text-white">make UTD feel a little more like home!</strong>
       </p>
     </div>
   )

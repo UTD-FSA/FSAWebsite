@@ -566,7 +566,7 @@ export default function PamilyasClient({
             className="font-sans font-semibold uppercase"
             style={{ fontSize: '16px', letterSpacing: '0.14em', color: '#9a9a9a' }}
           >
-            Find the pam that feels like home
+            Find the pam that's right for you
           </span>
         </div>
 

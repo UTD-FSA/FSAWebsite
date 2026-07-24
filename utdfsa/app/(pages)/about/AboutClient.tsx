@@ -364,7 +364,7 @@ export default function AboutClient() {
               style={{ fontSize: 'clamp(15px, 1.5vw, 18px)' }}
             >
               Throughout the year, UTD FSA offers a wide variety of opportunities for members to get involved both on and off campus. 
-              From our Pamilya program, GoodPhil and Isang Mahal performances, cultural showcases, and some of our most anticipated social events, there's always something to look forward to. 
+              From our Pamilya program, GoodPhil and Isang Mahal performances, cultural showcases, and some of our most anticipated social events, there's always something to look forward to! 
               No matter your interests, every experience is an opportunity to meet new people, try something new, and become part of our traditions.
 
             </AnimatedTitle>

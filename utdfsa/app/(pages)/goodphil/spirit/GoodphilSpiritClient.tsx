@@ -149,7 +149,7 @@ export default function SpiritPage() {
             <strong className="font-bold text-accent-green">creativity, school pride, and Filipino culture</strong> come together in one high-energy performance. Every
             year, our team creates an original routine filled with <strong className="font-bold text-accent-gold">choreography, skits, music, and plenty of unexpected moments</strong>{' '}
             that capture what it means to <strong className="font-bold text-white">represent UTD.</strong>{' '}
-            <strong className="font-bold text-accent-green">No experience needed</strong> — Spirit welcomes anyone ready to have fun and be part of
+            <strong className="font-bold text-accent-green">Also, there's no dance experience needed to join!</strong>{' '}Spirit welcomes anyone ready to have fun and be part of
             something bigger. From the first rehearsal to the final performance, it&apos;s an experience built on{' '}
             <strong className="font-bold text-accent-gold">teamwork, laughter, and representing your school together.</strong> This is where{' '}
             <strong className="font-bold text-accent-green spirit-glow">Comet pride shines the brightest!</strong>

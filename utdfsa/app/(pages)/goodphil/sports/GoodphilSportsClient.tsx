@@ -151,7 +151,7 @@ export default function SportsPage() {
           >
             <strong className="font-bold text-white">UTD FSA Sports</strong>
             {' '}is where UTD FSA&apos;s <strong className="font-bold text-accent-green">competitive spirit comes alive.</strong> Throughout the weekend, members represent UTD in a variety of sports while competing against Filipino Student Associations from across Texas.
-            From first-time players to seasoned competitors, <strong className="font-bold text-accent-green">there's a place for everyone!</strong> You'll build friendships, challenge yourself, and experience the excitement of representing UTD alongside your FSA family. Whether you're <strong className="font-bold text-accent-gold">chasing a championship or trying a new sport with friends</strong>, it's all about teamwork, sportsmanship, and <strong className="font-bold text-accent-green">creating lasting memories both on and off the court.</strong>
+            From first-time players to seasoned competitors, <strong className="font-bold text-accent-green">there's a place for everyone!</strong> You'll build friendships, challenge yourself, and experience the excitement of representing UTD alongside your teammates. Whether you're <strong className="font-bold text-accent-gold">chasing a championship or trying a new sport with friends</strong>, it's all about teamwork, sportsmanship, and <strong className="font-bold text-accent-green">creating lasting memories both on and off the court.</strong>
           </p>
 
           <div ref={headingRef} className="flex flex-col gap-6 mx-auto lg:mx-0 w-full max-w-[460px]">
