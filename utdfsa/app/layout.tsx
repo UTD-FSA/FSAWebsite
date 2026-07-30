@@ -1,17 +1,18 @@
 // ── layout.tsx ───────────────────────────────────────────────
 // root layout — wraps every page with Navbar, Footer, and fonts
 //
-// data:  members (id, first_name, last_name, avatar_url, role) — looked up by auth email
-// deps:  supabase user client, @vercel/analytics, @vercel/speed-insights
-// notes: member is fetched server-side so Navbar receives data before hydration;
+// deps:  @vercel/analytics, @vercel/speed-insights
+// notes: deliberately reads no request-time APIs (no cookies()/headers()) so this
+//        layout, and any page under it that also avoids them, can be statically
+//        prerendered — see proxy.ts's STATIC_CSP_ROUTES for which routes qualify.
+//        Navbar resolves the signed-in member client-side instead (browser
+//        supabase client + auth listener) rather than being seeded here.
 //        the four google fonts are registered as CSS custom properties via @theme
 // ─────────────────────────────────────────────────────────────
 import type { Metadata, Viewport } from "next"
-import { headers } from "next/headers"
 import { Geist, Geist_Mono, Unbounded, Noto_Sans_Tagalog } from "next/font/google"
 import "./globals.css"
 import SiteChrome from "@/components/SiteChrome"
-import { createUserClient } from "@/utils/supabase/server"
 import { Analytics } from "@vercel/analytics/next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
@@ -55,52 +56,11 @@ export const metadata: Metadata = {
   },
 }
 
-// sitewide Organization structured data — one instance is enough for the whole
-// site per Google's guidance, so it lives in the root layout rather than per-page
-const ORGANIZATION_JSON_LD = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "UTD FSA — Filipino Student Association at UT Dallas",
-  alternateName: "UTD FSA",
-  url: SITE_URL,
-  logo: `${SITE_URL}/logo-head.png`,
-  description: SITE_DESCRIPTION,
-  sameAs: [
-    "https://instagram.com/fsautd",
-    "https://youtube.com/@fsautd",
-    "https://tiktok.com/@utdfsa",
-    "https://discord.gg/uVRmuF3BT",
-  ],
-}
-
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  // nonce set per-request by proxy.ts — required for the inline JSON-LD script below
-  // to run under a nonce-based CSP (script-src no longer allows 'unsafe-inline')
-  const nonce = (await headers()).get('x-nonce')
-
-  // ── auth + member prefetch ────────────────────────────────
-  // fetch member server-side so Navbar has data immediately on hydration
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  let initialMember = null
-
-  // only query members table when a supabase session exists
-  if (user?.email) {
-    // members table — fetch minimal fields needed by Navbar avatar + role badge
-    const { data } = await supabase
-      .from('members')
-      .select('id, first_name, last_name, avatar_url, role')
-      .eq('email', user.email)
-      .maybeSingle()
-
-    initialMember = data
-  }
-
   const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${unbounded.variable} ${notoTagalog.variable} h-full antialiased`}>
@@ -108,16 +68,6 @@ export default async function RootLayout({
         {supabaseOrigin && <link rel="preconnect" href={supabaseOrigin} />}
         <link rel="preconnect" href="https://api.stripe.com" />
         <link rel="dns-prefetch" href="https://js.stripe.com" />
-        <script
-          type="application/ld+json"
-          nonce={nonce ?? undefined}
-          // browsers zero out the nonce attribute in the DOM after parsing (CSP
-          // hardening, prevents nonce exfiltration) — React sees that as a hydration
-          // mismatch even though the script already ran fine server-side
-          suppressHydrationWarning
-          // static, no user input — safe to inline
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
-        />
       </head>
       <body className="min-h-full flex flex-col">
         <a
@@ -126,7 +76,7 @@ export default async function RootLayout({
         >
           Skip to main content
         </a>
-        <SiteChrome initialMember={initialMember}>
+        <SiteChrome>
           <div id="main-content" tabIndex={-1} className="outline-none flex-1 flex flex-col">
             {children}
           </div>

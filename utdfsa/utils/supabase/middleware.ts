@@ -29,8 +29,9 @@ const ALLOWED_UNPAID_PATHS = [
 
 // true only when pathname IS prefix, or is a sub-path of it at a segment boundary —
 // plain startsWith would let '/member' match '/membership' too (route-gating bug:
-// a future '/membership-*' route could slip past a guard it should've hit)
-function matchesPrefix(pathname: string, prefix: string): boolean {
+// a future '/membership-*' route could slip past a guard it should've hit).
+// exported — proxy.ts reuses this for its static-vs-nonce CSP route split.
+export function matchesPrefix(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(prefix + '/')
 }
 

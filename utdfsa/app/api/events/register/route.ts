@@ -12,6 +12,8 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { fail, failValidation } from '@/lib/api-response'
 import { isRateLimited } from '@/lib/rate-limit'
+import { resolveEventPricing } from '@/lib/events/pricing'
+import { shouldUseMemberPath } from '@/lib/events/registration-ownership'
 
 // ponytail: in-memory rate limit — per-instance backstop only. the real gate is the
 // Vercel Firewall rate-limit rule on this path (global, runs at the edge). kept generous
@@ -112,21 +114,17 @@ export async function POST(req: Request) {
   }
 
   // ── pricing ─────────────────────────────────────────────────────────────────
-  // early bird applies only when a deadline and both early-bird prices are set,
-  // and the current server time is before that deadline
-  const isEarlyBird =
-    event.eb_deadline != null &&
-    event.eb_price_members != null &&
-    event.eb_price_nonmembers != null &&
-    new Date() < new Date(event.eb_deadline)
-
-  // select the correct price tier based on membership and early-bird status; values are already in cents
-  const pricePerTicket = isEarlyBird
-    ? (isMember ? event.eb_price_members! : event.eb_price_nonmembers!)
-    : (isMember ? event.price_cents_members : event.price_cents_nonmembers)
-
-  // total is price per ticket multiplied by ticket count
-  const totalAmount = pricePerTicket * tickets.length
+  // see lib/events/pricing.ts (resolveEventPricing) for the early-bird / member-tier
+  // logic and its unit tests
+  const { isEarlyBird, pricePerTicket, totalAmount } = resolveEventPricing({
+    priceCentsMembers: event.price_cents_members,
+    priceCentsNonmembers: event.price_cents_nonmembers,
+    ebPriceMembers: event.eb_price_members,
+    ebPriceNonmembers: event.eb_price_nonmembers,
+    ebDeadline: event.eb_deadline,
+    isMember,
+    ticketCount: tickets.length,
+  })
 
   // early-bird checkout sessions die at the deadline so a stale open tab can't pay the
   // old price after it stops being offered. stripe clamps expires_at to 30min-24h from
@@ -158,7 +156,10 @@ export async function POST(req: Request) {
   let registration: { id: string }
   let isUpsert = false
 
-  if (member) {
+  // see lib/events/registration-ownership.ts (shouldUseMemberPath) for why this isn't
+  // just `if (member)` — an expired/inactive member buying 2+ tickets falls through to
+  // the guest branch below instead of violating check_member_single_ticket
+  if (shouldUseMemberPath(member, tickets.length)) {
     // check for any non-paid row for this member+event (pending from abandonment, or failed/expired).
     // active members: reuse the row already fetched above (guaranteed non-paid — a paid
     // row would have 409'd already) instead of re-querying. non-active members: fetch fresh,
@@ -234,7 +235,9 @@ export async function POST(req: Request) {
       registration = inserted
     }
   } else {
-    // unauthenticated guest — dedupe on (event_id, lower(guest_email)) so one person can't
+    // guest checkout — reached by unauthenticated buyers, and by an authenticated but
+    // expired/inactive member buying 2+ tickets (see the branch above). member_id stays
+    // null either way. dedupe on (event_id, lower(guest_email)) so one person can't
     // resubmit this form repeatedly and mint unlimited tickets for a free event. exact-match
     // lookup first (cheap, handles the common case); the partial unique index
     // (unique_guest_event_registration) is the authoritative backstop for case-variant

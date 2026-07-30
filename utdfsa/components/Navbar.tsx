@@ -1,10 +1,15 @@
 // ── Navbar.tsx ────────────────────────────────────────────
 // sticky site-wide navigation with desktop dropdowns and mobile slide-out menu
 //
-// data:  props — initialMember (Member pick | null) from the root layout server component
-//        supabase: members table (select on auth state change)
+// data:  supabase: members table (select on auth state change)
 // deps:  supabase auth listener (onAuthStateChange)
-// notes: member state is seeded from SSR then kept live via the auth subscription
+// notes: member state resolves entirely client-side — the root layout no longer
+//        seeds it via SSR (that required cookies()/auth.getUser() on every route,
+//        which forced the whole app to render dynamically). the INITIAL_SESSION
+//        event supabase-js fires on client init covers the first-load case, so
+//        this is a single listener, not a separate fetch-on-mount. authLoading
+//        gates a skeleton avatar so a logged-in visitor doesn't see a "Sign In"
+//        flash before the session resolves.
 
 'use client'
 
@@ -15,15 +20,6 @@ import { usePathname } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import type { Member } from '@/types/database'
 
-/**
- * Props — passed down from the root layout server component (app/layout.tsx)
- *   initialMember — the logged-in Member row at SSR time; null when not signed in.
- *     The client-side auth listener keeps this in sync with subsequent sign-in/sign-out events.
- */
-interface NavbarProps {
-  initialMember: Pick<Member, 'id' | 'first_name' | 'last_name' | 'avatar_url' | 'role'> | null
-}
-
 // ============================================================
 // UI — safe to restyle everything below this line
 // available data:
@@ -31,13 +27,16 @@ interface NavbarProps {
 //     fields: id, first_name, last_name, avatar_url, role, membership_status, …
 //   isOfficer (bool) — true when member.role is 'officer' or 'admin'
 //   pathname (string) — current page path, used to build the ?next= redirect
+//   authLoading (bool) — true until the client has resolved whether a session exists
 // change classnames, layout, colors, and typography freely
 // do not remove or rename the variables being rendered
 // ============================================================
-export default function Navbar({ initialMember }: NavbarProps) {
+export default function Navbar() {
   type NavbarMember = Pick<Member, 'id' | 'first_name' | 'last_name' | 'avatar_url' | 'role'>
-  // seeded from SSR; updated live by the auth state change listener below
-  const [member, setMember] = useState<NavbarMember | null>(initialMember)
+  // resolved client-side by the auth listener below; null until then or when signed out
+  const [member, setMember] = useState<NavbarMember | null>(null)
+  // true until the first auth state is known — avoids flashing "Sign In" for a signed-in visitor
+  const [authLoading, setAuthLoading] = useState(true)
   // controls the desktop profile/avatar dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false)
   // controls the desktop goodphil sub-navigation dropdown
@@ -58,20 +57,22 @@ export default function Navbar({ initialMember }: NavbarProps) {
   const anyDropdownOpenRef = useRef(false)
 
   useEffect(() => {
-    // only listen for changes after initial load
+    // INITIAL_SESSION fires once on subscribe with whatever session already exists
+    // (or none) — that's what resolves the first-load case now that there's no
+    // SSR-seeded member; SIGNED_IN/SIGNED_OUT keep it live after that.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
+        if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session?.user) {
           const { data } = await supabase
             .from('members')
             .select('id, first_name, last_name, avatar_url, role')
             .eq('email', session.user.email!)
             .maybeSingle()
           setMember(data ?? null)
-        }
-        if (event === 'SIGNED_OUT') {
+        } else if (event === 'SIGNED_OUT' || event === 'INITIAL_SESSION') {
           setMember(null)
         }
+        setAuthLoading(false)
       }
     )
 
@@ -239,8 +240,13 @@ export default function Navbar({ initialMember }: NavbarProps) {
           {/* route: /events — public events listing page — do not change this path */}
           <li><Link href="/events" className={navLink(isActive('/events'))}>Events</Link></li>
 
-          {/* only renders the avatar/dropdown when a member is signed in; otherwise shows the Sign In button — do not remove this condition */}
-          {member ? (
+          {/* avatar/dropdown when signed in, Sign In button when not, a skeleton while
+              the client hasn't resolved a session yet — do not remove this condition */}
+          {authLoading ? (
+            <li>
+              <div className="w-9 h-9 rounded-full bg-white/10 animate-pulse" aria-hidden="true" />
+            </li>
+          ) : member ? (
             <li className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(prev => !prev)}

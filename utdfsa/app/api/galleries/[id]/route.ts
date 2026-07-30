@@ -11,6 +11,7 @@ import { updateGallerySchema } from '@/lib/schemas'
 import { uploadToS3, deleteFromS3, s3KeyFromUrl } from '@/utils/s3'
 import { imageMagicBytesMatch } from '@/utils/validate-image'
 import { NextResponse } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { fail, failValidation } from '@/lib/api-response'
 
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
@@ -50,6 +51,8 @@ export async function DELETE(
   if (key) {
     await deleteFromS3(key).catch(err => console.error('[galleries] S3 cleanup error:', err))
   }
+
+  revalidateTag('galleries', { expire: 0 })
 
   return NextResponse.json({ success: true })
 }
@@ -156,6 +159,9 @@ export async function PATCH(
       await deleteFromS3(oldKey).catch(err => console.error('[galleries] old cover cleanup error:', err))
     }
   }
+
+  // any field here (including is_published) can change what the public cache should show
+  revalidateTag('galleries', { expire: 0 })
 
   return NextResponse.json({ gallery })
 }

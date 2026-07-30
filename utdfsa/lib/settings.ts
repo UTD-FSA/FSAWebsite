@@ -5,27 +5,42 @@
 //
 // data:  settings (key, value)
 // deps:  createAdminClient (bypasses rls — settings table is officer-managed)
+// notes: the key/value fetch is cached (unstable_cache, tag 'settings') — the
+//        expiry-date arithmetic below it stays outside the cache since it depends
+//        on the current date, not on the settings themselves. if an officer-facing
+//        settings editor is ever added, its write route must call
+//        revalidateTag('settings', { expire: 0 }) or edits won't show up for
+//        up to the revalidate window below.
 
+import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/utils/supabase/server'
+
+// ── cached key/value fetch ─────────────────────────────────
+
+const getSettingsMap = unstable_cache(
+  async (): Promise<Record<string, string>> => {
+    // bypass rls — client roles have no direct read access to settings
+    // (migration: revoke_settings_direct_access), so the admin client is required
+    const supabase = createAdminClient()
+
+    const { data, error } = await supabase
+      .from('settings')
+      .select('key, value')
+
+    if (error || !data) {
+      throw new Error('failed to load settings')
+    }
+
+    return Object.fromEntries(data.map(row => [row.key, row.value]))
+  },
+  ['settings-map'],
+  { revalidate: 300, tags: ['settings'] }
+)
 
 // ── settings loader ───────────────────────────────────────
 
 export async function getSettings() {
-  // bypass rls — client roles have no direct read access to settings
-  // (migration: revoke_settings_direct_access), so the admin client is required
-  const supabase = createAdminClient()
-
-  // fetch all key/value rows from the settings table
-  const { data, error } = await supabase
-    .from('settings')
-    .select('key, value')
-
-  if (error || !data) {
-    throw new Error('failed to load settings')
-  }
-
-  // flatten rows into a plain object for easy key access
-  const map = Object.fromEntries(data.map(row => [row.key, row.value]))
+  const map = await getSettingsMap()
 
   // required keys — throw explicitly so a misconfigured db surfaces immediately
   if (!map.membership_price_cents) throw new Error('settings: membership_price_cents not found in database')

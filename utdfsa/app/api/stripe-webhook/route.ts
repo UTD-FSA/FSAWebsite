@@ -93,6 +93,19 @@ export async function POST(req: Request) {
     return fail('Ledger write failed', 500)
   }
 
+  // ponytail: no pg_cron on this project, so retention runs inline instead of on a
+  // schedule — ~1% of webhook calls prune rows past stripe's ~30-day replay window.
+  // fire-and-forget: never blocks or fails the webhook response over a cleanup query.
+  if (Math.random() < 0.01) {
+    void supabase
+      .from('stripe_events')
+      .delete()
+      .lt('processed_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+      .then(({ error }) => {
+        if (error) console.error('[webhook] stripe_events prune failed', error)
+      })
+  }
+
   // release the claim on a transient DB failure so stripe's retry of this event
   // can claim it again — only call before a 500 return, never before a permanent
   // data-problem 4xx (e.g. missing metadata), which would just loop forever.

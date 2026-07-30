@@ -26,16 +26,24 @@ import { fail } from '@/lib/api-response'
 // once drift between scans — acceptable, next scan corrects it.
 type AdminClient = NonNullable<Awaited<ReturnType<typeof requireOfficer>>>['admin']
 
+// counts on the database instead of pulling every row and counting in JS —
+// head: true skips the row payload entirely, only the count comes back.
 async function eventTally(admin: AdminClient, eventId: string) {
-  const { data } = await admin
-    .from('registration_tickets')
-    .select('checked_in, event_registrations!inner(event_id, payment_status)')
-    .eq('event_registrations.event_id', eventId)
-    .eq('event_registrations.payment_status', 'paid')
-  const rows = (data ?? []) as { checked_in: boolean }[]
+  const base = () =>
+    admin
+      .from('registration_tickets')
+      .select('id, event_registrations!inner(event_id, payment_status)', { count: 'exact', head: true })
+      .eq('event_registrations.event_id', eventId)
+      .eq('event_registrations.payment_status', 'paid')
+
+  const [{ count: totalPaid }, { count: checkedIn }] = await Promise.all([
+    base(),
+    base().eq('checked_in', true),
+  ])
+
   return {
-    checked_in_count: rows.filter(r => r.checked_in).length,
-    total_paid: rows.length,
+    checked_in_count: checkedIn ?? 0,
+    total_paid: totalPaid ?? 0,
   }
 }
 

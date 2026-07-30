@@ -3,16 +3,17 @@
 // POST /api/galleries — create a gallery with a cover photo (officer/admin only)
 //
 // data:  galleries, members (role check)
-// deps:  s3 (cover photo upload)
+// deps:  s3 (cover photo upload), lib/data/galleries.ts (GET's shared cache, also used by /archives)
 // notes: cover image is uploaded to S3 before the db row is written;
 //        google photos url is validated against an allowlist of trusted hosts
-import { createUserClient } from '@/utils/supabase/server'
 import { requireOfficer } from '@/lib/auth'
+import { getCachedPublishedGalleries } from '@/lib/data/galleries'
 import { createGallerySchema } from '@/lib/schemas'
 import { uploadToS3 } from '@/utils/s3'
 import { imageMagicBytesMatch } from '@/utils/validate-image'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { revalidateTag } from 'next/cache'
 import { fail, failValidation } from '@/lib/api-response'
 
 // accepted mime types for the cover photo upload
@@ -21,25 +22,12 @@ const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif
 const MIME_EXT: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' }
 
 // ── GET ───────────────────────────────────────────────────
-// public endpoint — use user client so RLS policies apply
+// public endpoint — data is public, so this reads through the shared cache
+// (no cookies, no per-request supabase client) instead of a live RLS-scoped query
 export async function GET() {
-  const supabase = await createUserClient()
+  const galleries = await getCachedPublishedGalleries()
 
-  // respects rls — only returns published galleries visible to everyone
-  // explicit columns: excludes created_by (officer uuid) from the public response
-  const { data: galleries, error } = await supabase
-    .from('galleries')
-    .select('id, title, cover_photo_url, google_photos_url, description, semester, year, is_published, created_at')
-    .eq('is_published', true)
-    .order('year', { ascending: false })
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('[galleries] fetch error:', error)
-    return fail('Failed to load galleries', 500)
-  }
-
-  return NextResponse.json(galleries ?? [], {
+  return NextResponse.json(galleries, {
     headers: { 'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400' },
   })
 }
@@ -128,6 +116,9 @@ export async function POST(request: NextRequest) {
     console.error('[galleries] insert error:', insertError)
     return fail('Failed to create gallery', 500)
   }
+
+  // new gallery is published immediately — bust the shared public cache
+  revalidateTag('galleries', { expire: 0 })
 
   return NextResponse.json({ gallery }, { status: 201 })
 }

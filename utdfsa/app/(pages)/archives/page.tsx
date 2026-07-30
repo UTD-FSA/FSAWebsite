@@ -2,9 +2,10 @@
 // archives server component — fetches published galleries and passes to client
 //
 // data:  galleries table — published only, sorted year desc then created_at desc
-// deps:  supabase admin client (bypass rls to read published galleries publicly)
-// notes: admin client used here because gallery reads are public but RLS would
-//        block unauthenticated access; only is_published = true rows are shown
+// deps:  lib/data/galleries.ts (getCachedPublishedGalleries — shared with /api/galleries GET)
+// notes: this page has no user session and reads no cookies, so it prerenders as
+//        static; freshness comes from the shared unstable_cache boundary in
+//        lib/data/galleries.ts (revalidate: 3600), not a route-segment export
 // ─────────────────────────────────────────────────────────────
 import type { Metadata } from 'next'
 export const metadata: Metadata = {
@@ -12,25 +13,12 @@ export const metadata: Metadata = {
   description: 'Browse photo archives from past UTD FSA events, socials, and Goodphil competitions, the Filipino Student Association at UT Dallas.',
   alternates: { canonical: '/archives' },
 }
-export const revalidate = 3600
 
-import { createAdminClient } from '@/utils/supabase/server'
+import { getCachedPublishedGalleries } from '@/lib/data/galleries'
 import ArchivesClient from './ArchivesClient'
-import type { Gallery } from '@/types/database'
 
 export default async function ArchivesPage() {
-  // bypass rls — this page has no user session (public route); rls would
-  // block the read entirely, so the admin client is required here
-  const admin = createAdminClient()
-
-  // galleries table — fetch only published rows, newest year first
-  // explicit columns — excludes created_by (officer uuid); mirrors the public /api/galleries GET
-  const { data: galleries } = await admin
-    .from('galleries')
-    .select('id, title, cover_photo_url, google_photos_url, description, semester, year, is_published, created_at')
-    .eq('is_published', true)
-    .order('year', { ascending: false })
-    .order('created_at', { ascending: false })
+  const galleries = await getCachedPublishedGalleries()
 
   // ============================================================
   // UI — safe to restyle everything below this line
@@ -42,7 +30,7 @@ export default async function ArchivesPage() {
   // ============================================================
   return (
     <ArchivesClient
-      galleries={(galleries ?? []) as Gallery[]}
+      galleries={galleries}
     />
   )
 }

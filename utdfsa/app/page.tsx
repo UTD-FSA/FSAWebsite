@@ -9,6 +9,10 @@
 //        here because auth.getUser() below reads cookies() unconditionally,
 //        which forces this whole page to render dynamically per request
 //        regardless of that export; unstable_cache is the real cache boundary.
+//        the sitewide Organization JSON-LD lives here (not the root layout) —
+//        one instance is enough per Google's guidance, and reading x-nonce for
+//        it is what used to force every route in the app to render dynamically;
+//        this page is already dynamic (cookies() below), so it's a free home.
 // ─────────────────────────────────────────────────────────────
 
 import type { Metadata } from "next"
@@ -16,6 +20,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 }
 
+import { headers } from "next/headers"
 import SmoothImage from "@/components/SmoothImage"
 import PhotoCarousel from "@/components/PhotoCarousel"
 import HeroSection from "@/components/HeroSection"
@@ -27,7 +32,32 @@ import { createAdminClient, createUserClient } from "@/utils/supabase/server"
 import { getCachedVisibleEvents } from "@/lib/data/events"
 import { isMembershipActive } from "@/lib/membership"
 
+const SITE_URL = "https://www.utdfsa.org"
+const SITE_DESCRIPTION = "The Filipino Student Association at The University of Texas at Dallas. Join events, become a member, explore pamilyas, cultural programs, and connect with the Filipino-American community at UTD."
+
+// sitewide Organization structured data — one instance is enough for the whole
+// site per Google's guidance, so it lives on the home page rather than per-page
+const ORGANIZATION_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "UTD FSA — Filipino Student Association at UT Dallas",
+  alternateName: "UTD FSA",
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo-head.png`,
+  description: SITE_DESCRIPTION,
+  sameAs: [
+    "https://instagram.com/fsautd",
+    "https://youtube.com/@fsautd",
+    "https://tiktok.com/@utdfsa",
+    "https://discord.gg/uVRmuF3BT",
+  ],
+}
+
 export default async function Home() {
+  // nonce set per-request by proxy.ts — required for the inline JSON-LD script below
+  // to run under a nonce-based CSP (script-src no longer allows 'unsafe-inline')
+  const nonce = (await headers()).get('x-nonce')
+
   const admin = createAdminClient()
 
   // filtered/sliced live (not baked into the cached query) so "upcoming" stays
@@ -79,6 +109,16 @@ export default async function Home() {
 
   return (
     <main className="bg-brand-bg text-white overflow-x-clip">
+      <script
+        type="application/ld+json"
+        nonce={nonce ?? undefined}
+        // browsers zero out the nonce attribute in the DOM after parsing (CSP
+        // hardening, prevents nonce exfiltration) — React sees that as a hydration
+        // mismatch even though the script already ran fine server-side
+        suppressHydrationWarning
+        // static, no user input — safe to inline
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }}
+      />
 
       {/* ── HERO ──────────────────────────────────────────────────── */}
       <section className="relative h-[50vh] sm:h-[70vh] md:h-screen w-full overflow-hidden">

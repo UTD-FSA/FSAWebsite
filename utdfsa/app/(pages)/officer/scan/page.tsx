@@ -46,23 +46,29 @@ export default async function ScanPage() {
     .gte('event_date', windowStart.toISOString())
     .order('event_date', { ascending: true })
 
-  // initial door tallies — one query for all listed events, counted in js.
-  // scan responses keep the tally fresh afterwards (see /api/scan-ticket).
+  // initial door tallies — one count-only query pair per listed event (the picker
+  // window is 7-days-back + active Party/Other events, so this stays small).
+  // head: true skips row payload entirely. scan responses keep the tally fresh
+  // afterwards (see /api/scan-ticket).
   const eventIds = (events ?? []).map(e => e.id)
   const tallies = new Map<string, { checked_in_count: number; total_paid: number }>()
   if (eventIds.length > 0) {
-    const { data: tickets } = await admin
-      .from('registration_tickets')
-      .select('checked_in, event_registrations!inner(event_id, payment_status)')
-      .in('event_registrations.event_id', eventIds)
-      .eq('event_registrations.payment_status', 'paid')
-    for (const t of (tickets ?? []) as unknown as { checked_in: boolean; event_registrations: { event_id: string } }[]) {
-      const id = t.event_registrations.event_id
-      const tally = tallies.get(id) ?? { checked_in_count: 0, total_paid: 0 }
-      tally.total_paid += 1
-      if (t.checked_in) tally.checked_in_count += 1
-      tallies.set(id, tally)
-    }
+    const counts = await Promise.all(
+      eventIds.map(async id => {
+        const base = () =>
+          admin
+            .from('registration_tickets')
+            .select('id, event_registrations!inner(event_id, payment_status)', { count: 'exact', head: true })
+            .eq('event_registrations.event_id', id)
+            .eq('event_registrations.payment_status', 'paid')
+        const [{ count: totalPaid }, { count: checkedIn }] = await Promise.all([
+          base(),
+          base().eq('checked_in', true),
+        ])
+        return [id, { checked_in_count: checkedIn ?? 0, total_paid: totalPaid ?? 0 }] as const
+      })
+    )
+    for (const [id, tally] of counts) tallies.set(id, tally)
   }
 
   const scannableEvents: ScannableEvent[] = (events ?? []).map(e => ({

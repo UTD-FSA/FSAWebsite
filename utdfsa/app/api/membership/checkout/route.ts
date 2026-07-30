@@ -6,6 +6,7 @@
 // notes: early-bird pricing is applied when current time is before settings.earlyBirdDeadline;
 //        price and expiry are read from the db at request time — never hardcoded
 import { requireUser } from '@/lib/auth'
+import { createAdminClient } from '@/utils/supabase/server'
 import { stripe } from '@/lib/stripe'
 import { getSettings } from '@/lib/settings'
 import { isMembershipActive } from '@/lib/membership'
@@ -41,7 +42,10 @@ export async function POST() {
   }
 
   // ── member lookup ─────────────────────────────────────────
-  // respects rls — user client; verifies effective membership (status + expiry) before proceeding
+  // respects rls — user client; verifies effective membership (status + expiry) before proceeding.
+  // stripe_checkout_session_id is a payment-internal column excluded from the authenticated
+  // grant (see migration: restrict_members_column_grant) — fetched separately via the
+  // admin client below, once we know we're actually about to create a session
   const { data: member } = await supabase
     .from('members')
     .select('id, membership_status, membership_expires_at, email, first_name, last_name')
@@ -58,6 +62,16 @@ export async function POST() {
   if (isMembershipActive(member)) {
     return fail('Already a member', 400)
   }
+
+  // bypass rls — needed for stripe_checkout_session_id (see note above) and to write
+  // the new session id below; the member's own user client can't touch that column
+  const admin = createAdminClient()
+  const { data: sessionRow } = await admin
+    .from('members')
+    .select('stripe_checkout_session_id')
+    .eq('id', member.id)
+    .maybeSingle()
+  const priorSessionId = sessionRow?.stripe_checkout_session_id ?? null
 
   // ── pricing ─────────────────────────────────────────────
   // fetch prices dynamically from the database
@@ -126,6 +140,33 @@ export async function POST() {
       is_early_bird: isEarlyBird.toString(),
     },
   })
+
+  // save the new session id immediately, and expire whatever session it replaces —
+  // membership fulfillment in stripe-webhook is keyed on member_id (not session id), so a
+  // stale open session left alive could still be paid and fulfilled later, at whatever
+  // price/terms it was created under (e.g. a pre-deadline early-bird rate). eagerly
+  // recording the id here (rather than only on the webhook's post-payment write) is what
+  // lets the *next* checkout attempt find and expire *this* one if it's abandoned too.
+  const { error: sessionIdError } = await admin
+    .from('members')
+    .update({ stripe_checkout_session_id: session.id })
+    .eq('id', member.id)
+
+  if (sessionIdError) {
+    // best-effort — doesn't block checkout (fulfillment doesn't depend on this column),
+    // it only means the *next* abandoned-session cleanup below has stale info to work with
+    console.warn('[membership/checkout] session id write failed', member.id, sessionIdError)
+  }
+
+  // best-effort: stripe throws if the prior session is already paid/expired/completed,
+  // which is the common case and fine to ignore — same pattern as events/register/route.ts
+  if (priorSessionId && priorSessionId !== session.id) {
+    try {
+      await stripe.checkout.sessions.expire(priorSessionId)
+    } catch (err) {
+      console.warn('[membership/checkout] prior session expire failed (likely already terminal)', priorSessionId, err)
+    }
+  }
 
   return NextResponse.json({ url: session.url })
 }
