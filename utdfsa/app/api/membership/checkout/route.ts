@@ -81,6 +81,17 @@ export async function POST() {
     ? `UTD FSA Membership ${settings.membershipYear} — Early Bird`
     : `UTD FSA Membership ${settings.membershipYear}`
 
+  // early-bird sessions die at the deadline so a stale open tab can't pay the old price
+  // after it stops being offered. stripe clamps expires_at to 30min-24h from creation, so
+  // this is a min/max clamp, not an exact deadline match. same fix as events/register/route.ts.
+  const nowSec = Math.floor(now.getTime() / 1000)
+  const ebExpiresAt = isEarlyBird
+    ? Math.min(
+        Math.max(Math.floor(settings.earlyBirdDeadline.getTime() / 1000), nowSec + 1800),
+        nowSec + 86400
+      )
+    : undefined
+
   // ── stripe checkout ───────────────────────────────────────
   // creates a hosted checkout session; returns url to redirect the browser to
   const session = await stripe.checkout.sessions.create({
@@ -105,6 +116,9 @@ export async function POST() {
     // NEXT_PUBLIC_SITE_URL is the canonical origin (e.g. https://utdfsa.com)
     success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/onboarding?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/membership`,
+    // early-bird sessions die at the deadline so a stale open tab can't pay the old price
+    // once it stops being offered; omitted entirely outside early-bird (defaults to 24h)
+    ...(ebExpiresAt ? { expires_at: ebExpiresAt } : {}),
     metadata: {
       // stripe-webhook uses type + member_id to route the completed payment and update membership_status
       member_id: member.id,

@@ -71,7 +71,7 @@ export async function POST(req: Request) {
   // ── member-specific restrictions ───────────────────────────────────────────
   // fetched once here (unique constraint guarantees at most one row per member+event)
   // and reused below in the update/insert block instead of re-querying for the stale-row check
-  let memberExistingRegistration: { id: string; payment_status: string } | null = null
+  let memberExistingRegistration: { id: string; payment_status: string; stripe_checkout_session_id: string | null } | null = null
 
   if (isMember) {
     if (tickets.length > 1) {
@@ -82,7 +82,7 @@ export async function POST(req: Request) {
     // bypass rls — admin client needed to query all registrations across members
     const { data: existing } = await admin
       .from('event_registrations')
-      .select('id, payment_status')
+      .select('id, payment_status, stripe_checkout_session_id')
       .eq('member_id', member!.id)
       .eq('event_id', event_id)
       .maybeSingle()
@@ -128,6 +128,17 @@ export async function POST(req: Request) {
   // total is price per ticket multiplied by ticket count
   const totalAmount = pricePerTicket * tickets.length
 
+  // early-bird checkout sessions die at the deadline so a stale open tab can't pay the
+  // old price after it stops being offered. stripe clamps expires_at to 30min-24h from
+  // creation, so this is a min/max clamp, not an exact deadline match.
+  const nowSec = Math.floor(Date.now() / 1000)
+  const ebExpiresAt = isEarlyBird
+    ? Math.min(
+        Math.max(Math.floor(new Date(event.eb_deadline!).getTime() / 1000), nowSec + 1800),
+        nowSec + 86400
+      )
+    : undefined
+
   // ── create or update registration ──────────────────────────────────────────
   // bypass rls — admin client for all writes below
   // for any authenticated user (member or not): if a non-paid row already exists for this
@@ -135,9 +146,15 @@ export async function POST(req: Request) {
   // in place rather than inserting — avoids a 23505 unique_violation on (member_id, event_id).
   // free events are immediately marked paid to skip stripe entirely.
   //
-  // ⚠ limitation: a pending row from a live concurrent checkout session in another tab is
-  // indistinguishable from an abandoned one — no stripe session id is stored at creation time.
-  // this is an accepted trade-off; session-level tracking can be revisited later if needed.
+  // a reused row may carry a stripe session id from a prior attempt (abandoned or superseded).
+  // that old session gets expired below, once the fresh one is safely written in its place —
+  // otherwise a still-open stale tab stays payable at whatever price it was created at (e.g.
+  // an early-bird rate that expired in between), even though the row it was for has moved on.
+  // the webhook's stripe_checkout_session_id match means paying it can't fulfill this row, but
+  // without expiring it, the charge goes through and the buyer gets nothing until the webhook's
+  // auto-refund catches the mismatch (see stripe-webhook/route.ts) — this closes that gap up front.
+  let priorSessionId: string | null = null
+
   let registration: { id: string }
   let isUpsert = false
 
@@ -150,13 +167,14 @@ export async function POST(req: Request) {
       ? memberExistingRegistration
       : (await admin
           .from('event_registrations')
-          .select('id')
+          .select('id, stripe_checkout_session_id')
           .eq('member_id', member.id)
           .eq('event_id', event_id)
           .neq('payment_status', 'paid')
           .maybeSingle()).data
 
     if (existingRow) {
+      priorSessionId = existingRow.stripe_checkout_session_id
       // update the stale row with the current attempt's ticket info.
       // .neq('payment_status', 'paid') re-verifies the condition atomically at the write,
       // not just at the read above — closes the race where the row gets paid (e.g. a
@@ -223,7 +241,7 @@ export async function POST(req: Request) {
     // emails or races, caught via 23505 below.
     const { data: existingGuestRow } = await admin
       .from('event_registrations')
-      .select('id, payment_status')
+      .select('id, payment_status, stripe_checkout_session_id')
       .eq('event_id', event_id)
       .is('member_id', null)
       .eq('guest_email', tickets[0].email)
@@ -241,6 +259,8 @@ export async function POST(req: Request) {
     }
 
     if (existingGuestRow) {
+      priorSessionId = existingGuestRow.stripe_checkout_session_id
+
       // 'failed' row from a stripe-expired abandoned attempt — safe to reuse in place.
       // .eq('payment_status', 'failed') re-verifies the condition atomically at the write,
       // not just at the read above — closes the race where the row flips to pending/paid
@@ -378,6 +398,9 @@ export async function POST(req: Request) {
     allow_promotion_codes: true,
     success_url: successUrl,
     cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/events`,
+    // early-bird sessions die at the deadline so a stale open tab can't pay the old price
+    // once it stops being offered; omitted entirely outside early-bird (defaults to 24h)
+    ...(ebExpiresAt ? { expires_at: ebExpiresAt } : {}),
     metadata: {
       // stripe-webhook uses these fields to route the completed payment correctly
       type: 'event_ticket',
@@ -403,6 +426,18 @@ export async function POST(req: Request) {
       console.error('[register] failed to expire orphaned session', session.id, err)
     )
     return fail('Failed to prepare checkout. Please try again.', 500)
+  }
+
+  // this row now points at the fresh session — expire whatever session it pointed at before
+  // (if any). must run AFTER the write above succeeds: expiring first would fire stripe's
+  // checkout.session.expired webhook while the row still carried the OLD session id, letting
+  // it match and mark this row 'failed' out from under the new session we just opened.
+  // ponytail: fire-and-forget, .catch-logged — an already-expired/completed prior session
+  // throws here and that's fine, nothing downstream depends on this succeeding
+  if (priorSessionId && priorSessionId !== session.id) {
+    await stripe.checkout.sessions.expire(priorSessionId).catch(err =>
+      console.error('[register] failed to expire superseded session', priorSessionId, err)
+    )
   }
 
   return NextResponse.json({ url: session.url })

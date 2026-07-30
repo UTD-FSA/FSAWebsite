@@ -2,7 +2,7 @@
 // receives stripe webhook events and fulfills orders (membership or event tickets).
 //
 // data:  members, event_registrations, registration_tickets, events, stripe_events (idempotency ledger)
-// deps:  stripe (signature verification + event parsing), resend (confirmation emails),
+// deps:  stripe (signature verification + event parsing, refunds), resend (confirmation emails),
 //        qrcode (png buffer generation for ticket attachments)
 // notes: CRITICAL — stripe calls this directly; do NOT add auth middleware here.
 //        stripe.webhooks.constructEvent() is the security layer (STRIPE_WEBHOOK_SECRET).
@@ -18,7 +18,10 @@
 //        covered the DB field writes but not the email sends or the membership expiry re-stamp.
 //        fulfillment writes are additionally bound to the exact stripe_checkout_session_id
 //        stored on the row — see the session-id-match comments below — so a stale/superseded
-//        session can never fulfill (or fail) a registration it didn't pay for.
+//        session can never fulfill (or fail) a registration it didn't pay for. a mismatch on
+//        the completion path now auto-refunds the charge (see the event-ticket fulfillment
+//        block below) instead of only logging — register/route.ts also expires the superseded
+//        session up front, so this refund path is a backstop, not the primary defense.
 
 // CRITICAL: this route handles all payment confirmations
 // stripe sends events here after payment completes
@@ -238,7 +241,39 @@ export async function POST(req: Request) {
       }
 
       if (!fulfilledRows || fulfilledRows.length === 0) {
-        console.warn('[webhook] session/registration mismatch — not fulfilling', { registration_id, sessionId: session.id })
+        // distinguish "superseded by a later registration attempt" from "our own
+        // stripe_checkout_session_id write in register/route.ts hasn't landed yet" — the
+        // latter is a legitimate in-flight payment, not a stale session, and must not be refunded.
+        const { data: row } = await supabase
+          .from('event_registrations')
+          .select('stripe_checkout_session_id')
+          .eq('id', registration_id)
+          .maybeSingle()
+
+        if (row && row.stripe_checkout_session_id === null) {
+          console.warn('[webhook] registration not yet bound to a session — retrying', { registration_id, sessionId: session.id })
+          await releaseClaim()
+          return fail('Registration not ready', 500)
+        }
+
+        console.warn('[webhook] session/registration mismatch — not fulfilling, refunding', { registration_id, sessionId: session.id })
+
+        // this session paid for a row that's since moved on to a newer checkout attempt
+        // (e.g. a re-registration after an early-bird deadline passed) — refund the charge
+        // since it can never be fulfilled. no_payment_required (100%-off promo codes) has
+        // no payment_intent and nothing to refund.
+        if (session.payment_intent && (session.amount_total ?? 0) > 0) {
+          try {
+            await stripe.refunds.create({
+              payment_intent: session.payment_intent as string,
+              reason: 'duplicate',
+              metadata: { cause: 'superseded_checkout_session', registration_id },
+            })
+          } catch (err) {
+            console.error('[webhook] auto-refund failed for superseded session', session.id, registration_id, err)
+          }
+        }
+
         return NextResponse.json({ received: true })
       }
 
