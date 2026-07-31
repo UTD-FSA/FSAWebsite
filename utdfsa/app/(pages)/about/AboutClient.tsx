@@ -226,6 +226,19 @@ export default function AboutClient() {
     return () => cancelAnimationFrame(raf)
   }, [])
 
+  // ── current officer board — staggered fade-up entrance ────
+  // delay is scoped to the card's row (grouped by offsetTop), not its global index —
+  // an 18-card grid staggered globally leaves the last card blank ~1.4s after it is
+  // already on screen. per-row reset caps the wait at 135ms at every breakpoint.
+  const boardGridRef = useRef<HTMLDivElement>(null)
+  useStaggeredReveal(
+    () => Array.from(boardGridRef.current?.querySelectorAll<HTMLElement>('[data-officer-card]') ?? []),
+    (card, cards) => {
+      const row = cards.filter(c => Math.abs(c.offsetTop - card.offsetTop) < 4)
+      card.style.animation = `fadeUp 0.45s var(--ease-smooth) ${row.indexOf(card) * 45}ms both`
+    },
+  )
+
   // ── past officer boards — staggered fade-up entrance ──────
   const pastGridRef = useRef<HTMLDivElement>(null)
   useStaggeredReveal(
@@ -320,7 +333,7 @@ export default function AboutClient() {
           >
             2026 - 2027 OFFICER BOARD
           </h2>
-          <div className="flex flex-col gap-6">
+          <div ref={boardGridRef} className="flex flex-col gap-6">
             {/* leadership row — President + VP always share their own row, 2-up at every breakpoint */}
             <div className="grid grid-cols-2 gap-6 max-w-xl mx-auto w-full">
               {OFFICERS_LEADERSHIP.map(({ position, name }, i) => (
