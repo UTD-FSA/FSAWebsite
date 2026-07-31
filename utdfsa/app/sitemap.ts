@@ -10,7 +10,9 @@ const BASE_URL = 'https://www.utdfsa.org'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
-    '', '/about', '/events', '/pamilyas', '/archives', '/membership',
+    // /membership excluded — gated to signed-in users (utils/supabase/middleware.ts),
+    // logged-out crawlers now 307 to /login, which reads as a redirect error
+    '', '/about', '/events', '/pamilyas', '/archives',
     '/goodphil/about', '/goodphil/cultural', '/goodphil/modern',
     '/goodphil/spirit', '/goodphil/sports', '/privacy', '/terms',
   ]

@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   title: 'Become a Member',
   description: 'Join UTD FSA, the Filipino Student Association at UT Dallas, and get access to pamilya matching, events, and the Filipino-American community on campus.',
   alternates: { canonical: '/membership' },
+  // gated to signed-in users (utils/supabase/middleware.ts) — logged-out crawlers now
+  // 307 to /login, so this page shouldn't be indexed as a public destination
+  robots: { index: false, follow: true },
 }
 
 import { getSettings } from '@/lib/settings'

@@ -67,7 +67,10 @@ function calcAge(birthday: string): number | null {
 
 // shared class strings for form fields — mockup design language
 const fieldCls = 'w-full px-4 py-[14px] bg-[#141414] border border-white/10 rounded-xl text-white text-[15px] outline-none focus:border-accent-green focus:bg-[#171717] transition-colors placeholder:text-[#7a7a7a]'
-const fieldDateCls = `${fieldCls} [&::-webkit-calendar-picker-indicator]:invert`
+// note: no invert needed here — globals.css sets color-scheme: dark site-wide,
+// which already renders the native date-picker icon light; inverting on top of
+// that flips it back to black
+const fieldDateCls = fieldCls
 const textareaCls = `${fieldCls} min-h-[96px] resize-y leading-relaxed`
 const labelCls = 'flex items-center gap-[5px] mb-[9px] text-[12px] font-bold tracking-[0.1em] text-[#9a9a9a] uppercase'
 
@@ -334,11 +337,11 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
         return
       }
 
-      // invalidate the client router cache for /member/profile (experimental.staleTimes
-      // in next.config.ts otherwise serves the pre-save payload for its 300s static
-      // window) — done now, not on the button click below, since this screen can sit
-      // idle for a while before the member clicks through
-      router.refresh()
+      // do NOT router.refresh() here — this route's server component (page.tsx) redirects
+      // to /member/profile once onboarding_complete is true, which the submit above just
+      // set. a refresh would re-run that redirect and yank this success screen away before
+      // the member ever sees it. the profile-bound button below does a hard navigation
+      // instead, which sidesteps the client router cache without touching this route.
       setStep('submitted')
     } catch {
       setServerError('Network error — please try again.')
@@ -1527,7 +1530,10 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
           {/* action buttons */}
           <div className="relative z-10 flex flex-col sm:flex-row gap-3.5 w-full mt-7">
             <button
-              onClick={() => router.push('/member/profile')}
+              // hard navigation, not router.push — the client router cache (next.config.ts
+              // staleTimes) can otherwise serve a /member/profile payload from before this
+              // application was saved
+              onClick={() => { window.location.href = '/member/profile' }}
               className="flex-1 flex items-center justify-center gap-2.5 py-4 rounded-[14px] bg-accent-green text-[#08130a] font-display font-extrabold text-[15px] tracking-[0.02em] hover:brightness-[1.08] cursor-pointer transition-all"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#08130a" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">

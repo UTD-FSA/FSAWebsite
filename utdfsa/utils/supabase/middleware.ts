@@ -118,6 +118,16 @@ export async function updateSession(request: NextRequest, cspInfo?: CspInfo) {
     memberRow = data
   }
 
+  // protects /membership — the page is a post-oauth paywall: it has no navbar (SiteChrome
+  // hides it) and its checkout call requires a session, so a logged-out visitor lands on a
+  // dead end. send them to sign in first; auth/callback routes unpaid users right back here.
+  if (pathname === '/membership' && !user) {
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = '/login'
+    loginUrl.searchParams.set('next', pathname)
+    return NextResponse.redirect(loginUrl)
+  }
+
   // protects /membership — redirects active members and officers away since they don't need to pay again
   if (pathname === '/membership' && user) {
     const isActive = isMembershipActive(memberRow)
