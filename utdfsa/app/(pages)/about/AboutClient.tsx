@@ -226,10 +226,6 @@ export default function AboutClient() {
     return () => cancelAnimationFrame(raf)
   }, [])
 
-  // ── officer board scroll-triggered animation ──────────────
-  const boardTitleRef = useRef<HTMLHeadingElement>(null)
-  const boardGridRef = useRef<HTMLDivElement>(null)
-
   // ── past officer boards — staggered fade-up entrance ──────
   const pastGridRef = useRef<HTMLDivElement>(null)
   useStaggeredReveal(
@@ -252,65 +248,6 @@ export default function AboutClient() {
       card.style.animation = `fadeUp 0.5s var(--ease-smooth) ${i * 70}ms both`
     },
   )
-
-  useEffect(() => {
-    const title = boardTitleRef.current
-    const grid = boardGridRef.current
-    if (!title || !grid) return
-
-    // scaled to 35% of the original timing (0.7s/1050ms/150ms) — cuts title +
-    // first-row render time ~65% while keeping the same relative choreography
-    const TIMING = '0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-    // hero title (0ms) + description delay (150ms) + duration (900ms) = 1050ms, scaled
-    const HERO_DONE_MS = 368
-    // title leads the first row by this many ms (appears "just before" cards)
-    const TITLE_LEAD_MS = 53
-    const mountTime = Date.now()
-
-    const cards = Array.from(grid.querySelectorAll<HTMLElement>('[data-officer-card]'))
-    const animated = new Set<HTMLElement>()
-    // offsetTop values are stable after layout; compute once at mount
-    const minOffsetTop = Math.min(...cards.map(c => c.offsetTop))
-    let titleAnimated = false
-
-    title.style.opacity = '0'
-    cards.forEach(c => { c.style.opacity = '0' })
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(e => {
-        if (!e.isIntersecting) return
-        const card = e.target as HTMLElement
-        if (animated.has(card)) return
-
-        const top = card.offsetTop
-        const isFirstRow = Math.abs(top - minOffsetTop) < 4
-        // first row waits for the hero description to finish; all other rows fire immediately
-        const cardDelay = isFirstRow ? Math.max(0, HERO_DONE_MS - (Date.now() - mountTime)) : 0
-
-        // title fades in 150ms before the first row cards
-        if (isFirstRow && !titleAnimated) {
-          titleAnimated = true
-          const titleDelay = Math.max(0, cardDelay - TITLE_LEAD_MS)
-          title.style.animation = 'none'
-          void title.offsetHeight
-          title.style.animation = `fadeUp ${TIMING} ${titleDelay}ms both`
-        }
-
-        cards
-          .filter(c => Math.abs(c.offsetTop - top) < 4)
-          .forEach(c => {
-            if (animated.has(c)) return
-            animated.add(c)
-            observer.unobserve(c)
-            c.style.animation = 'none'
-            void c.offsetHeight
-            c.style.animation = `fadeUp ${TIMING} ${cardDelay}ms both`
-          })
-      })
-    }, { threshold: 0.4 })
-
-    cards.forEach(c => observer.observe(c))
-    return () => observer.disconnect()
-  }, [])
 
   return (
     <main className="bg-brand-bg text-white overflow-x-clip">
@@ -378,13 +315,12 @@ export default function AboutClient() {
       <section id="officers" className="py-16 px-6 bg-section-bg scroll-mt-20">
         <div className="max-w-6xl mx-auto">
           <h2
-            ref={boardTitleRef}
             className="font-display font-black text-white text-center mb-12"
             style={{ fontSize: 'clamp(16px, 2.2vw, 32px)', letterSpacing: '0.02em' }}
           >
             2026 - 2027 OFFICER BOARD
           </h2>
-          <div ref={boardGridRef} className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6">
             {/* leadership row — President + VP always share their own row, 2-up at every breakpoint */}
             <div className="grid grid-cols-2 gap-6 max-w-xl mx-auto w-full">
               {OFFICERS_LEADERSHIP.map(({ position, name }, i) => (
