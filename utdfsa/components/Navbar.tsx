@@ -1,16 +1,16 @@
 // ── Navbar.tsx ────────────────────────────────────────────
 // sticky site-wide navigation with desktop dropdowns and mobile slide-out menu
 //
-// data:  supabase: members table (select on auth state change)
-// deps:  supabase auth listener (onAuthStateChange)
-// notes: member state resolves entirely client-side — the root layout no longer
-//        seeds it via SSR (that required cookies()/auth.getUser() on every route,
-//        which forced the whole app to render dynamically). the INITIAL_SESSION
-//        event supabase-js fires on client init covers the first-load case, so
-//        this is a single listener, not a separate fetch-on-mount. authLoading
-//        gates a skeleton avatar so a logged-in visitor doesn't see a "Sign In"
-//        flash before the session resolves.
-
+// data:  supabase auth session (client-side, no round trip) for name/avatar;
+//        members table (select on auth state change) for role only
+// deps:  supabase auth listener (onAuthStateChange), lib/format.ts (splitOAuthName)
+// notes: member state paints from the session immediately (name/avatar live in
+//        user_metadata already) so the navbar never waits on a network round trip —
+//        the root layout no longer seeds this via SSR (that required cookies() on
+//        every route, forcing the whole app to render dynamically). the members
+//        query still runs, deferred via setTimeout, to fill in `role` for the
+//        officer-only links; see the comment on the listener below for why that
+//        query must never be awaited inside the callback itself.
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
@@ -18,25 +18,41 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
+import { splitOAuthName } from '@/lib/format'
 import type { Member } from '@/types/database'
+import type { User } from '@supabase/supabase-js'
 
 // ============================================================
 // UI — safe to restyle everything below this line
 // available data:
-//   member (Member | null) — full member row when signed in, null otherwise;
-//     fields: id, first_name, last_name, avatar_url, role, membership_status, …
+//   member (NavbarMember | null) — signed-in member when known, null otherwise;
+//     fields: first_name, last_name, avatar_url, role (role is null until the
+//     members-table lookup resolves — isOfficer stays false until then)
 //   isOfficer (bool) — true when member.role is 'officer' or 'admin'
 //   pathname (string) — current page path, used to build the ?next= redirect
-//   authLoading (bool) — true until the client has resolved whether a session exists
 // change classnames, layout, colors, and typography freely
 // do not remove or rename the variables being rendered
 // ============================================================
+
+type NavbarMember = Pick<Member, 'first_name' | 'last_name' | 'avatar_url'> & { role: Member['role'] | null }
+
+// derives what the navbar can show instantly from an oauth session, with no
+// supabase round trip — role isn't in the session, so it starts null and is
+// filled in once the deferred members-table query (below) resolves
+function memberFromSession(user: User): NavbarMember {
+  const { firstName, lastName } = splitOAuthName(user.user_metadata)
+  return {
+    first_name: firstName,
+    last_name: lastName,
+    avatar_url: typeof user.user_metadata?.avatar_url === 'string' ? user.user_metadata.avatar_url : null,
+    role: null,
+  }
+}
+
 export default function Navbar() {
-  type NavbarMember = Pick<Member, 'id' | 'first_name' | 'last_name' | 'avatar_url' | 'role'>
-  // resolved client-side by the auth listener below; null until then or when signed out
+  // resolved client-side: painted from the session on sign-in, refined by the
+  // deferred members query below; null only when signed out
   const [member, setMember] = useState<NavbarMember | null>(null)
-  // true until the first auth state is known — avoids flashing "Sign In" for a signed-in visitor
-  const [authLoading, setAuthLoading] = useState(true)
   // controls the desktop profile/avatar dropdown
   const [dropdownOpen, setDropdownOpen] = useState(false)
   // controls the desktop goodphil sub-navigation dropdown
@@ -57,26 +73,48 @@ export default function Navbar() {
   const anyDropdownOpenRef = useRef(false)
 
   useEffect(() => {
+    // holds the pending role lookup so a later event (fast sign-out, or a second
+    // sign-in) can cancel a stale one before it resolves
+    let roleLookup: ReturnType<typeof setTimeout> | undefined
+
     // INITIAL_SESSION fires once on subscribe with whatever session already exists
     // (or none) — that's what resolves the first-load case now that there's no
     // SSR-seeded member; SIGNED_IN/SIGNED_OUT keep it live after that.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && session?.user) {
-          const { data } = await supabase
-            .from('members')
-            .select('id, first_name, last_name, avatar_url, role')
-            .eq('email', session.user.email!)
-            .maybeSingle()
-          setMember(data ?? null)
-        } else if (event === 'SIGNED_OUT' || event === 'INITIAL_SESSION') {
-          setMember(null)
-        }
-        setAuthLoading(false)
-      }
-    )
+    //
+    // this callback must stay synchronous and never await a supabase call directly:
+    // auth-js holds its storage lock for the duration of this callback (it's invoked
+    // from inside _acquireLock, e.g. on tab-visibility recovery), and any supabase
+    // query re-enters that same lock to read the access token before it can run —
+    // a circular wait with no timeout that freezes this tab's supabase client
+    // permanently. setTimeout defers the query until after the lock is released.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      clearTimeout(roleLookup)
 
-    return () => subscription.unsubscribe()
+      if (event === 'SIGNED_OUT' || !session?.user) {
+        setMember(null)
+        return
+      }
+
+      // paint immediately from the session — no network wait, so the navbar
+      // never shows a loading state or a "Sign In" flash for a signed-in visitor
+      setMember(memberFromSession(session.user))
+
+      // fill in `role` (not available in the session) once the lock is free
+      const email = session.user.email!
+      roleLookup = setTimeout(async () => {
+        const { data } = await supabase
+          .from('members')
+          .select('first_name, last_name, avatar_url, role')
+          .eq('email', email)
+          .maybeSingle()
+        if (data) setMember(data)
+      }, 0)
+    })
+
+    return () => {
+      clearTimeout(roleLookup)
+      subscription.unsubscribe()
+    }
   }, [])
 
   // close dropdowns when clicking outside
@@ -240,13 +278,9 @@ export default function Navbar() {
           {/* route: /events — public events listing page — do not change this path */}
           <li><Link href="/events" className={navLink(isActive('/events'))}>Events</Link></li>
 
-          {/* avatar/dropdown when signed in, Sign In button when not, a skeleton while
-              the client hasn't resolved a session yet — do not remove this condition */}
-          {authLoading ? (
-            <li>
-              <div className="w-9 h-9 rounded-full bg-white/10 animate-pulse" aria-hidden="true" />
-            </li>
-          ) : member ? (
+          {/* avatar/dropdown when signed in, Sign In button when not —
+              do not remove this condition */}
+          {member ? (
             <li className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(prev => !prev)}

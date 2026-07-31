@@ -14,6 +14,19 @@ export function toTitleCase(value: string): string {
     .join(' ')
 }
 
+// ── oauth name helper ──────────────────────────────────────
+
+// derives first/last name from google oauth metadata — shared by the first-sign-in
+// member provisioning (app/auth/callback/route.ts) and the navbar's session-painted
+// fallback (components/Navbar.tsx), so the two can't drift apart
+// 50-char cap matches the limit enforced on member-edited names elsewhere (update-profile)
+export function splitOAuthName(meta: Record<string, unknown> | undefined): { firstName: string; lastName: string } {
+  const fullName = typeof meta?.full_name === 'string' ? meta.full_name : ''
+  const firstName = (typeof meta?.given_name === 'string' ? meta.given_name : fullName.split(' ')[0] ?? '').slice(0, 50)
+  const lastName = (typeof meta?.family_name === 'string' ? meta.family_name : fullName.split(' ').slice(1).join(' ')).slice(0, 50)
+  return { firstName, lastName }
+}
+
 // ── date/time helpers ─────────────────────────────────────
 
 // formats an abbreviated month + day in Central time — e.g. "Sep. 3"

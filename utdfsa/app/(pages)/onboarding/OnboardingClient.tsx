@@ -334,6 +334,11 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
         return
       }
 
+      // invalidate the client router cache for /member/profile (experimental.staleTimes
+      // in next.config.ts otherwise serves the pre-save payload for its 300s static
+      // window) — done now, not on the button click below, since this screen can sit
+      // idle for a while before the member clicks through
+      router.refresh()
       setStep('submitted')
     } catch {
       setServerError('Network error — please try again.')

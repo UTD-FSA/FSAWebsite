@@ -93,6 +93,12 @@ export default function BasicInfoClient({ initial, firstName, deadlineText }: Pr
         return
       }
 
+      // invalidate the client router cache for /member/profile (experimental.staleTimes
+      // in next.config.ts otherwise serves the pre-save payload for its 300s static
+      // window) — done now, not on the button click below, since this screen can sit
+      // idle for a while before the member clicks through
+      router.refresh()
+
       // show the confirmation screen instead of redirecting straight to
       // /member/profile — reassures not-interested members the door stays open
       setSubmitted(true)

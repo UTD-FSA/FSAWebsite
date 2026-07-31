@@ -106,6 +106,9 @@ export default function ProfileEditClient({ member, loginEmail }: Props) {
       }
 
       setSuccess(true)
+      // invalidate the client router cache for /member/profile (experimental.staleTimes
+      // in next.config.ts otherwise serves the pre-save payload for its 300s static window)
+      router.refresh()
       // route: /member/profile — member profile view page — do not change this path
       setTimeout(() => router.push('/member/profile'), 1200)
     } catch {

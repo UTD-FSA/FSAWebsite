@@ -12,6 +12,7 @@
 import { NextResponse } from 'next/server'
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import { isMembershipActive } from '@/lib/membership'
+import { splitOAuthName } from '@/lib/format'
 
 // google avatar urls are always served from this host — matches the CSP img-src
 // allowlist (proxy.ts) exactly, so arbitrary oauth-provider metadata can't seed a
@@ -66,14 +67,9 @@ export async function GET(request: Request) {
 
   // first time signing in — create the member row from oauth metadata
   if (!member) {
-    // cap length — unbounded oauth-metadata strings written straight into the row;
-    // matches the 50-char cap already enforced on member-edited names in update-profile
-    const firstName = (user.user_metadata?.given_name
-      ?? user.user_metadata?.full_name?.split(' ')[0]
-      ?? '').slice(0, 50)
-    const lastName = (user.user_metadata?.family_name
-      ?? user.user_metadata?.full_name?.split(' ').slice(1).join(' ')
-      ?? '').slice(0, 50)
+    // cap length enforced inside splitOAuthName — unbounded oauth-metadata strings
+    // written straight into the row otherwise
+    const { firstName, lastName } = splitOAuthName(user.user_metadata)
 
     const { data: newMember } = await admin
       .from('members')
