@@ -124,7 +124,7 @@ export default function GoodphilClient({ members }: { members: GoodphilEligibili
           </div>
           <button
             onClick={exportCSV}
-            className="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-[13px] bg-transparent border border-white/20 text-[#cfcfcf] text-sm font-bold hover:border-white/40 hover:text-white transition-colors cursor-pointer"
+            className="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-[13px] bg-transparent border border-white/20 text-[#cfcfcf] text-sm font-bold hover:border-white/40 hover:text-white active:scale-95 transition-all cursor-pointer"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" strokeLinecap="round" strokeLinejoin="round"/>
@@ -157,7 +157,7 @@ export default function GoodphilClient({ members }: { members: GoodphilEligibili
               <button
                 onClick={() => setPage(p => Math.max(0, p - 1))}
                 disabled={safePage === 0}
-                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-[#8c8c8c] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-base"
+                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-[#8c8c8c] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed active:scale-90 transition-all text-base"
                 aria-label="Previous page"
               >
                 ‹
@@ -165,7 +165,7 @@ export default function GoodphilClient({ members }: { members: GoodphilEligibili
               <button
                 onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
                 disabled={safePage >= totalPages - 1}
-                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-[#8c8c8c] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-base"
+                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-[#8c8c8c] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed active:scale-90 transition-all text-base"
                 aria-label="Next page"
               >
                 ›

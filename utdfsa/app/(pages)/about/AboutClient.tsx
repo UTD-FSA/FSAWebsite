@@ -528,12 +528,18 @@ export default function AboutClient() {
               // format "2024-2025" → "2024 – 2025" for display
               const displayYear = year.replace('-', ' – ')
               return (
-                <div key={year} data-past-card>
+                <div key={year} data-past-card className="rounded-xl border border-white/10 overflow-hidden">
+                  {/* border + radius live on this constant outer wrapper (not on the button
+                      or panel below), mirroring the FAQ accordion in MembershipClient.tsx —
+                      a radius toggled per open/closed state snaps instantly (border-radius
+                      wasn't in the transitioned property list), popping "closed" the moment
+                      isOpen flips while the panel below is still 300ms into collapsing.
+                      keeping the radius constant here removes that seam by construction. */}
                   <button
                     id={`past-officers-trigger-${year}`}
                     aria-expanded={isOpen}
                     aria-controls={`past-officers-panel-${year}`}
-                    className={`w-full flex items-center justify-between py-4 px-6 bg-[#1a1a1a] border border-white/10 text-left hover:bg-[#222] transition-colors duration-200 ${isOpen ? 'rounded-t-xl' : 'rounded-xl'}`}
+                    className="w-full flex items-center justify-between py-4 px-6 bg-[#1a1a1a] text-left hover:bg-[#222] transition-colors duration-200"
                     onClick={() => toggleYear(year)}
                   >
                     <span className="font-sans font-bold text-white text-base">{displayYear}</span>
@@ -553,7 +559,7 @@ export default function AboutClient() {
                         role="region"
                         aria-labelledby={`past-officers-trigger-${year}`}
                         aria-hidden={!isOpen}
-                        className="bg-[#161616] border border-t-0 border-white/10 rounded-b-xl px-6 py-2"
+                        className="bg-[#161616] px-6 py-2"
                       >
                         {officers.map(({ position, names }, i) => (
                           <div

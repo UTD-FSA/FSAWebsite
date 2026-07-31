@@ -161,7 +161,7 @@ export default function ScanClient({ events }: { events: ScannableEvent[] }) {
             <p className="text-sm text-gray-600 mb-6">{cameraError}</p>
             <button
               onClick={() => setCameraError(null)}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl text-sm active:scale-[0.98] transition-all"
             >
               Dismiss
             </button>
@@ -189,7 +189,7 @@ export default function ScanClient({ events }: { events: ScannableEvent[] }) {
                   <li key={ev.id}>
                     <button
                       onClick={() => pickEvent(ev)}
-                      className="w-full text-left px-4 py-3.5 rounded-2xl bg-[#141414] border border-white/10 hover:border-[#9747FF] transition-colors cursor-pointer"
+                      className="w-full text-left px-4 py-3.5 rounded-2xl bg-[#141414] border border-white/10 hover:border-[#9747FF] active:scale-[0.98] transition-all cursor-pointer"
                     >
                       <span className="block font-semibold text-[15px] text-white">{ev.name}</span>
                       <span className="flex items-center justify-between mt-1">
@@ -265,7 +265,7 @@ export default function ScanClient({ events }: { events: ScannableEvent[] }) {
           </div>
           <button
             onClick={switchEvent}
-            className="flex-shrink-0 px-3.5 py-2 rounded-[10px] bg-white/6 hover:bg-white/12 border border-white/10 text-[13px] font-semibold text-[#cfcfcf] transition-colors cursor-pointer"
+            className="flex-shrink-0 px-3.5 py-2 rounded-[10px] bg-white/6 hover:bg-white/12 border border-white/10 text-[13px] font-semibold text-[#cfcfcf] active:scale-95 transition-all cursor-pointer"
           >
             Switch event
           </button>

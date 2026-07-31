@@ -145,7 +145,7 @@ function StatusButtons({
     <div className="flex gap-1.5">
       <button
         onClick={() => onSelect('pending')}
-        className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border transition-colors ${
+        className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border active:scale-95 transition-all ${
           current === 'pending'
             ? 'bg-[rgba(227,174,61,0.16)] border-[rgba(227,174,61,0.5)] text-[#f0c869]'
             : 'bg-transparent border-white/12 text-[#7e7e7e] hover:border-white/24 hover:text-[#cfcfcf]'
@@ -155,7 +155,7 @@ function StatusButtons({
       </button>
       <button
         onClick={() => onSelect('accepted')}
-        className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border-none transition-colors ${
+        className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border-none active:scale-95 transition-all ${
           current === 'accepted'
             ? 'bg-[#3a9d63] text-white'
             : 'bg-[rgba(58,157,99,0.14)] text-[#5fcf8f] hover:bg-[rgba(58,157,99,0.22)]'
@@ -165,7 +165,7 @@ function StatusButtons({
       </button>
       <button
         onClick={() => onSelect('rejected')}
-        className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border-none transition-colors ${
+        className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border-none active:scale-95 transition-all ${
           current === 'rejected'
             ? 'bg-[#cf4d4d] text-white'
             : 'bg-[rgba(207,77,77,0.14)] text-[#ef6f6f] hover:bg-[rgba(207,77,77,0.22)]'
@@ -240,7 +240,7 @@ function SortMenu({ value, onChange }: { value: SortOption; onChange: (v: SortOp
       <button
         onClick={() => setOpen(prev => !prev)}
         aria-expanded={open}
-        className="flex items-center justify-center gap-2 w-full text-[13px] font-semibold px-3.5 py-1.5 rounded-[10px] border border-white/12 bg-[#141414] text-white hover:border-white/24 transition-colors"
+        className="flex items-center justify-center gap-2 w-full text-[13px] font-semibold px-3.5 py-1.5 rounded-[10px] border border-white/12 bg-[#141414] text-white hover:border-white/24 active:scale-95 transition-all"
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
           <path d="M4 6h16M7 12h10M10 18h4"/>
@@ -253,7 +253,7 @@ function SortMenu({ value, onChange }: { value: SortOption; onChange: (v: SortOp
             <button
               key={opt}
               onClick={() => { onChange(opt); setOpen(false) }}
-              className={`block w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${value === opt ? 'text-[#bb9eff]' : 'text-white/80 hover:text-white'}`}
+              className={`block w-full text-left px-4 py-2.5 text-sm font-medium active:bg-white/10 transition-colors ${value === opt ? 'text-[#bb9eff]' : 'text-white/80 hover:text-white'}`}
             >
               {SORT_LABELS[opt]}
             </button>
@@ -324,7 +324,7 @@ function ApplicationDetailModal({
                   <button
                     onClick={onPrevApp}
                     disabled={currentIndex === 0}
-                    className="w-6 h-6 rounded-full bg-white/6 hover:bg-white/12 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-[#8c8c8c] hover:text-white transition-colors"
+                    className="w-6 h-6 rounded-full bg-white/6 hover:bg-white/12 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-[#8c8c8c] hover:text-white active:scale-90 transition-all"
                     aria-label="Previous application"
                   >
                     <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}><path d="M15 18l-6-6 6-6" strokeLinecap="round"/></svg>
@@ -333,7 +333,7 @@ function ApplicationDetailModal({
                   <button
                     onClick={onNextApp}
                     disabled={currentIndex >= totalCount - 1}
-                    className="w-6 h-6 rounded-full bg-white/6 hover:bg-white/12 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-[#8c8c8c] hover:text-white transition-colors"
+                    className="w-6 h-6 rounded-full bg-white/6 hover:bg-white/12 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center text-[#8c8c8c] hover:text-white active:scale-90 transition-all"
                     aria-label="Next application"
                   >
                     <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}><path d="M9 18l6-6-6-6" strokeLinecap="round"/></svg>
@@ -342,7 +342,7 @@ function ApplicationDetailModal({
               )}
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-[#8c8c8c] hover:text-white transition-colors"
+                className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-[#8c8c8c] hover:text-white active:scale-90 transition-all"
                 aria-label="Close"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
@@ -576,14 +576,14 @@ function PaginationBar({
         <button
           onClick={onPrev}
           disabled={page === 1}
-          className="px-4 py-2 rounded-[10px] border border-white/12 bg-transparent text-[13px] font-semibold text-[#8c8c8c] hover:border-white/24 hover:text-[#cfcfcf] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-2 rounded-[10px] border border-white/12 bg-transparent text-[13px] font-semibold text-[#8c8c8c] hover:border-white/24 hover:text-[#cfcfcf] disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
         >
           Previous
         </button>
         <button
           onClick={onNext}
           disabled={page * ITEMS_PER_PAGE >= total}
-          className="px-4 py-2 rounded-[10px] border border-white/12 bg-transparent text-[13px] font-semibold text-[#8c8c8c] hover:border-white/24 hover:text-[#cfcfcf] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="px-4 py-2 rounded-[10px] border border-white/12 bg-transparent text-[13px] font-semibold text-[#8c8c8c] hover:border-white/24 hover:text-[#cfcfcf] disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
         >
           Next
         </button>
@@ -687,7 +687,7 @@ function ShortcutsDialog({ onClose }: { onClose: () => void }) {
           <h2 className="text-[16px] font-bold text-white">Keyboard Shortcuts</h2>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-[#8c8c8c] hover:text-white transition-colors"
+            className="w-7 h-7 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-[#8c8c8c] hover:text-white active:scale-90 transition-all"
             aria-label="Close"
           >
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}><path d="M18 6L6 18M6 6l12 12" strokeLinecap="round"/></svg>
@@ -959,7 +959,7 @@ export default function ApplicationsClient({
               role="tab"
               aria-selected={tab === t}
               onClick={() => setTab(t)}
-              className={`px-6 py-3 text-[14px] font-bold transition-colors relative ${
+              className={`px-6 py-3 text-[14px] font-bold active:opacity-60 transition-colors relative ${
                 tab === t
                   ? 'text-white'
                   : 'text-text-muted hover:text-[#a0a0a0]'
@@ -1173,7 +1173,7 @@ export default function ApplicationsClient({
                 <button
                   type="button"
                   onClick={() => setPendingStatus(null)}
-                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-[#cfcfcf] border border-white/16 bg-transparent rounded-xl hover:border-white/30 hover:text-white transition-colors"
+                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-[#cfcfcf] border border-white/16 bg-transparent rounded-xl hover:border-white/30 hover:text-white active:scale-[0.98] transition-all"
                 >
                   Go Back
                 </button>
@@ -1184,7 +1184,7 @@ export default function ApplicationsClient({
                     setPendingStatus(null)
                     setSelectedAppId(null)
                   }}
-                  className={`flex-1 px-4 py-2.5 text-sm font-bold text-white rounded-xl border-none transition-colors ${
+                  className={`flex-1 px-4 py-2.5 text-sm font-bold text-white rounded-xl border-none active:scale-[0.98] transition-all ${
                     pendingStatus.status === 'accepted'
                       ? 'bg-[#3a9d63] hover:bg-[#44b572]'
                       : 'bg-[#cf4d4d] hover:bg-[#e05555]'
@@ -1208,7 +1208,7 @@ export default function ApplicationsClient({
               <button
                 type="button"
                 onClick={() => setKuyateConflict(null)}
-                className="w-full px-4 py-2.5 text-sm font-semibold text-white bg-[#2a2a2a] rounded-xl hover:bg-[#333] border border-white/10 transition-colors"
+                className="w-full px-4 py-2.5 text-sm font-semibold text-white bg-[#2a2a2a] rounded-xl hover:bg-[#333] border border-white/10 active:scale-[0.98] transition-all"
               >
                 Got it
               </button>
@@ -1261,7 +1261,7 @@ export default function ApplicationsClient({
                 <button
                   type="button"
                   onClick={handleDeleteCancel}
-                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-[#cfcfcf] border border-white/16 bg-transparent rounded-xl hover:border-white/30 hover:text-white transition-colors"
+                  className="flex-1 px-4 py-2.5 text-sm font-semibold text-[#cfcfcf] border border-white/16 bg-transparent rounded-xl hover:border-white/30 hover:text-white active:scale-[0.98] transition-all"
                 >
                   Cancel
                 </button>
@@ -1269,7 +1269,7 @@ export default function ApplicationsClient({
                   type="button"
                   onClick={handleDeleteConfirm}
                   disabled={deleteConfirmInput !== deleteTarget.applicantName || deleting}
-                  className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-[#cf4d4d] hover:bg-[#e05555] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl border-none transition-colors"
+                  className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-[#cf4d4d] hover:bg-[#e05555] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] rounded-xl border-none transition-all"
                 >
                   {deleting ? 'Deleting…' : 'Delete Application'}
                 </button>

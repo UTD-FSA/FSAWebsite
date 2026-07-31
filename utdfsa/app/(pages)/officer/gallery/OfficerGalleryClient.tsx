@@ -468,7 +468,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
             <button
               onClick={() => setSortMenuOpen(prev => !prev)}
               aria-expanded={sortMenuOpen}
-              className="flex items-center justify-center gap-2 w-40 px-1 py-2.5 rounded-xl border border-white/12 bg-[#141414] text-white text-sm font-semibold hover:border-white/24 transition-colors"
+              className="flex items-center justify-center gap-2 w-40 px-1 py-2.5 rounded-xl border border-white/12 bg-[#141414] text-white text-sm font-semibold hover:border-white/24 active:scale-95 transition-all"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                 <path d="M4 6h16M7 12h10M10 18h4"/>
@@ -483,7 +483,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                   <button
                     key={opt.value}
                     onClick={() => { setSortMode(opt.value); setSortMenuOpen(false) }}
-                    className={`block w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${sortMode === opt.value ? 'text-[#bb9eff]' : 'text-white/80 hover:text-white'}`}
+                    className={`block w-full text-left px-4 py-2.5 text-sm font-medium active:bg-white/10 transition-colors ${sortMode === opt.value ? 'text-[#bb9eff]' : 'text-white/80 hover:text-white'}`}
                   >
                     {opt.label}
                   </button>
@@ -569,7 +569,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-[#8c8c8c] hover:text-white transition-colors"
+                  className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-[#8c8c8c] hover:text-white active:scale-90 transition-all"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
                     <path d="M18 6L6 18M6 6l12 12"/>
@@ -634,7 +634,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                           setCoverPreview(null)
                           if (fileInputRef.current) fileInputRef.current.value = ''
                         }}
-                        className="text-[12px] text-text-muted hover:text-[#ef6f6f] font-medium transition-colors"
+                        className="text-[12px] text-text-muted hover:text-[#ef6f6f] active:opacity-60 font-medium transition-colors"
                       >
                         Remove photo
                       </button>
@@ -736,7 +736,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="w-full sm:w-auto min-h-[44px] border border-white/16 bg-transparent text-[#cfcfcf] rounded-xl px-4 py-2.5 text-sm font-semibold hover:border-white/32 hover:text-white transition-colors"
+                  className="w-full sm:w-auto min-h-[44px] border border-white/16 bg-transparent text-[#cfcfcf] rounded-xl px-4 py-2.5 text-sm font-semibold hover:border-white/32 hover:text-white active:scale-[0.98] transition-all"
                 >
                   Cancel
                 </button>
@@ -770,7 +770,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                 <button
                   type="button"
                   onClick={closeEdit}
-                  className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-[#8c8c8c] hover:text-white transition-colors"
+                  className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-[#8c8c8c] hover:text-white active:scale-90 transition-all"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
                     <path d="M18 6L6 18M6 6l12 12"/>
@@ -819,7 +819,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                           setEditCoverPreview(null)
                           if (editFileInputRef.current) editFileInputRef.current.value = ''
                         }}
-                        className="text-[12px] text-text-muted hover:text-[#ef6f6f] font-medium transition-colors"
+                        className="text-[12px] text-text-muted hover:text-[#ef6f6f] active:opacity-60 font-medium transition-colors"
                       >
                         Remove new photo
                       </button>
@@ -844,7 +844,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                 <button
                   type="button"
                   onClick={() => editFileInputRef.current?.click()}
-                  className="text-[12px] font-semibold px-3.5 py-1.5 rounded-lg border border-white/16 text-[#cfcfcf] hover:border-white/30 hover:text-white transition-colors mt-2"
+                  className="text-[12px] font-semibold px-3.5 py-1.5 rounded-lg border border-white/16 text-[#cfcfcf] hover:border-white/30 hover:text-white active:scale-95 transition-all mt-2"
                 >
                   {editCoverPreview ? 'Change Cover' : 'Replace Cover'}
                 </button>
@@ -969,7 +969,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                   <button
                     type="button"
                     onClick={closeEdit}
-                    className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-xl bg-transparent border border-white/16 text-[#cfcfcf] text-sm font-semibold hover:border-white/32 hover:text-white transition-colors"
+                    className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-xl bg-transparent border border-white/16 text-[#cfcfcf] text-sm font-semibold hover:border-white/32 hover:text-white active:scale-[0.98] transition-all"
                   >
                     Cancel
                   </button>
@@ -1009,7 +1009,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
               <button
                 type="button"
                 onClick={() => setConfirmingDelete(false)}
-                className="flex-1 px-4 py-2.5 text-sm font-semibold text-[#cfcfcf] border border-white/16 bg-transparent rounded-xl hover:border-white/30 hover:text-white transition-colors"
+                className="flex-1 px-4 py-2.5 text-sm font-semibold text-[#cfcfcf] border border-white/16 bg-transparent rounded-xl hover:border-white/30 hover:text-white active:scale-[0.98] transition-all"
               >
                 Cancel
               </button>
@@ -1017,7 +1017,7 @@ export default function OfficerGalleryClient({ galleries }: Props) {
                 type="button"
                 disabled={editDeleting}
                 onClick={handleEditDelete}
-                className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-[#cf4d4d] hover:bg-[#e05555] disabled:opacity-40 disabled:cursor-not-allowed rounded-xl border-none transition-colors"
+                className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-[#cf4d4d] hover:bg-[#e05555] disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] rounded-xl border-none transition-all"
               >
                 {editDeleting ? 'Deleting…' : 'Delete Archive'}
               </button>

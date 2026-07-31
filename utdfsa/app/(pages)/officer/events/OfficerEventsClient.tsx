@@ -559,7 +559,7 @@ function EventForm({
         <div>{leftButtons}</div>
         <div className="flex gap-2.5 w-full sm:w-auto">
           <button type="button" onClick={onCancel}
-            className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-xl bg-transparent border border-white/16 text-[#cfcfcf] text-sm font-semibold hover:border-white/32 hover:text-white transition-colors">
+            className="w-full sm:w-auto min-h-[44px] px-5 py-2.5 rounded-xl bg-transparent border border-white/16 text-[#cfcfcf] text-sm font-semibold hover:border-white/32 hover:text-white active:scale-[0.98] transition-all">
             Cancel
           </button>
           <button type="submit" disabled={saving}
@@ -663,7 +663,7 @@ function AttendanceQR({ event, onUpdate }: { event: Event; onUpdate: (e: Event) 
         <div className="flex items-center gap-2 flex-wrap">
           <button disabled={saving}
             onClick={() => patch({ attend_qr_open: !isOpen })}
-            className={`text-sm font-bold px-4 py-2 rounded-[10px] border-none cursor-pointer disabled:cursor-not-allowed transition-colors disabled:opacity-60 ${
+            className={`text-sm font-bold px-4 py-2 rounded-[10px] border-none cursor-pointer disabled:cursor-not-allowed transition-all disabled:opacity-60 active:scale-[0.98] ${
               isOpen
                 ? 'bg-[rgba(239,111,111,0.16)] text-[#ef6f6f] hover:bg-[rgba(239,111,111,0.24)]'
                 : 'bg-[#9747FF] text-white hover:bg-[#a85eff]'
@@ -681,7 +681,7 @@ function AttendanceQR({ event, onUpdate }: { event: Event; onUpdate: (e: Event) 
                   : null
                 patch({ attend_qr_expires_at: expiry })
               }}
-              className="text-sm font-semibold px-4 py-2 rounded-[10px] bg-transparent border border-white/16 text-[#cfcfcf] hover:border-white/30 hover:text-white transition-colors">
+              className="text-sm font-semibold px-4 py-2 rounded-[10px] bg-transparent border border-white/16 text-[#cfcfcf] hover:border-white/30 hover:text-white active:scale-[0.98] transition-all">
               Set Auto-Close
             </button>
           )}
@@ -800,7 +800,7 @@ function CoverPhotoUpload({ event, onChange }: { event: Event; onChange: (file: 
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="text-xs font-semibold px-3.5 py-1.5 rounded-lg border border-white/16 text-[#cfcfcf] hover:border-white/30 hover:text-white transition-colors"
+            className="text-xs font-semibold px-3.5 py-1.5 rounded-lg border border-white/16 text-[#cfcfcf] hover:border-white/30 hover:text-white active:scale-95 transition-all"
           >
             {preview ? 'Change Cover' : 'Upload Cover'}
           </button>
@@ -908,7 +908,7 @@ function PendingCoverPhotoUpload({ onChange }: { onChange: (file: File | null) =
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="text-xs font-semibold px-3.5 py-1.5 rounded-lg border border-white/16 text-[#cfcfcf] hover:border-white/30 hover:text-white transition-colors"
+            className="text-xs font-semibold px-3.5 py-1.5 rounded-lg border border-white/16 text-[#cfcfcf] hover:border-white/30 hover:text-white active:scale-95 transition-all"
           >
             {preview ? 'Change Cover' : 'Upload Cover'}
           </button>
@@ -1082,7 +1082,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
                     <h2 className="font-display font-bold text-[17px] text-white tracking-[-0.01em]">Create New Event</h2>
                   </div>
                   <button type="button" onClick={() => { setCreating(false); setPendingCoverFile(null) }}
-                    className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-[#8c8c8c] hover:text-white transition-colors">
+                    className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-[#8c8c8c] hover:text-white active:scale-90 transition-all">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
                       <path d="M18 6L6 18M6 6l12 12"/>
                     </svg>
@@ -1122,7 +1122,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
             <button
               onClick={() => setSortMenuOpen(prev => !prev)}
               aria-expanded={sortMenuOpen}
-              className="flex items-center justify-center gap-2 w-32 px-1 py-2.5 rounded-xl border border-white/12 bg-[#141414] text-white text-sm font-semibold hover:border-white/24 transition-colors"
+              className="flex items-center justify-center gap-2 w-32 px-1 py-2.5 rounded-xl border border-white/12 bg-[#141414] text-white text-sm font-semibold hover:border-white/24 active:scale-95 transition-all"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
                 <path d="M4 6h16M7 12h10M10 18h4"/>
@@ -1136,7 +1136,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
                   <button
                     key={mode}
                     onClick={() => { setSortMode(mode); setSortMenuOpen(false) }}
-                    className={`block w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${sortMode === mode ? 'text-[#bb9eff]' : 'text-white/80 hover:text-white'}`}
+                    className={`block w-full text-left px-4 py-2.5 text-sm font-medium active:bg-white/10 transition-colors ${sortMode === mode ? 'text-[#bb9eff]' : 'text-white/80 hover:text-white'}`}
                   >
                     {SORT_LABELS[mode]}
                   </button>
@@ -1234,7 +1234,7 @@ export default function OfficerEventsClient({ initialEvents }: { initialEvents: 
                     <h2 className="font-display font-bold text-[17px] text-white tracking-[-0.01em]">Edit Event</h2>
                   </div>
                   <button type="button" onClick={closeEdit}
-                    className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-[#8c8c8c] hover:text-white transition-colors">
+                    className="w-8 h-8 rounded-full bg-white/6 hover:bg-white/12 flex items-center justify-center text-[#8c8c8c] hover:text-white active:scale-90 transition-all">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
                       <path d="M18 6L6 18M6 6l12 12"/>
                     </svg>
@@ -1383,7 +1383,7 @@ function EventRow({
           <div className="flex items-center gap-2 flex-shrink-0">
             <button
               onClick={onEdit}
-              className="min-h-[44px] sm:min-h-0 sm:h-9 px-5 rounded-xl border border-white/16 text-[#cfcfcf] text-sm font-semibold hover:border-white/32 hover:text-white transition-colors"
+              className="min-h-[44px] sm:min-h-0 sm:h-9 px-5 rounded-xl border border-white/16 text-[#cfcfcf] text-sm font-semibold hover:border-white/32 hover:text-white active:scale-95 transition-all"
             >
               {isEditing ? 'Close' : 'Edit'}
             </button>
@@ -1392,7 +1392,7 @@ function EventRow({
                 onClick={() => setMenuOpen(prev => !prev)}
                 aria-label="More options"
                 aria-expanded={menuOpen}
-                className="w-9 h-9 min-h-[44px] sm:min-h-0 flex items-center justify-center rounded-xl border border-white/16 text-[#cfcfcf] hover:border-white/32 hover:text-white transition-colors"
+                className="w-9 h-9 min-h-[44px] sm:min-h-0 flex items-center justify-center rounded-xl border border-white/16 text-[#cfcfcf] hover:border-white/32 hover:text-white active:scale-90 transition-all"
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/>
@@ -1403,7 +1403,7 @@ function EventRow({
                 <div className="absolute right-0 mt-2 w-40 bg-dropdown-bg border border-white/10 rounded-xl py-1 z-30 shadow-xl">
                   <button
                     onClick={() => { setMenuOpen(false); onDuplicate() }}
-                    className="block w-full text-left px-4 py-2.5 text-sm font-medium text-white/80 hover:text-white transition-colors"
+                    className="block w-full text-left px-4 py-2.5 text-sm font-medium text-white/80 hover:text-white active:bg-white/10 transition-colors"
                   >
                     Duplicate
                   </button>
