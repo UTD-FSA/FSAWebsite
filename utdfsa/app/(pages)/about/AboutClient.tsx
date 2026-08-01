@@ -2,9 +2,16 @@
 // client component — about page UI with officer board and past officers accordion
 //
 // data:  none — all officer data is hardcoded in constants below
+// deps:  lib/useRevealOnScroll (useRevealOnScroll, useStaggeredReveal)
 // notes: officer photos not yet available; placeholder silhouettes used.
 //        update OFFICERS_2025_2026 and PAST_OFFICERS each semester.
-//        accordion uses a single openYear string so only one year shows at a time.
+//        accordion uses a single openYear string so only one year shows at a time,
+//        and its border/rounding live on a constant outer wrapper rather than on
+//        the trigger button — the button's own className used to toggle its corner
+//        radius on open, which snapped square instantly while the panel below was
+//        still mid-collapse. nothing to keep in sync now, so nothing can desync.
+//        entrance stagger is scoped per row, not per global index — see the
+//        comments on each useStaggeredReveal call for why.
 // ─────────────────────────────────────────────────────────────
 'use client'
 

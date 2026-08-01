@@ -11,6 +11,10 @@
 //        event_type is restricted to Party/Other — the only ticketed types
 //        (see isTicketed() in OfficerEventsClient.tsx); other types have no
 //        registration_tickets rows, so there's nothing to scan for them.
+//        initial door tallies are count-only queries (count: 'exact', head: true),
+//        never a fetch-and-count-in-JS — postgres does the counting and no row
+//        payload crosses the wire. /api/scan-ticket uses the same pattern to keep
+//        the tally fresh per scan.
 import { requireUser } from '@/lib/auth'
 import { createAdminClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'

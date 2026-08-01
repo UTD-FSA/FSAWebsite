@@ -32,7 +32,7 @@ A full org-operations platform, not a brochure site: paid membership (Stripe), p
 
 - Three-layer auth: middleware session refresh + route gating, in-route/in-page guards, and a single shared `isMembershipActive()` predicate (status + unexpired) that every access gate must use.
 - `PUBLIC_EVENT_COLUMNS` allowlist deliberately excludes the check-in secret from public-facing event queries.
-- No test suite currently configured (no test runner, no `*.test.*`/`*.spec.*` files).
+- Tests cover pure business logic only: 29 tests over 6 `lib/**/*.test.ts` files via Node's built-in runner (`npm test`), no test framework dependency. No component, route, or integration coverage — regressions outside the money/access predicates rely on lint and a manual critical-flow checklist.
 
 ## Brand Commitments
 

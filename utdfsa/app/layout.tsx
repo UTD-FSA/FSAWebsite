@@ -4,7 +4,10 @@
 // deps:  @vercel/analytics, @vercel/speed-insights
 // notes: deliberately reads no request-time APIs (no cookies()/headers()) so this
 //        layout, and any page under it that also avoids them, can be statically
-//        prerendered — see proxy.ts's STATIC_CSP_ROUTES for which routes qualify.
+//        prerendered — any one such call here would force every route beneath it
+//        dynamic. proxy.ts's DYNAMIC_CSP_ROUTES lists the routes that do read
+//        request-time state (and so get the nonce'd CSP); everything not matching
+//        that list is the static-eligible set and gets the static-safe CSP instead.
 //        Navbar resolves the signed-in member client-side instead (browser
 //        supabase client + auth listener) rather than being seeded here.
 //        the four google fonts are registered as CSS custom properties via @theme

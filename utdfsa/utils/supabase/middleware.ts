@@ -1,11 +1,21 @@
 // ── utils/supabase/middleware.ts ──────────────────────────
 // next.js middleware — refreshes the supabase session and
-// enforces route-level auth guards for member and officer paths.
+// enforces route-level auth guards for member, officer, and /membership paths.
 //
-// data:  members (role, membership_status, membership_expires_at)
-// deps:  supabase/ssr
-// notes: called by proxy.ts on every non-static request;
-//        all redirects preserve the original path in ?next=
+// data:  members (role, membership_status, membership_expires_at) — one lookup,
+//        shared by every gate below it
+// deps:  supabase/ssr, lib/membership (isMembershipActive)
+// notes: called by proxy.ts on every non-static request.
+//        only the two sign-in redirects carry ?next= (member/officer routes and
+//        logged-out /membership) — the three post-auth routing redirects
+//        deliberately do not: /membership → /member/profile for someone who
+//        already paid, /member/** → /membership for someone who hasn't, and
+//        /officer/** → /member/profile?error=unauthorized. those aren't
+//        "sign in and come back," they're "you're in the wrong place," so
+//        preserving the original path would just bounce the user back into it.
+//        matchesPrefix() (below) is exported — proxy.ts reuses it for the
+//        static-vs-nonce CSP split so the two files can't drift on what
+//        "under this route" means.
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
