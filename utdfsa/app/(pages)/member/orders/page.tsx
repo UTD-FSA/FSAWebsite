@@ -79,18 +79,27 @@ export default async function OrdersPage({
 
   // pending_registrations — checkouts in flight, keyed by stripe session rather than
   // this member's identity, so this is deliberately a plain member_id lookup rather
-  // than anything resembling "the" pending row (see lib/events/fulfillment.ts)
-  const { data: pendingRegistrations } = await admin
+  // than anything resembling "the" pending row (see lib/events/fulfillment.ts).
+  // excludes expired sessions (dead, will never fulfill — only the webhook's
+  // opportunistic prune or checkout.session.expired ever deletes these rows) and any
+  // pending row for an event this member already has a paid registration for (an
+  // abandoned/retried checkout — unique_member_event_registration means that pending
+  // row can only ever resolve to a refund, never a second paid registration)
+  const paidEventIds = new Set((registrations ?? []).map(r => r.event_id))
+  const { data: pendingRegistrationsRaw } = await admin
     .from('pending_registrations')
     .select('id, event_id, num_tickets, created_at')
     .eq('member_id', member.id)
+    .gt('expires_at', new Date().toISOString())
     .order('created_at', { ascending: false })
+  const pendingRegistrations = (pendingRegistrationsRaw ?? [])
+    .filter(p => !p.event_id || !paidEventIds.has(p.event_id))
 
   // fetch event details separately — nested joins require fk constraints in supabase schema
   // collect unique event ids from both paid and pending rows, filtering out nulls
   const eventIds = [
     ...(registrations ?? []).map(r => r.event_id),
-    ...(pendingRegistrations ?? []).map(r => r.event_id),
+    ...pendingRegistrations.map(r => r.event_id),
   ].filter((id): id is string => Boolean(id))
 
   const eventsData: Record<string, {
@@ -117,7 +126,7 @@ export default async function OrdersPage({
   return (
     <OrdersClient
       registrations={registrations ?? []}
-      pendingRegistrations={pendingRegistrations ?? []}
+      pendingRegistrations={pendingRegistrations}
       eventsData={eventsData}
       contactEmail={contactEmail}
       success={success}

@@ -166,7 +166,7 @@ export default function OrdersClient({ registrations, pendingRegistrations, even
                     {event?.name ?? 'Unknown Event'}
                   </p>
                   <p className="text-xs mt-0.5 italic" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                    Finishing up — this updates automatically once payment is confirmed.
+                    Finishing up — check back in a bit or refresh the page.
                   </p>
                 </div>
                 <span className="shrink-0 text-[11px] font-bold tracking-[0.04em] px-2.5 py-0.5 rounded-full bg-[rgba(227,174,61,0.12)] border border-[rgba(227,174,61,0.35)] text-[#f0c869]">
