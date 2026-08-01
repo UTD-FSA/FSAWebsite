@@ -1,10 +1,14 @@
 // ── OrdersClient.tsx ─────────────────────────────────────────
 // client component — renders order history cards with expandable qr tickets
 //
-// data:  props from OrdersPage (registrations, eventsData lookup map, contactEmail, success flag)
+// data:  props from OrdersPage (registrations, pendingRegistrations, eventsData lookup
+//        map, contactEmail, success flag)
 // deps:  qrcode (npm) — generates qr data urls client-side from ticket codes
 // notes: qr images are generated on the client to avoid storing pre-rendered images;
-//        the success banner only appears when stripe redirects back with ?success=true
+//        the success banner only appears when stripe redirects back with ?success=true.
+//        pendingRegistrations covers the webhook race: a member can land here right
+//        after paying, before the webhook has materialized the real (paid) row — see
+//        app/(pages)/member/orders/page.tsx.
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
@@ -23,12 +27,18 @@ type Ticket = {
 type Registration = {
   id: string
   created_at: string
-  payment_status: string
   num_tickets: number
   amt_paid: number | null
   amt_expected: number
   event_id: string | null
   registration_tickets: Ticket[] | null
+}
+
+type PendingRegistration = {
+  id: string
+  event_id: string | null
+  num_tickets: number
+  created_at: string
 }
 
 type EventInfo = {
@@ -40,6 +50,7 @@ type EventInfo = {
 
 type Props = {
   registrations: Registration[]
+  pendingRegistrations: PendingRegistration[]
   eventsData: Record<string, EventInfo>
   contactEmail: string
   success: string | undefined
@@ -91,7 +102,7 @@ function TicketQRImage({ code }: { code: string }) {
 }
 
 // ── component ─────────────────────────────────────────────────
-export default function OrdersClient({ registrations, eventsData, contactEmail, success }: Props) {
+export default function OrdersClient({ registrations, pendingRegistrations, eventsData, contactEmail, success }: Props) {
   // tracks which registration cards have their qr ticket panel open; keyed by registration id
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({})
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest')
@@ -135,6 +146,38 @@ export default function OrdersClient({ registrations, eventsData, contactEmail, 
         </div>
       )}
 
+      {/* checkouts stripe hasn't confirmed yet — normally clears within seconds as the
+          webhook fulfills it; only sticks around if payment is still processing */}
+      {pendingRegistrations.length > 0 && (
+        <div className="flex flex-col gap-3 mb-3">
+          {pendingRegistrations.map(pending => {
+            const event = pending.event_id ? eventsData[pending.event_id] ?? null : null
+            return (
+              <div
+                key={pending.id}
+                className="rounded-2xl overflow-hidden p-4 flex items-center gap-4"
+                style={{
+                  background: '#1a1a1a',
+                  border: '1px solid rgba(227,174,61,0.35)',
+                }}
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-white truncate text-sm">
+                    {event?.name ?? 'Unknown Event'}
+                  </p>
+                  <p className="text-xs mt-0.5 italic" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                    Finishing up — this updates automatically once payment is confirmed.
+                  </p>
+                </div>
+                <span className="shrink-0 text-[11px] font-bold tracking-[0.04em] px-2.5 py-0.5 rounded-full bg-[rgba(227,174,61,0.12)] border border-[rgba(227,174,61,0.35)] text-[#f0c869]">
+                  Processing
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
       {/* sort toggle — full width on mobile, auto on sm+ */}
       {registrations.length > 0 && (
         <button
@@ -162,8 +205,8 @@ export default function OrdersClient({ registrations, eventsData, contactEmail, 
         </button>
       )}
 
-      {/* only renders the empty state when the member has no registrations — do not remove this condition */}
-      {registrations.length === 0 ? (
+      {/* only renders the empty state when the member has no paid or pending registrations — do not remove this condition */}
+      {registrations.length === 0 && pendingRegistrations.length === 0 ? (
         <div className="text-center py-20">
           <p className="text-2xl mb-3" role="img" aria-label="ticket">🎟️</p>
           <p className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text-secondary)' }}>
@@ -179,10 +222,6 @@ export default function OrdersClient({ registrations, eventsData, contactEmail, 
             // look up event details from the pre-fetched map by event_id
             const event = reg.event_id ? eventsData[reg.event_id] ?? null : null
             const tickets = (reg.registration_tickets ?? []) as Ticket[]
-            // derive display flags from payment_status string
-            const isPaid = reg.payment_status === 'paid'
-            const isPending = reg.payment_status === 'pending'
-            const isFailed = reg.payment_status === 'failed'
             // whether this card's qr ticket panel is currently open
             const isExpanded = expandedCards[reg.id] ?? false
 
@@ -215,20 +254,14 @@ export default function OrdersClient({ registrations, eventsData, contactEmail, 
                     )}
                   </div>
 
-                  {/* Payment status badge — no event type badge */}
-                  <span className={`shrink-0 text-[11px] font-bold tracking-[0.04em] px-2.5 py-0.5 rounded-full ${
-                    isPaid
-                      ? 'bg-[rgba(95,207,143,0.12)] border border-[rgba(95,207,143,0.35)] text-[#5fcf8f]'
-                      : isPending
-                        ? 'bg-[rgba(227,174,61,0.12)] border border-[rgba(227,174,61,0.35)] text-[#f0c869]'
-                        : 'bg-[rgba(239,111,111,0.12)] border border-[rgba(239,111,111,0.35)] text-[#ef6f6f]'
-                  }`}>
-                    {isPaid ? 'Paid' : isPending ? 'Pending' : 'Failed'}
+                  {/* every row that reaches this page is paid — event_registrations is
+                      paid-only, see app/api/stripe-webhook/route.ts */}
+                  <span className="shrink-0 text-[11px] font-bold tracking-[0.04em] px-2.5 py-0.5 rounded-full bg-[rgba(95,207,143,0.12)] border border-[rgba(95,207,143,0.35)] text-[#5fcf8f]">
+                    Paid
                   </span>
                 </div>
 
-                {/* only renders tickets once payment_status === 'paid' and tickets exist — do not remove this condition */}
-                {isPaid && tickets.length > 0 && (
+                {tickets.length > 0 && (
                   <>
                     <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0 16px' }} />
 
@@ -285,30 +318,6 @@ export default function OrdersClient({ registrations, eventsData, contactEmail, 
                           ))}
                         </div>
                       </div>
-                    </div>
-                  </>
-                )}
-
-                {/* only renders when payment is still processing — do not remove this condition */}
-                {isPending && (
-                  <>
-                    <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0 16px' }} />
-                    <div className="px-4 py-3">
-                      <p className="text-xs italic" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                        Ticket available after payment is confirmed.
-                      </p>
-                    </div>
-                  </>
-                )}
-
-                {/* only renders when payment failed or was abandoned — do not remove this condition */}
-                {isFailed && (
-                  <>
-                    <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0 16px' }} />
-                    <div className="px-4 py-3">
-                      <p className="text-xs" style={{ color: 'rgba(248,113,113,0.7)' }}>
-                        Payment was not completed.
-                      </p>
                     </div>
                   </>
                 )}

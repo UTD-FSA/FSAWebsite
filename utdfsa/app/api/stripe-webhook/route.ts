@@ -1,27 +1,37 @@
 // ── route.ts (stripe-webhook) ─────────────────────────────────────────────────
 // receives stripe webhook events and fulfills orders (membership or event tickets).
 //
-// data:  members, event_registrations, registration_tickets, events, stripe_events (idempotency ledger)
+// data:  members, event_registrations, registration_tickets, pending_registrations,
+//        events, stripe_events (idempotency ledger)
 // deps:  stripe (signature verification + event parsing, refunds), resend (confirmation emails),
 //        qrcode (png buffer generation for ticket attachments)
 // notes: CRITICAL — stripe calls this directly; do NOT add auth middleware here.
 //        stripe.webhooks.constructEvent() is the security layer (STRIPE_WEBHOOK_SECRET).
 //        two event types are handled:
 //          checkout.session.completed → fulfill membership or ticket order + send email
-//          checkout.session.expired  → mark event registration as failed
+//          checkout.session.expired  → drop the pending event-ticket cart, if any
 //        email failures are caught and logged — they never fail the webhook response
 //        because payment is already recorded before the email attempt.
 //        idempotency: event.id is claimed in stripe_events before any fulfillment write —
 //        a replayed/retried event no-ops on the duplicate-key insert. the claim is rolled
-//        back before any 500 response so stripe's retry can claim it again. this replaces
-//        the old "downstream .eq('id',…) updates are naturally idempotent" reasoning, which
-//        covered the DB field writes but not the email sends or the membership expiry re-stamp.
-//        fulfillment writes are additionally bound to the exact stripe_checkout_session_id
-//        stored on the row — see the session-id-match comments below — so a stale/superseded
-//        session can never fulfill (or fail) a registration it didn't pay for. a mismatch on
-//        the completion path now auto-refunds the charge (see the event-ticket fulfillment
-//        block below) instead of only logging — register/route.ts also expires the superseded
-//        session up front, so this refund path is a backstop, not the primary defense.
+//        back before any 500 response so stripe's retry can claim it again.
+//
+//        event-ticket fulfillment: event_registrations is now paid-only. the cart lives in
+//        pending_registrations, keyed by stripe_checkout_session_id (not by identity), so
+//        concurrent checkouts for the same person never collide — see
+//        app/api/events/register/route.ts and lib/events/fulfillment.ts for why. this route
+//        materializes the real registration + tickets here, on checkout.session.completed,
+//        then deletes the pending row. classifyFulfillment() decides fulfill/retry/refund
+//        from the pending row's own stripe_checkout_session_id, so a stale/superseded
+//        session (or one whose pending row was already pruned) auto-refunds instead of
+//        silently fulfilling with the wrong cart.
+//
+//        TRANSITION: sessions created before this route's rewrite carry the old
+//        metadata.registration_id shape (an event_registrations row created pre-payment).
+//        those stay payable for up to 24h post-deploy, so the legacy branch below must stay
+//        until 48h after deploy, then be deleted along with a follow-up migration purging any
+//        leftover non-paid event_registrations rows. see
+//        supabase/migrations/20260731190000_pending_registrations.sql.
 
 // CRITICAL: this route handles all payment confirmations
 // stripe sends events here after payment completes
@@ -35,12 +45,142 @@ import { createAdminClient } from '@/utils/supabase/server'
 import { resend } from '@/lib/resend'
 import { ticketEmailHtml } from '@/lib/email/ticket'
 import { membershipEmailHtml } from '@/lib/email/membership'
+import { classifyFulfillment } from '@/lib/events/fulfillment'
 import QRCode from 'qrcode'
 import { NextResponse } from 'next/server'
 import { fail } from '@/lib/api-response'
 
 // App Router reads the raw body via req.text() — no special config needed.
 // Do NOT add bodyParser: false here (that's Pages Router only and is ignored in App Router).
+
+// admin client threaded in explicitly rather than imported at module scope, since it's
+// only ever used inside POST — matches how the rest of this file is structured
+type AdminClient = ReturnType<typeof createAdminClient>
+
+// ── ticket email sending ──────────────────────────────────────────────────────
+// shared by both the new (pending-registration) and legacy fulfillment paths so a
+// materialized registration and a legacy-flow registration send identical emails.
+// Guard: env vars must be present, otherwise log and skip. never throws — payment is
+// already recorded by the time this runs, emails can be re-sent manually if this fails.
+async function sendTicketEmails(supabase: AdminClient, registrationId: string) {
+  if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) {
+    console.error(
+      '[webhook] Skipping ticket emails — RESEND_API_KEY or RESEND_FROM_EMAIL is not set in environment variables.'
+    )
+    return
+  }
+
+  try {
+    // Use two separate queries instead of a nested join.
+    const [{ data: tickets }, { data: regRow }] = await Promise.all([
+      supabase
+        .from('registration_tickets')
+        .select('id, qr_code, attendee_fname, attendee_lname, attendee_email')
+        .eq('registration_id', registrationId),
+      supabase
+        .from('event_registrations')
+        .select('event_id, member_id')
+        .eq('id', registrationId)
+        .single(),
+    ])
+
+    let eventInfo: { name: string; event_date: string | null; event_end: string | null; location: string | null } | null = null
+    let memberContactEmail: string | null = null
+
+    const [eventResult, memberResult] = await Promise.all([
+      regRow?.event_id
+        ? supabase.from('events').select('name, event_date, event_end, location').eq('id', regRow.event_id).single()
+        : Promise.resolve({ data: null }),
+      regRow?.member_id
+        ? supabase.from('members').select('contact_email').eq('id', regRow.member_id).single()
+        : Promise.resolve({ data: null }),
+    ])
+
+    eventInfo = eventResult.data
+    memberContactEmail = memberResult.data?.contact_email ?? null
+
+    console.log(
+      `[webhook] registration ${registrationId}: tickets=${tickets?.length ?? 0}, eventInfo=${eventInfo?.name ?? 'NOT FOUND'}`
+    )
+
+    if (!tickets || tickets.length === 0) {
+      console.error('[webhook] No tickets found for registration', registrationId)
+      return
+    }
+    if (!eventInfo) {
+      console.error('[webhook] Event info not found for registration', registrationId)
+      return
+    }
+
+    await Promise.all(
+      tickets
+        .filter(t => t.attendee_email)
+        .map(async (ticket) => {
+          // PNG buffer — embedded as a CID inline attachment so Gmail/Apple Mail/Outlook render it.
+          // data: URLs are blocked by most email clients.
+          const qrBuffer = await QRCode.toBuffer(ticket.qr_code, {
+            width: 256,
+            margin: 2,
+            color: { dark: '#000000', light: '#ffffff' },
+          })
+
+          const attendeeName =
+            [ticket.attendee_fname, ticket.attendee_lname].filter(Boolean).join(' ') ||
+            'Attendee'
+
+          // for members, prefer their stored contact_email over the attendee email on the ticket
+          const recipientEmail = memberContactEmail ?? ticket.attendee_email!
+
+          const { error: sendError } = await resend.emails.send({
+            from: process.env.RESEND_FROM_EMAIL!,
+            to: recipientEmail,
+            subject: `Your ticket for ${eventInfo!.name}`,
+            html: ticketEmailHtml({
+              attendeeName,
+              eventName: eventInfo!.name,
+              eventDate: eventInfo!.event_date,
+              eventEnd: eventInfo!.event_end,
+              location: eventInfo!.location,
+              qrCid: 'ticket_qr',
+            }),
+            attachments: [{
+              filename: 'ticket-qr.png',
+              content: qrBuffer,
+              contentId: 'ticket_qr',
+              contentType: 'image/png',
+            }],
+          })
+
+          if (sendError) {
+            console.error('[webhook] Resend error for ticket', ticket.id, sendError)
+          } else {
+            console.log('[webhook] Email sent to', recipientEmail)
+          }
+        })
+    )
+  } catch (err) {
+    // Don't fail the webhook — payment is recorded, emails can be re-sent manually
+    console.error('[webhook] Unexpected error sending ticket emails for registration', registrationId, err)
+  }
+}
+
+// ── auto-refund helper ──────────────────────────────────────────────────────────
+// a session that can never be fulfilled (stale/superseded/already-registered) gets its
+// charge refunded rather than left in limbo. no_payment_required (100%-off promo codes)
+// has no payment_intent and nothing to refund.
+async function refundUnfulfillable(session: { payment_intent: string | null | unknown; amount_total: number | null; id: string }, cause: string, ref: string) {
+  if (session.payment_intent && (session.amount_total ?? 0) > 0) {
+    try {
+      await stripe.refunds.create({
+        payment_intent: session.payment_intent as string,
+        reason: 'duplicate',
+        metadata: { cause, ref },
+      })
+    } catch (err) {
+      console.error('[webhook] auto-refund failed', session.id, cause, ref, err)
+    }
+  }
+}
 
 export async function POST(req: Request) {
   // ── signature verification ────────────────────────────────────────────────
@@ -103,6 +243,18 @@ export async function POST(req: Request) {
       .lt('processed_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
       .then(({ error }) => {
         if (error) console.error('[webhook] stripe_events prune failed', error)
+      })
+
+    // same cadence — pending_registrations whose stripe session died without ever
+    // firing (or whose checkout.session.expired delivery was itself dropped) past
+    // their own expires_at. real expiry is enforced by classifyFulfillment() at
+    // fulfillment time regardless; this just keeps the table from growing unbounded.
+    void supabase
+      .from('pending_registrations')
+      .delete()
+      .lt('expires_at', new Date().toISOString())
+      .then(({ error }) => {
+        if (error) console.error('[webhook] pending_registrations prune failed', error)
       })
   }
 
@@ -212,206 +364,218 @@ export async function POST(req: Request) {
 
     // ── event ticket fulfillment ──────────────────────────────────────────────
     if (type === 'event_ticket') {
-      const { registration_id } = session.metadata ?? {}
+      const { pending_id, registration_id } = session.metadata ?? {}
 
-      if (!registration_id) {
-        console.error('[webhook] event_ticket missing registration_id in session metadata', session.id)
-        return fail('Missing registration_id', 400)
-      }
-
-      // mark registration as paid — fill all payment tracking fields
-      // security: bound to stripe_checkout_session_id = session.id — a registration row
-      // can be reused across multiple checkout attempts (see register/route.ts), so without
-      // this the *first* session paid for a row could fulfill however many tickets a *later*
-      // update raised num_tickets to. matching 0 rows means this session is stale/superseded
-      // by a newer attempt on the same row — do not fulfill, do not email.
-      // .select() + error check mirrors the membership path so a silent DB failure
-      // returns 500 and lets Stripe retry rather than losing the fulfillment event
-      const { data: fulfilledRows, error: fulfillmentError } = await supabase
-        .from('event_registrations')
-        .update({
-          payment_status: 'paid',
-          amt_paid: session.amount_total,
-          payment_verified_at: new Date().toISOString(),
-          payment_provider: 'stripe',
-          stripe_checkout_session_id: session.id,
-          stripe_payment_intent_id: (session.payment_intent as string) ?? null,
-          payment_method: session.payment_method_types?.[0] ?? 'card',
-          payment_metadata: {
-            amount_total: session.amount_total,
-            currency: session.currency,
-            customer_email: session.customer_email,
-          },
-        })
-        .eq('id', registration_id)
-        .eq('stripe_checkout_session_id', session.id)
-        .select('id')
-
-      if (fulfillmentError) {
-        console.error('[webhook] event_ticket DB write failed for registration', registration_id, fulfillmentError)
-        await releaseClaim()
-        return fail('DB write failed', 500)
-      }
-
-      if (!fulfilledRows || fulfilledRows.length === 0) {
-        // distinguish "superseded by a later registration attempt" from "our own
-        // stripe_checkout_session_id write in register/route.ts hasn't landed yet" — the
-        // latter is a legitimate in-flight payment, not a stale session, and must not be refunded.
-        const { data: row } = await supabase
-          .from('event_registrations')
-          .select('stripe_checkout_session_id')
-          .eq('id', registration_id)
+      if (pending_id) {
+        // ── current path: materialize from pending_registrations ─────────────────
+        const { data: pending } = await supabase
+          .from('pending_registrations')
+          .select('id, event_id, member_id, attendees, num_tickets, amt_expected, guest_email, stripe_checkout_session_id')
+          .eq('id', pending_id)
           .maybeSingle()
 
-        if (row && row.stripe_checkout_session_id === null) {
-          console.warn('[webhook] registration not yet bound to a session — retrying', { registration_id, sessionId: session.id })
+        const action = classifyFulfillment({ pending, sessionId: session.id })
+
+        if (action === 'retry') {
+          // distinguishes "register/route.ts's session-id write hasn't landed yet" (a
+          // legitimate in-flight payment) from a genuinely stale session — must not be
+          // refunded, just retried
+          console.warn('[webhook] pending registration not yet bound to a session — retrying', { pending_id, sessionId: session.id })
           await releaseClaim()
-          return fail('Registration not ready', 500)
+          return fail('Pending registration not ready', 500)
         }
 
-        console.warn('[webhook] session/registration mismatch — not fulfilling, refunding', { registration_id, sessionId: session.id })
+        if (action === 'refund') {
+          console.warn('[webhook] pending/session mismatch — not fulfilling, refunding', { pending_id, sessionId: session.id })
+          await refundUnfulfillable(session, 'superseded_or_missing_pending_registration', pending_id)
+          return NextResponse.json({ received: true })
+        }
 
-        // this session paid for a row that's since moved on to a newer checkout attempt
-        // (e.g. a re-registration after an early-bird deadline passed) — refund the charge
-        // since it can never be fulfilled. no_payment_required (100%-off promo codes) has
-        // no payment_intent and nothing to refund.
-        if (session.payment_intent && (session.amount_total ?? 0) > 0) {
-          try {
-            await stripe.refunds.create({
-              payment_intent: session.payment_intent as string,
-              reason: 'duplicate',
-              metadata: { cause: 'superseded_checkout_session', registration_id },
-            })
-          } catch (err) {
-            console.error('[webhook] auto-refund failed for superseded session', session.id, registration_id, err)
+        // action === 'fulfill' — classifyFulfillment only returns this when pending is
+        // non-null, but narrow explicitly rather than asserting: a future edit to the
+        // classifier shouldn't be able to silently reintroduce a null-pending fulfill
+        // on the money path.
+        if (!pending) {
+          console.error('[webhook] unreachable: fulfill action with null pending row', { pending_id, sessionId: session.id })
+          await releaseClaim()
+          return fail('Internal error', 500)
+        }
+
+        // upsert on the stripe_checkout_session_id unique constraint so a replayed
+        // delivery converges instead of duplicating; a member-already-registered race
+        // (two paid sessions for the same member+event) or a same-email free-guest
+        // duplicate surfaces as 23505 here rather than a silent double-insert
+        const { data: registration, error: fulfillmentError } = await supabase
+          .from('event_registrations')
+          .upsert({
+            member_id: pending.member_id,
+            event_id: pending.event_id,
+            payment_status: 'paid',
+            num_tickets: pending.num_tickets,
+            amt_expected: pending.amt_expected,
+            amt_paid: session.amount_total,
+            guest_fname: pending.attendees[0]?.fname ?? null,
+            guest_lname: pending.attendees[0]?.lname ?? null,
+            guest_email: pending.guest_email,
+            payment_verified_at: new Date().toISOString(),
+            payment_provider: 'stripe',
+            stripe_checkout_session_id: session.id,
+            stripe_payment_intent_id: (session.payment_intent as string) ?? null,
+            payment_method: session.payment_method_types?.[0] ?? 'card',
+            payment_metadata: {
+              amount_total: session.amount_total,
+              currency: session.currency,
+              customer_email: session.customer_email,
+            },
+          }, { onConflict: 'stripe_checkout_session_id' })
+          .select('id')
+          .single()
+
+        if (fulfillmentError) {
+          if (fulfillmentError.code === '23505') {
+            console.warn('[webhook] fulfillment conflict — already registered, refunding', { pending_id, sessionId: session.id })
+            await refundUnfulfillable(session, 'already_registered', pending_id)
+            await supabase.from('pending_registrations').delete().eq('id', pending_id)
+            return NextResponse.json({ received: true })
+          }
+          console.error('[webhook] event_ticket DB write failed for pending registration', pending_id, fulfillmentError)
+          await releaseClaim()
+          return fail('DB write failed', 500)
+        }
+
+        // mint tickets only if none exist yet. a single array insert is atomic, so "no
+        // tickets exist for this registration" unambiguously means "never inserted" —
+        // retry-safe without a separate per-ticket idempotency column.
+        const { count: existingTicketCount } = await supabase
+          .from('registration_tickets')
+          .select('id', { count: 'exact', head: true })
+          .eq('registration_id', registration.id)
+
+        if (!existingTicketCount) {
+          const ticketRows = pending.attendees.map((a: { fname: string; lname: string; email: string }) => ({
+            registration_id: registration.id,
+            qr_code: crypto.randomUUID(),
+            attendee_fname: a.fname,
+            attendee_lname: a.lname,
+            attendee_email: a.email,
+            checked_in: false,
+          }))
+          const { error: ticketInsertError } = await supabase.from('registration_tickets').insert(ticketRows)
+          if (ticketInsertError) {
+            console.error('[webhook] ticket insert failed for registration', registration.id, ticketInsertError)
+            await releaseClaim()
+            return fail('Ticket insert failed', 500)
           }
         }
 
-        return NextResponse.json({ received: true })
-      }
+        await supabase.from('pending_registrations').delete().eq('id', pending_id)
 
-      // ── send QR code emails ──────────────────────────────────────────────────
-      // Guard: env vars must be present, otherwise log and skip
-      if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) {
-        console.error(
-          '[webhook] Skipping ticket emails — RESEND_API_KEY or RESEND_FROM_EMAIL is not set in environment variables.'
-        )
+        await sendTicketEmails(supabase, registration.id)
+      } else if (registration_id) {
+        // ── TRANSITION (legacy path): pre-deploy session, old metadata shape ─────────
+        // remove this branch + purge leftover non-paid event_registrations rows no
+        // sooner than 48h after deploy (session default lifetime), once no old-format
+        // session can still be in flight. see file header.
+        //
+        // mark registration as paid — fill all payment tracking fields
+        // security: bound to stripe_checkout_session_id = session.id — a registration row
+        // can be reused across multiple checkout attempts (see register/route.ts), so without
+        // this the *first* session paid for a row could fulfill however many tickets a *later*
+        // update raised num_tickets to. matching 0 rows means this session is stale/superseded
+        // by a newer attempt on the same row — do not fulfill, do not email.
+        const { data: fulfilledRows, error: fulfillmentError } = await supabase
+          .from('event_registrations')
+          .update({
+            payment_status: 'paid',
+            amt_paid: session.amount_total,
+            payment_verified_at: new Date().toISOString(),
+            payment_provider: 'stripe',
+            stripe_checkout_session_id: session.id,
+            stripe_payment_intent_id: (session.payment_intent as string) ?? null,
+            payment_method: session.payment_method_types?.[0] ?? 'card',
+            payment_metadata: {
+              amount_total: session.amount_total,
+              currency: session.currency,
+              customer_email: session.customer_email,
+            },
+          })
+          .eq('id', registration_id)
+          .eq('stripe_checkout_session_id', session.id)
+          .select('id')
+
+        if (fulfillmentError) {
+          console.error('[webhook] event_ticket DB write failed for registration', registration_id, fulfillmentError)
+          await releaseClaim()
+          return fail('DB write failed', 500)
+        }
+
+        if (!fulfilledRows || fulfilledRows.length === 0) {
+          // distinguish "superseded by a later registration attempt" from "our own
+          // stripe_checkout_session_id write in register/route.ts hasn't landed yet" — the
+          // latter is a legitimate in-flight payment, not a stale session, and must not be refunded.
+          const { data: row } = await supabase
+            .from('event_registrations')
+            .select('stripe_checkout_session_id')
+            .eq('id', registration_id)
+            .maybeSingle()
+
+          if (row && row.stripe_checkout_session_id === null) {
+            console.warn('[webhook] registration not yet bound to a session — retrying', { registration_id, sessionId: session.id })
+            await releaseClaim()
+            return fail('Registration not ready', 500)
+          }
+
+          console.warn('[webhook] session/registration mismatch — not fulfilling, refunding', { registration_id, sessionId: session.id })
+          await refundUnfulfillable(session, 'superseded_checkout_session', registration_id)
+          return NextResponse.json({ received: true })
+        }
+
+        await sendTicketEmails(supabase, registration_id)
       } else {
-        try {
-          // Use two separate queries instead of a nested join.
-          const [{ data: tickets }, { data: regRow }] = await Promise.all([
-            supabase
-              .from('registration_tickets')
-              .select('id, qr_code, attendee_fname, attendee_lname, attendee_email')
-              .eq('registration_id', registration_id),
-            supabase
-              .from('event_registrations')
-              .select('event_id, member_id')
-              .eq('id', registration_id)
-              .single(),
-          ])
-
-          let eventInfo: { name: string; event_date: string | null; event_end: string | null; location: string | null } | null = null
-          let memberContactEmail: string | null = null
-
-          const [eventResult, memberResult] = await Promise.all([
-            regRow?.event_id
-              ? supabase.from('events').select('name, event_date, event_end, location').eq('id', regRow.event_id).single()
-              : Promise.resolve({ data: null }),
-            regRow?.member_id
-              ? supabase.from('members').select('contact_email').eq('id', regRow.member_id).single()
-              : Promise.resolve({ data: null }),
-          ])
-
-          eventInfo = eventResult.data
-          memberContactEmail = memberResult.data?.contact_email ?? null
-
-          console.log(
-            `[webhook] registration ${registration_id}: tickets=${tickets?.length ?? 0}, eventInfo=${eventInfo?.name ?? 'NOT FOUND'}`
-          )
-
-          if (!tickets || tickets.length === 0) {
-            console.error('[webhook] No tickets found for registration', registration_id)
-          } else if (!eventInfo) {
-            console.error('[webhook] Event info not found for registration', registration_id)
-          } else {
-            await Promise.all(
-              tickets
-                .filter(t => t.attendee_email)
-                .map(async (ticket) => {
-                  // PNG buffer — embedded as a CID inline attachment so Gmail/Apple Mail/Outlook render it.
-                  // data: URLs are blocked by most email clients.
-                  const qrBuffer = await QRCode.toBuffer(ticket.qr_code, {
-                    width: 256,
-                    margin: 2,
-                    color: { dark: '#000000', light: '#ffffff' },
-                  })
-
-                  const attendeeName =
-                    [ticket.attendee_fname, ticket.attendee_lname].filter(Boolean).join(' ') ||
-                    'Attendee'
-
-                  // for members, prefer their stored contact_email over the attendee email on the ticket
-                  const recipientEmail = memberContactEmail ?? ticket.attendee_email!
-
-                  const { error: sendError } = await resend.emails.send({
-                    from: process.env.RESEND_FROM_EMAIL!,
-                    to: recipientEmail,
-                    subject: `Your ticket for ${eventInfo!.name}`,
-                    html: ticketEmailHtml({
-                      attendeeName,
-                      eventName: eventInfo!.name,
-                      eventDate: eventInfo!.event_date,
-                      eventEnd: eventInfo!.event_end,
-                      location: eventInfo!.location,
-                      qrCid: 'ticket_qr',
-                    }),
-                    attachments: [{
-                      filename: 'ticket-qr.png',
-                      content: qrBuffer,
-                      contentId: 'ticket_qr',
-                      contentType: 'image/png',
-                    }],
-                  })
-
-                  if (sendError) {
-                    console.error('[webhook] Resend error for ticket', ticket.id, sendError)
-                  } else {
-                    console.log('[webhook] Email sent to', recipientEmail)
-                  }
-                })
-            )
-          }
-        } catch (err) {
-          // Don't fail the webhook — payment is recorded, emails can be re-sent manually
-          console.error('[webhook] Unexpected error sending ticket emails for registration', registration_id, err)
-        }
+        console.error('[webhook] event_ticket missing pending_id/registration_id in session metadata', session.id)
+        return fail('Missing registration reference', 400)
       }
     }
   }
 
-  // checkout.session.expired: user abandoned checkout — mark registration as failed
-  // so the seat is not held indefinitely and the member can retry
+  // checkout.session.expired: user abandoned checkout
   if (event.type === 'checkout.session.expired') {
     const session = event.data.object
-    const { type, registration_id } = session.metadata ?? {}
+    const { type, pending_id, registration_id } = session.metadata ?? {}
 
-    if (type === 'event_ticket' && registration_id) {
-      // update event_registrations to reflect abandoned payment
-      // security: bound to stripe_checkout_session_id = session.id + neq('payment_status','paid')
-      // — a registration row is reused across attempts, so a stale expired-session event for an
-      // earlier abandoned attempt must never be able to fail a row a *later* session already paid.
-      const { error: expireError } = await supabase
-        .from('event_registrations')
-        .update({ payment_status: 'failed' })
-        .eq('id', registration_id)
-        .eq('stripe_checkout_session_id', session.id)
-        .neq('payment_status', 'paid')
+    if (type === 'event_ticket') {
+      if (pending_id) {
+        // drop the cart — nothing was ever fulfilled from it. bound to session.id so a
+        // delayed/duplicate expired event can't delete a pending row a later session is
+        // still using (pending rows only ever bind to one session, but guard anyway)
+        const { error: deleteError } = await supabase
+          .from('pending_registrations')
+          .delete()
+          .eq('id', pending_id)
+          .eq('stripe_checkout_session_id', session.id)
 
-      if (expireError) {
-        console.error('[webhook] checkout expiry DB write failed for registration', registration_id, expireError)
-        await releaseClaim()
-        return fail('DB write failed', 500)
+        if (deleteError) {
+          console.error('[webhook] pending registration delete failed', pending_id, deleteError)
+          await releaseClaim()
+          return fail('DB write failed', 500)
+        }
+      } else if (registration_id) {
+        // TRANSITION (legacy path) — see the completed-event branch above for removal timing.
+        // security: bound to stripe_checkout_session_id = session.id + neq('payment_status','paid')
+        // — a registration row is reused across attempts, so a stale expired-session event for an
+        // earlier abandoned attempt must never be able to fail a row a *later* session already paid.
+        const { error: expireError } = await supabase
+          .from('event_registrations')
+          .update({ payment_status: 'failed' })
+          .eq('id', registration_id)
+          .eq('stripe_checkout_session_id', session.id)
+          .neq('payment_status', 'paid')
+
+        if (expireError) {
+          console.error('[webhook] checkout expiry DB write failed for registration', registration_id, expireError)
+          await releaseClaim()
+          return fail('DB write failed', 500)
+        }
       }
     }
   }

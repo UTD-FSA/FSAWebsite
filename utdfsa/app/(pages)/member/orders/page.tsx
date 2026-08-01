@@ -50,13 +50,16 @@ export default async function OrdersPage({
   // the email address that qr ticket confirmation was sent to
   const contactEmail = member.contact_email ?? user.email!
 
-  // event_registrations table — all registrations for this member, newest first, with tickets inline
+  // event_registrations table — all registrations for this member, newest first, with tickets inline.
+  // paid-only by construction (see app/api/stripe-webhook/route.ts) — a checkout still
+  // in flight lives in pending_registrations instead, fetched separately below, so a
+  // member who just paid but hasn't been fulfilled yet (webhook race) still sees
+  // something here rather than a success banner over an empty list.
   const { data: registrations } = await admin
     .from('event_registrations')
     .select(`
       id,
       created_at,
-      payment_status,
       num_tickets,
       amt_paid,
       amt_expected,
@@ -74,11 +77,21 @@ export default async function OrdersPage({
     .eq('member_id', member.id)
     .order('created_at', { ascending: false })
 
+  // pending_registrations — checkouts in flight, keyed by stripe session rather than
+  // this member's identity, so this is deliberately a plain member_id lookup rather
+  // than anything resembling "the" pending row (see lib/events/fulfillment.ts)
+  const { data: pendingRegistrations } = await admin
+    .from('pending_registrations')
+    .select('id, event_id, num_tickets, created_at')
+    .eq('member_id', member.id)
+    .order('created_at', { ascending: false })
+
   // fetch event details separately — nested joins require fk constraints in supabase schema
-  // collect unique event ids from registrations, filtering out nulls
-  const eventIds = (registrations ?? [])
-    .map(r => r.event_id)
-    .filter((id): id is string => Boolean(id))
+  // collect unique event ids from both paid and pending rows, filtering out nulls
+  const eventIds = [
+    ...(registrations ?? []).map(r => r.event_id),
+    ...(pendingRegistrations ?? []).map(r => r.event_id),
+  ].filter((id): id is string => Boolean(id))
 
   const eventsData: Record<string, {
     name: string
@@ -104,6 +117,7 @@ export default async function OrdersPage({
   return (
     <OrdersClient
       registrations={registrations ?? []}
+      pendingRegistrations={pendingRegistrations ?? []}
       eventsData={eventsData}
       contactEmail={contactEmail}
       success={success}

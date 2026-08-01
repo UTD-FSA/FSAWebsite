@@ -1,9 +1,23 @@
 // ── route.ts ─────────────────────────────────────────────
-// POST /api/events/register — create a registration + tickets, then redirect to Stripe checkout
+// POST /api/events/register — for free events, creates a paid registration + tickets
+// directly. for paid events, creates a pending_registrations row and redirects to
+// Stripe checkout; the stripe-webhook route materializes the real registration + tickets
+// once checkout.session.completed fires (see lib/events/fulfillment.ts).
 //
-// data:  events, event_registrations, registration_tickets (members for identity lookup)
+// data:  events, event_registrations, registration_tickets (free path only),
+//        pending_registrations (paid path only), members (identity lookup)
 // deps:  stripe (checkout session)
-// notes: caller may be anonymous; member detection is best-effort via auth cookie
+// notes: caller may be anonymous; member detection is best-effort via auth cookie.
+//        pending state is keyed by stripe_checkout_session_id, not by identity — a
+//        person can have any number of concurrent checkouts in flight, so closing the
+//        tab and registering again never blocks on a stale row. only a *paid* row is
+//        ever checked for collisions: members are capped at one paid registration per
+//        event by unique_member_event_registration + check_member_single_ticket (the
+//        discount is per-person, enforced by the db); guests may place multiple paid
+//        orders (normal ecommerce behavior — no refund case results from it). free
+//        events skip Stripe and pending state entirely — a free row is written 'paid'
+//        immediately, so unique_free_guest_event_registration still guards against one
+//        guest resubmitting the free form to mint unlimited tickets.
 import { createUserClient, createAdminClient } from '@/utils/supabase/server'
 import { stripe } from '@/lib/stripe'
 import { isMembershipActive } from '@/lib/membership'
@@ -13,6 +27,7 @@ import { headers } from 'next/headers'
 import { fail, failValidation } from '@/lib/api-response'
 import { isRateLimited } from '@/lib/rate-limit'
 import { resolveEventPricing } from '@/lib/events/pricing'
+import { resolveSessionExpiry } from '@/lib/events/session-expiry'
 import { shouldUseMemberPath } from '@/lib/events/registration-ownership'
 
 // ponytail: in-memory rate limit — per-instance backstop only. the real gate is the
@@ -70,30 +85,11 @@ export async function POST(req: Request) {
   // effective active membership (status + expiry) gates member pricing and restrictions
   const isMember = isMembershipActive(member)
 
-  // ── member-specific restrictions ───────────────────────────────────────────
-  // fetched once here (unique constraint guarantees at most one row per member+event)
-  // and reused below in the update/insert block instead of re-querying for the stale-row check
-  let memberExistingRegistration: { id: string; payment_status: string; stripe_checkout_session_id: string | null } | null = null
-
-  if (isMember) {
-    if (tickets.length > 1) {
-      return fail('Members may only purchase one ticket per event.', 400)
-    }
-
-    // prevent buying a second ticket for the same event; only a confirmed paid ticket blocks retry
-    // bypass rls — admin client needed to query all registrations across members
-    const { data: existing } = await admin
-      .from('event_registrations')
-      .select('id, payment_status, stripe_checkout_session_id')
-      .eq('member_id', member!.id)
-      .eq('event_id', event_id)
-      .maybeSingle()
-
-    if (existing?.payment_status === 'paid') {
-      return fail('You are already registered for this event.', 409)
-    }
-
-    memberExistingRegistration = existing
+  // active members are capped at one ticket per event; an expired/inactive member buying
+  // 2+ tickets falls through to the guest path below instead of violating
+  // check_member_single_ticket (see shouldUseMemberPath)
+  if (isMember && tickets.length > 1) {
+    return fail('Members may only purchase one ticket per event.', 400)
   }
 
   // ── fetch event ─────────────────────────────────────────────────────────────
@@ -126,255 +122,134 @@ export async function POST(req: Request) {
     ticketCount: tickets.length,
   })
 
-  // early-bird checkout sessions die at the deadline so a stale open tab can't pay the
-  // old price after it stops being offered. stripe clamps expires_at to 30min-24h from
-  // creation, so this is a min/max clamp, not an exact deadline match.
-  const nowSec = Math.floor(Date.now() / 1000)
-  const ebExpiresAt = isEarlyBird
-    ? Math.min(
-        Math.max(Math.floor(new Date(event.eb_deadline!).getTime() / 1000), nowSec + 1800),
-        nowSec + 86400
-      )
-    : undefined
+  // see lib/events/session-expiry.ts (resolveSessionExpiry) for the min/max clamp
+  const ebExpiresAt = resolveSessionExpiry({ isEarlyBird, ebDeadline: event.eb_deadline })
 
-  // ── create or update registration ──────────────────────────────────────────
-  // bypass rls — admin client for all writes below
-  // for any authenticated user (member or not): if a non-paid row already exists for this
-  // (member_id, event_id) pair from a prior abandoned or stripe-expired attempt, update it
-  // in place rather than inserting — avoids a 23505 unique_violation on (member_id, event_id).
-  // free events are immediately marked paid to skip stripe entirely.
-  //
-  // a reused row may carry a stripe session id from a prior attempt (abandoned or superseded).
-  // that old session gets expired below, once the fresh one is safely written in its place —
-  // otherwise a still-open stale tab stays payable at whatever price it was created at (e.g.
-  // an early-bird rate that expired in between), even though the row it was for has moved on.
-  // the webhook's stripe_checkout_session_id match means paying it can't fulfill this row, but
-  // without expiring it, the charge goes through and the buyer gets nothing until the webhook's
-  // auto-refund catches the mismatch (see stripe-webhook/route.ts) — this closes that gap up front.
-  let priorSessionId: string | null = null
+  const isMemberPath = shouldUseMemberPath(member, tickets.length)
 
-  let registration: { id: string }
-  let isUpsert = false
-
-  // see lib/events/registration-ownership.ts (shouldUseMemberPath) for why this isn't
-  // just `if (member)` — an expired/inactive member buying 2+ tickets falls through to
-  // the guest branch below instead of violating check_member_single_ticket
-  if (shouldUseMemberPath(member, tickets.length)) {
-    // check for any non-paid row for this member+event (pending from abandonment, or failed/expired).
-    // active members: reuse the row already fetched above (guaranteed non-paid — a paid
-    // row would have 409'd already) instead of re-querying. non-active members: fetch fresh,
-    // since the isMember block above never ran for them.
-    const existingRow = isMember
-      ? memberExistingRegistration
-      : (await admin
-          .from('event_registrations')
-          .select('id, stripe_checkout_session_id')
-          .eq('member_id', member.id)
-          .eq('event_id', event_id)
-          .neq('payment_status', 'paid')
-          .maybeSingle()).data
-
-    if (existingRow) {
-      priorSessionId = existingRow.stripe_checkout_session_id
-      // update the stale row with the current attempt's ticket info.
-      // .neq('payment_status', 'paid') re-verifies the condition atomically at the write,
-      // not just at the read above — closes the race where the row gets paid (e.g. a
-      // concurrent tab's webhook fires) between the SELECT and this UPDATE
-      const { data: updated, error: updateError } = await admin
-        .from('event_registrations')
-        .update({
-          guest_fname: tickets[0].fname,
-          guest_lname: tickets[0].lname,
-          guest_email: tickets[0].email,
-          num_tickets: tickets.length,
-          amt_expected: totalAmount,
-          payment_status: totalAmount === 0 ? 'paid' : 'pending',
-        })
-        .eq('id', existingRow.id)
-        .neq('payment_status', 'paid')
-        .select('id')
-        .maybeSingle()
-
-      if (updateError) {
-        console.error('Registration update error:', updateError)
-        return fail('Failed to update registration.', 500)
-      }
-
-      if (!updated) {
-        // lost the race — the row was paid between the read above and this update
-        return fail('You are already registered for this event.', 409)
-      }
-
-      registration = updated
-      isUpsert = true
-
-      // remove stale ticket rows from the prior attempt; fresh ones are inserted below
-      await admin.from('registration_tickets').delete().eq('registration_id', registration.id)
-    } else {
-      // no prior row — insert fresh
-      const { data: inserted, error: insertError } = await admin
-        .from('event_registrations')
-        .insert({
-          member_id: member.id,
-          event_id,
-          payment_status: totalAmount === 0 ? 'paid' : 'pending',
-          num_tickets: tickets.length,
-          amt_expected: totalAmount,
-          guest_fname: tickets[0].fname,
-          guest_lname: tickets[0].lname,
-          guest_email: tickets[0].email,
-        })
-        .select('id')
-        .single()
-
-      if (insertError || !inserted) {
-        console.error('Registration insert error:', insertError)
-        return fail('Failed to create registration.', 500)
-      }
-
-      registration = inserted
-    }
-  } else {
-    // guest checkout — reached by unauthenticated buyers, and by an authenticated but
-    // expired/inactive member buying 2+ tickets (see the branch above). member_id stays
-    // null either way. dedupe on (event_id, lower(guest_email)) so one person can't
-    // resubmit this form repeatedly and mint unlimited tickets for a free event. exact-match
-    // lookup first (cheap, handles the common case); the partial unique index
-    // (unique_guest_event_registration) is the authoritative backstop for case-variant
-    // emails or races, caught via 23505 below.
-    const { data: existingGuestRow } = await admin
+  // ── block a second paid registration ────────────────────────────────────────
+  // members: any existing PAID row for this (member, event) blocks a retry — this is
+  // the per-person discount cap, enforced here for a friendly error and by
+  // unique_member_event_registration in the db as the real backstop. applies
+  // regardless of current membership status (a lapsed member's past paid ticket still
+  // counts) — deliberately broader than the old isMember-only check, which let an
+  // expired member with an existing paid row slip past to an insert that would 500 on
+  // the unique constraint instead of a clean 409.
+  // guests: no check — multiple paid orders per email are allowed (see file header).
+  if (isMemberPath) {
+    const { data: existingPaid } = await admin
       .from('event_registrations')
-      .select('id, payment_status, stripe_checkout_session_id')
+      .select('id')
+      .eq('member_id', member!.id)
       .eq('event_id', event_id)
-      .is('member_id', null)
-      .eq('guest_email', tickets[0].email)
+      .eq('payment_status', 'paid')
       .maybeSingle()
 
-    // security: 'paid' AND 'pending' both reject with the SAME generic message. a guest
-    // row is located by attacker-suppliable email alone — anyone who knows a victim's
-    // email could otherwise overwrite their live in-flight registration (names, attendee
-    // emails, ticket count) and delete its ticket rows. only a 'failed' row (killed by the
-    // checkout.session.expired webhook — genuinely dead, no live stripe session) is safe
-    // to reuse in place; the legitimate owner of a 'pending' row still has their open
-    // checkout link and doesn't need this endpoint to resume it.
-    if (existingGuestRow?.payment_status === 'paid' || existingGuestRow?.payment_status === 'pending') {
-      return fail('This email already has a registration for this event.', 409)
+    if (existingPaid) {
+      return fail('You are already registered for this event.', 409)
     }
+  }
 
-    if (existingGuestRow) {
-      priorSessionId = existingGuestRow.stripe_checkout_session_id
+  const guestEmail = tickets[0].email
 
-      // 'failed' row from a stripe-expired abandoned attempt — safe to reuse in place.
-      // .eq('payment_status', 'failed') re-verifies the condition atomically at the write,
-      // not just at the read above — closes the race where the row flips to pending/paid
-      // (e.g. a webhook fires) between the SELECT and this UPDATE
-      const { data: updated, error: updateError } = await admin
+  // ── free events skip Stripe and pending state entirely ──────────────────────
+  if (totalAmount === 0) {
+    if (!isMemberPath) {
+      // exact-match lookup first (cheap, handles the common case); the partial unique
+      // index (unique_free_guest_event_registration) is the authoritative backstop for
+      // case-variant emails or races, caught via 23505 below
+      const { data: existingFreeRow } = await admin
         .from('event_registrations')
-        .update({
-          guest_fname: tickets[0].fname,
-          guest_lname: tickets[0].lname,
-          guest_email: tickets[0].email,
-          num_tickets: tickets.length,
-          amt_expected: totalAmount,
-          payment_status: totalAmount === 0 ? 'paid' : 'pending',
-        })
-        .eq('id', existingGuestRow.id)
-        .eq('payment_status', 'failed')
         .select('id')
+        .eq('event_id', event_id)
+        .is('member_id', null)
+        .eq('guest_email', guestEmail)
         .maybeSingle()
 
-      if (updateError) {
-        console.error('Registration update error:', updateError)
-        return fail('Failed to update registration.', 500)
-      }
-
-      if (!updated) {
-        // lost the race — the row is no longer 'failed' (e.g. a webhook just fulfilled it)
+      if (existingFreeRow) {
         return fail('This email already has a registration for this event.', 409)
       }
-
-      registration = updated
-      // must be set — the ticket-insert-failure cleanup below only deletes the row
-      // when !isUpsert; this row pre-existed and isn't ours to delete on failure
-      isUpsert = true
-
-      // remove stale ticket rows from the prior attempt; fresh ones are inserted below
-      await admin.from('registration_tickets').delete().eq('registration_id', registration.id)
-    } else {
-      const { data: inserted, error: insertError } = await admin
-        .from('event_registrations')
-        .insert({
-          member_id: null,
-          event_id,
-          payment_status: totalAmount === 0 ? 'paid' : 'pending',
-          num_tickets: tickets.length,
-          amt_expected: totalAmount,
-          guest_fname: tickets[0].fname,
-          guest_lname: tickets[0].lname,
-          guest_email: tickets[0].email,
-        })
-        .select('id')
-        .single()
-
-      if (insertError) {
-        // 23505 = unique_violation — a case-variant email or a race slipped past the
-        // exact-match lookup above and hit unique_guest_event_registration
-        if (insertError.code === '23505') {
-          return fail('This email already has a registration for this event.', 409)
-        }
-        console.error('Registration insert error:', insertError)
-        return fail('Failed to create registration.', 500)
-      }
-
-      if (!inserted) {
-        console.error('Registration insert error: no row returned')
-        return fail('Failed to create registration.', 500)
-      }
-
-      registration = inserted
     }
-  }
 
-  // ── create one ticket row per attendee ──────────────────────────────────────
-  // each attendee gets a unique uuid as their qr_code — scanned at event entry
-  // bypass rls — inserting into registration_tickets on behalf of the caller
-  const ticketRows = tickets.map(t => ({
-    registration_id: registration.id,
-    qr_code: crypto.randomUUID(),
-    attendee_fname: t.fname,
-    attendee_lname: t.lname,
-    attendee_email: t.email,
-    checked_in: false,
-  }))
+    const { data: registration, error: insertError } = await admin
+      .from('event_registrations')
+      .insert({
+        member_id: isMemberPath ? member!.id : null,
+        event_id,
+        payment_status: 'paid',
+        num_tickets: tickets.length,
+        amt_expected: totalAmount,
+        guest_fname: tickets[0].fname,
+        guest_lname: tickets[0].lname,
+        guest_email: guestEmail,
+      })
+      .select('id')
+      .single()
 
-  const { error: ticketError } = await admin.from('registration_tickets').insert(ticketRows)
+    if (insertError || !registration) {
+      // 23505 = unique_violation — a case-variant email or a race slipped past the
+      // exact-match lookup above and hit unique_free_guest_event_registration (or, for
+      // a member, unique_member_event_registration)
+      if (insertError?.code === '23505') {
+        return fail('This email already has a registration for this event.', 409)
+      }
+      console.error('Registration insert error:', insertError)
+      return fail('Failed to create registration.', 500)
+    }
 
-  if (ticketError) {
-    // on a fresh insert, delete the registration row to avoid orphaned records.
-    // on an upsert, leave the row in place — the member can retry and the next attempt
-    // will update it and insert fresh ticket rows.
-    if (!isUpsert) {
+    const ticketRows = tickets.map(t => ({
+      registration_id: registration.id,
+      qr_code: crypto.randomUUID(),
+      attendee_fname: t.fname,
+      attendee_lname: t.lname,
+      attendee_email: t.email,
+      checked_in: false,
+    }))
+
+    const { error: ticketError } = await admin.from('registration_tickets').insert(ticketRows)
+
+    if (ticketError) {
+      // fresh insert — safe to roll back rather than leave an orphaned ticketless row
       await admin.from('event_registrations').delete().eq('id', registration.id)
+      console.error('Ticket insert error:', ticketError)
+      return fail('Failed to create tickets.', 500)
     }
-    console.error('Ticket insert error:', ticketError)
-    return fail('Failed to create tickets.', 500)
-  }
 
-  // ── free events skip Stripe entirely ───────────────────────────────────────
-  if (totalAmount === 0) {
-    // registration already marked paid above; redirect to success page without stripe.
-    // members land on /member/orders, guests land on /events — same split as the
-    // paid path below, so the post-registration card is always the same width as
-    // wherever the member would normally view it (order history).
+    // members land on /member/orders after payment; guests land on /events
     const freeSuccessUrl = isMember
       ? `${process.env.NEXT_PUBLIC_SITE_URL}/member/orders?success=true`
       : `${process.env.NEXT_PUBLIC_SITE_URL}/events?success=true`
     return NextResponse.json({ url: freeSuccessUrl })
   }
 
+  // ── paid events: stash the cart, then create Stripe checkout ────────────────
+  // bypass rls — admin client; pending_registrations has no RLS grants for
+  // anon/authenticated, only service-role reads/writes it
+  const { data: pending, error: pendingInsertError } = await admin
+    .from('pending_registrations')
+    .insert({
+      event_id,
+      member_id: isMemberPath ? member!.id : null,
+      attendees: tickets,
+      num_tickets: tickets.length,
+      amt_expected: totalAmount,
+      guest_email: guestEmail,
+      // stripe's own session lifetime is the source of truth for when this checkout
+      // dies; mirrored here (same clamp as ebExpiresAt, or stripe's 24h default) so the
+      // webhook's expiry prune doesn't need to ask stripe
+      expires_at: new Date((ebExpiresAt ?? Math.floor(Date.now() / 1000) + 86400) * 1000).toISOString(),
+    })
+    .select('id')
+    .single()
+
+  if (pendingInsertError || !pending) {
+    console.error('Pending registration insert error:', pendingInsertError)
+    return fail('Failed to start checkout.', 500)
+  }
+
   // ── create Stripe checkout ─────────────────────────────────────────────────
   // prefer stored contact_email over login email so members use their preferred address
-  const customerEmail = member?.contact_email ?? user?.email ?? tickets[0].email
+  const customerEmail = member?.contact_email ?? user?.email ?? guestEmail
   // members land on /member/orders after payment; guests land on /events
   // {CHECKOUT_SESSION_ID} is a stripe template literal — stripe substitutes the real session id at redirect
   // time; do not replace this string manually. the events page resolves tickets from it after payment.
@@ -405,42 +280,30 @@ export async function POST(req: Request) {
     // once it stops being offered; omitted entirely outside early-bird (defaults to 24h)
     ...(ebExpiresAt ? { expires_at: ebExpiresAt } : {}),
     metadata: {
-      // stripe-webhook uses these fields to route the completed payment correctly
+      // stripe-webhook dispatches on pending_id — see lib/events/fulfillment.ts
       type: 'event_ticket',
-      member_id: member?.id ?? '',
-      registration_id: registration.id,
+      member_id: isMemberPath ? member!.id : '',
+      pending_id: pending.id,
     },
   })
 
-  // save the stripe session id immediately so the success page can resolve tickets by session id
-  // before the webhook fires. for upserts this also replaces the stale abandoned session id.
-  // security: this write must succeed and block the redirect — the webhook now requires an
-  // exact stripe_checkout_session_id match before fulfilling (see stripe-webhook/route.ts), so
-  // a silently-failed write here would leave the row unfulfillable even after a real payment.
+  // bind the pending row to this session so the webhook can tell "fulfill" from "stale"
+  // (see lib/events/fulfillment.ts). must succeed and block the redirect — an unbound
+  // pending row can never be fulfilled.
   const { error: sessionIdError } = await admin
-    .from('event_registrations')
+    .from('pending_registrations')
     .update({ stripe_checkout_session_id: session.id })
-    .eq('id', registration.id)
+    .eq('id', pending.id)
 
   if (sessionIdError) {
-    console.error('[register] stripe_checkout_session_id write failed for registration', registration.id, sessionIdError)
-    // cancel the now-orphaned stripe session so it can't later pay for an unfulfillable row
+    console.error('[register] stripe_checkout_session_id write failed for pending registration', pending.id, sessionIdError)
+    // cancel the now-orphaned stripe session and drop the pending row so neither can
+    // later be paid/fulfilled in an inconsistent state
+    await admin.from('pending_registrations').delete().eq('id', pending.id)
     await stripe.checkout.sessions.expire(session.id).catch(err =>
       console.error('[register] failed to expire orphaned session', session.id, err)
     )
     return fail('Failed to prepare checkout. Please try again.', 500)
-  }
-
-  // this row now points at the fresh session — expire whatever session it pointed at before
-  // (if any). must run AFTER the write above succeeds: expiring first would fire stripe's
-  // checkout.session.expired webhook while the row still carried the OLD session id, letting
-  // it match and mark this row 'failed' out from under the new session we just opened.
-  // ponytail: fire-and-forget, .catch-logged — an already-expired/completed prior session
-  // throws here and that's fine, nothing downstream depends on this succeeding
-  if (priorSessionId && priorSessionId !== session.id) {
-    await stripe.checkout.sessions.expire(priorSessionId).catch(err =>
-      console.error('[register] failed to expire superseded session', priorSessionId, err)
-    )
   }
 
   return NextResponse.json({ url: session.url })

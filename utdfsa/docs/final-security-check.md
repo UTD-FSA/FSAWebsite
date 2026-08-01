@@ -1,5 +1,15 @@
 # Final Security Check
 
+> **2026-07-31 note:** the event-registration payment path was refactored after this audit
+> (pending-cart architecture — see CLAUDE.md's Payments section, `lib/events/fulfillment.ts`).
+> Two claims below no longer hold as written: guest dedup no longer prevents a *duplicate paid*
+> registration (multiple paid orders per guest email are now allowed by design; the dedup index
+> now only guards free registrations), and "idempotent" fulfillment is now enforced via an
+> upsert on `stripe_checkout_session_id` plus `classifyFulfillment()`'s fulfill/retry/refund
+> decision rather than the update-in-place model this audit reviewed. This is a point-in-time
+> report, not re-run against the new code — treat payment-path claims below as historical until
+> a fresh audit covers the new model.
+
 **Date:** 2026-07-22 · **Scope:** entire critical-flow surface — auth/middleware, membership + Stripe payments, event registration (free + paid), QR ticket scanning, attendance QR/points, officer admin CRUD, gallery/S3 uploads, member profile, CSV exports, security headers. **Status:** report only — no code changed.
 
 **Method:** five parallel domain scans (auth & access control; payments; QR/attendance/points; input validation & uploads; data exposure/IDOR/headers), each reading actual file contents rather than guessing from names. Every finding below was then independently re-read and confirmed against the current codebase before being included — nothing here is taken on a scanner's word alone.

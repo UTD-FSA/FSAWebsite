@@ -3,8 +3,9 @@
 // used across server components, api routes, and client hooks.
 //
 // data:  members, events, event_registrations, registration_tickets,
-//        attendance, photos, galleries, settings, ading_applications,
-//        kuyate_applications, goodphil_eligibility (view), stripe_events
+//        pending_registrations, attendance, photos, galleries, settings,
+//        ading_applications, kuyate_applications, goodphil_eligibility (view),
+//        stripe_events
 // notes: keep in sync with supabase migrations; nullable fields
 //        reflect columns that allow null in the db
 
@@ -108,6 +109,36 @@ export interface EventRegistration {
   cover_photo_url: string | null
   // set the first time the post-checkout success page renders this registration's ticket QR codes
   tickets_viewed_at: string | null
+}
+
+// ── pending registration ──────────────────────────────────
+
+// one attendee within a pending checkout's `attendees` jsonb array — mirrors
+// lib/schemas.ts's attendeeSchema, the shape submitted by the register form
+export interface PendingRegistrationAttendee {
+  fname: string
+  lname: string
+  email: string
+}
+
+// a checkout in flight, before payment — keyed by stripe_checkout_session_id (unique),
+// not by identity, so concurrent checkouts for the same person never collide. the
+// stripe-webhook route materializes this into an EventRegistration + tickets on
+// checkout.session.completed, then deletes this row. see app/api/events/register/route.ts.
+export interface PendingRegistration {
+  id: string
+  event_id: string
+  member_id: string | null
+  // null immediately after insert, until register/route.ts writes back the session id
+  // it just created — see lib/events/fulfillment.ts for how the webhook reasons about
+  // that narrow window
+  stripe_checkout_session_id: string | null
+  attendees: PendingRegistrationAttendee[]
+  num_tickets: number
+  amt_expected: number
+  guest_email: string
+  created_at: string
+  expires_at: string
 }
 
 // ── registration ticket ───────────────────────────────────
