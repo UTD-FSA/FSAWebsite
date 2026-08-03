@@ -11,5 +11,5 @@ import Stripe from 'stripe'
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   // pinned api version — upgrading requires re-testing checkout, webhooks, and refunds
-  apiVersion: '2026-05-27.dahlia',
+  apiVersion: '2026-07-29.dahlia',
 })
