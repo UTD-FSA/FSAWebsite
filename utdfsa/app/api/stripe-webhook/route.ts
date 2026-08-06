@@ -15,6 +15,11 @@
 //        idempotency: event.id is claimed in stripe_events before any fulfillment write —
 //        a replayed/retried event no-ops on the duplicate-key insert. the claim is rolled
 //        back before any 500 response so stripe's retry can claim it again.
+//        refunds: refundUnfulfillable() (see lib/events/refund-error.ts) never swallows a
+//        failed stripe.refunds.create — a transient failure releases the claim and 500s so
+//        stripe redelivers and retries the refund; a permanent one is logged CRITICAL and
+//        returns 200, since retrying can't fix it. a stripe.refunds.create idempotency key
+//        (refund_<session.id>) keeps a redelivery from double-refunding.
 //
 //        event-ticket fulfillment: event_registrations is now paid-only. the cart lives in
 //        pending_registrations, keyed by stripe_checkout_session_id (not by identity), so
@@ -46,6 +51,7 @@ import { resend } from '@/lib/resend'
 import { ticketEmailHtml } from '@/lib/email/ticket'
 import { membershipEmailHtml } from '@/lib/email/membership'
 import { classifyFulfillment } from '@/lib/events/fulfillment'
+import { classifyRefundError, type RefundOutcome } from '@/lib/events/refund-error'
 import QRCode from 'qrcode'
 import { NextResponse } from 'next/server'
 import { fail } from '@/lib/api-response'
@@ -168,17 +174,37 @@ async function sendTicketEmails(supabase: AdminClient, registrationId: string) {
 // a session that can never be fulfilled (stale/superseded/already-registered) gets its
 // charge refunded rather than left in limbo. no_payment_required (100%-off promo codes)
 // has no payment_intent and nothing to refund.
-async function refundUnfulfillable(session: { payment_intent: string | null | unknown; amount_total: number | null; id: string }, cause: string, ref: string) {
-  if (session.payment_intent && (session.amount_total ?? 0) > 0) {
-    try {
-      await stripe.refunds.create({
+//
+// returns an outcome rather than swallowing failure: 'settled' (refunded, or nothing was
+// owed), 'retry' (transient stripe failure — caller must release the idempotency claim and
+// 500 so stripe redelivers), or 'stuck' (permanent failure — retrying won't help, logged as
+// CRITICAL for manual reconciliation, caller returns 200 since a redelivery loop can't fix it).
+async function refundUnfulfillable(session: { payment_intent: string | null | unknown; amount_total: number | null; id: string }, cause: string, ref: string): Promise<RefundOutcome> {
+  if (!session.payment_intent || (session.amount_total ?? 0) <= 0) return 'settled'
+
+  try {
+    await stripe.refunds.create(
+      {
         payment_intent: session.payment_intent as string,
         reason: 'duplicate',
         metadata: { cause, ref },
-      })
-    } catch (err) {
-      console.error('[webhook] auto-refund failed', session.id, cause, ref, err)
-    }
+      },
+      // one refund per checkout session no matter how many times this path runs — without
+      // this, a redelivery after a dropped connection (where stripe *did* receive the first
+      // call) would issue a second refund.
+      { idempotencyKey: `refund_${session.id}` }
+    )
+    return 'settled'
+  } catch (err) {
+    const outcome = classifyRefundError(err)
+    if (outcome === 'settled') return outcome
+    console.error(
+      outcome === 'stuck'
+        ? '[webhook] CRITICAL auto-refund permanently failed — charge kept, reconcile manually in stripe'
+        : '[webhook] auto-refund failed, retrying',
+      session.id, cause, ref, err
+    )
+    return outcome
   }
 }
 
@@ -387,7 +413,11 @@ export async function POST(req: Request) {
 
         if (action === 'refund') {
           console.warn('[webhook] pending/session mismatch — not fulfilling, refunding', { pending_id, sessionId: session.id })
-          await refundUnfulfillable(session, 'superseded_or_missing_pending_registration', pending_id)
+          const outcome = await refundUnfulfillable(session, 'superseded_or_missing_pending_registration', pending_id)
+          if (outcome === 'retry') {
+            await releaseClaim()
+            return fail('Refund failed', 500)
+          }
           return NextResponse.json({ received: true })
         }
 
@@ -434,7 +464,13 @@ export async function POST(req: Request) {
         if (fulfillmentError) {
           if (fulfillmentError.code === '23505') {
             console.warn('[webhook] fulfillment conflict — already registered, refunding', { pending_id, sessionId: session.id })
-            await refundUnfulfillable(session, 'already_registered', pending_id)
+            const outcome = await refundUnfulfillable(session, 'already_registered', pending_id)
+            if (outcome === 'retry') {
+              // leave the pending row in place — a redelivery must re-derive the same 23505,
+              // not silently fulfill because the conflicting cart disappeared out from under it
+              await releaseClaim()
+              return fail('Refund failed', 500)
+            }
             await supabase.from('pending_registrations').delete().eq('id', pending_id)
             return NextResponse.json({ received: true })
           }
@@ -526,7 +562,11 @@ export async function POST(req: Request) {
           }
 
           console.warn('[webhook] session/registration mismatch — not fulfilling, refunding', { registration_id, sessionId: session.id })
-          await refundUnfulfillable(session, 'superseded_checkout_session', registration_id)
+          const outcome = await refundUnfulfillable(session, 'superseded_checkout_session', registration_id)
+          if (outcome === 'retry') {
+            await releaseClaim()
+            return fail('Refund failed', 500)
+          }
           return NextResponse.json({ received: true })
         }
 
