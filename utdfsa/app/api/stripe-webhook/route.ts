@@ -287,9 +287,21 @@ export async function POST(req: Request) {
   // release the claim on a transient DB failure so stripe's retry of this event
   // can claim it again — only call before a 500 return, never before a permanent
   // data-problem 4xx (e.g. missing metadata), which would just loop forever.
+  //
+  // ponytail: no automatic recovery if this delete itself fails — the claim row survives,
+  // so stripe's retry hits the duplicate branch above and no-ops, and this event is never
+  // reprocessed. recovering automatically needs a staleness-gated takeover on that duplicate
+  // branch, which weakens the claim from an absolute mutex to a timing-dependent one, on the
+  // route that handles all money in the app; not worth that risk until this log actually fires.
   const releaseClaim = async () => {
     const { error } = await supabase.from('stripe_events').delete().eq('id', event.id)
-    if (error) console.error('[webhook] ledger release failed', event.id, error)
+    if (error) {
+      const obj = event.data.object as { id?: string; payment_intent?: string }
+      console.error(
+        '[webhook] CRITICAL ledger release failed — event will never be retried, reconcile manually',
+        { eventId: event.id, type: event.type, sessionId: obj?.id, paymentIntent: obj?.payment_intent, error }
+      )
+    }
   }
 
   // ── event dispatch ────────────────────────────────────────────────────────
