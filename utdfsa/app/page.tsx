@@ -27,7 +27,6 @@ import HeroSection from "@/components/HeroSection"
 import UpcomingEventsSection from "@/components/UpcomingEventsSection"
 import MissionStatementSection from "@/components/MissionStatementSection"
 import WhoAreWeText from "@/components/WhoAreWeText"
-import ScrollFadeIn from "@/components/ScrollFadeIn"
 import { createAdminClient, createUserClient } from "@/utils/supabase/server"
 import { getCachedVisibleEvents } from "@/lib/data/events"
 import { isMembershipActive } from "@/lib/membership"
@@ -169,10 +168,10 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── FULL-BLEED PHOTO ──────────────────────────────────────── */}
-      <ScrollFadeIn className="relative h-[300px] md:h-[450px] lg:h-[600px] w-full overflow-hidden">
+      {/* ── FULL-BLEED PHOTO — static, no scroll-reveal ─────────────── */}
+      <div className="relative h-[255px] md:h-[383px] lg:h-[510px] w-full overflow-hidden">
         <SmoothImage src="/event-photo.jpg" alt="FSA Event" fill className="object-cover object-[center_60%]" sizes="100vw" />
-      </ScrollFadeIn>
+      </div>
 
       {/* ── MISSION STATEMENT ─────────────────────────────────────── */}
       <MissionStatementSection />
@@ -185,10 +184,10 @@ export default async function Home() {
         registeredEventIds={[...registeredEventIds]}
       />
 
-      {/* ── SECOND FULL-BLEED PHOTO ───────────────────────────────── */}
-      <ScrollFadeIn className="relative h-[300px] md:h-[450px] lg:h-[600px] w-full overflow-hidden">
+      {/* ── SECOND FULL-BLEED PHOTO — static, no scroll-reveal ──────── */}
+      <div className="relative h-[255px] md:h-[383px] lg:h-[510px] w-full overflow-hidden">
         <SmoothImage src="/event-photo-2.jpg" alt="FSA Event" fill className="object-cover" sizes="100vw" />
-      </ScrollFadeIn>
+      </div>
 
     </main>
   )

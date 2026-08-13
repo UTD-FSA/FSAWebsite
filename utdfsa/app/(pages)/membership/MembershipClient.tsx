@@ -7,7 +7,7 @@
 //        early-bird pricing is determined server-side by comparing now vs. earlyBirdDeadline
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import Image from 'next/image'
 import QuickNavRail from '@/components/QuickNavRail'
 import AnimatedTitle from '@/components/AnimatedTitle'
@@ -144,18 +144,7 @@ export default function MembershipClient({
   const [faqOpen, setFaqOpen] = useState([true, false, false, false])
 
   const faqRef = useRef<HTMLElement>(null)
-  useEffect(() => {
-    const el = faqRef.current
-    if (!el) return
-    const obs = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        el.style.animation = 'fadeUp 0.7s cubic-bezier(0.25,0.46,0.45,0.94) both'
-        obs.disconnect()
-      }
-    }, { threshold: 0.15 })
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [])
+  const faqVisible = useRevealOnScroll(faqRef)
 
   const benefitsGridRef = useRef<HTMLDivElement>(null)
   useStaggeredReveal(
@@ -174,9 +163,6 @@ export default function MembershipClient({
       card.style.animation = `fadeUp 550ms cubic-bezier(0.16,1,0.3,1) ${delay}ms both`
     },
   )
-
-  const pricingRef = useRef<HTMLDivElement>(null)
-  const pricingVisible = useRevealOnScroll(pricingRef, 0.25)
 
   // ── handlePayment ────────────────────────────────────────────
   // opens the stripe checkout page; on success stripe redirects back with ?success=true
@@ -345,16 +331,10 @@ export default function MembershipClient({
             </div>
           </div>
 
-          {/* pricing card */}
+          {/* pricing card — static, no scroll-reveal (unlike the rest of the page) */}
           <div
-            ref={pricingRef}
             className="relative bg-gradient-to-br from-[#161616] to-[#101010] border border-accent-green/30 rounded-[20px] p-7 md:p-8 flex flex-col"
-            style={{
-              boxShadow: '0 30px 70px -40px rgba(147,208,123,0.16)',
-              opacity: pricingVisible ? 1 : 0,
-              transform: pricingVisible ? 'none' : 'translateY(20px) scale(0.98)',
-              transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
-            }}
+            style={{ boxShadow: '0 30px 70px -40px rgba(147,208,123,0.16)' }}
           >
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -448,7 +428,16 @@ export default function MembershipClient({
         </section>
 
         {/* ── FAQ ──────────────────────────────────────────── */}
-        <section id="faq" ref={faqRef} className="px-6 md:px-14 pb-16 scroll-mt-20" style={{ opacity: 0 }}>
+        <section
+          id="faq"
+          ref={faqRef}
+          className="px-6 md:px-14 pb-16 scroll-mt-20"
+          style={{
+            opacity: faqVisible ? 1 : 0,
+            transform: faqVisible ? 'translateY(0)' : 'translateY(24px)',
+            transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
+          }}
+        >
           <div className="flex items-center gap-4 mb-7">
             <h2 className="font-display font-extrabold text-2xl tracking-[-0.02em] text-white whitespace-nowrap">Questions</h2>
             <span className="h-px flex-1 bg-white/[0.08]" />

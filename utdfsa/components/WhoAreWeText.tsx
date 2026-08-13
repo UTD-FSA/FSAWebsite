@@ -7,23 +7,12 @@
 // data:  none — static copy, mirrors what used to live inline in app/page.tsx
 // ─────────────────────────────────────────────────────────────
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
+import { useRevealOnScroll } from '@/lib/useRevealOnScroll'
 
 export default function WhoAreWeText() {
   const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return
-      setVisible(true)
-      observer.disconnect()
-    }, { threshold: 0.3 })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
+  const visible = useRevealOnScroll(ref)
 
   return (
     <div ref={ref} className="w-full flex flex-col">

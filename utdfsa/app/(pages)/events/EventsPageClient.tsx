@@ -20,6 +20,7 @@ import Modal from '@/components/Modal'
 import type { Event } from '@/types/database'
 import { getBadge, type EventTypeBadge } from '@/utils/eventTypes'
 import { fmtTimeRange, fmtDateShort } from '@/lib/format'
+import { useRevealOnScroll } from '@/lib/useRevealOnScroll'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 // converts cents integer to dollar string (e.g. 1500 → "$15.00")
@@ -285,26 +286,9 @@ export default function EventsPageClient({ events, isMember, member, registeredE
     })
   }, [])
 
-  // ── calendar viewport entrance — re-runs when showCalendar mounts the section ─
-  useEffect(() => {
-    if (!showCalendar) return
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const el = calendarSectionRef.current
-    if (!el) return
-    if (reduced) { el.style.opacity = '1'; return }
-    el.style.opacity = '0'
-    el.style.transform = 'translateY(12px)'
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        el.style.transition = 'opacity 500ms var(--ease-smooth), transform 500ms var(--ease-smooth)'
-        el.style.opacity = '1'
-        el.style.transform = 'translateY(0)'
-        observer.disconnect()
-      }
-    }, { threshold: 0.1 })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [showCalendar])
+  // ── calendar viewport entrance — resetKey re-arms the reveal each time
+  // showCalendar mounts the section (it's conditionally rendered below) ─
+  const calendarVisible = useRevealOnScroll(calendarSectionRef, { resetKey: showCalendar })
 
   return (
     <main className="min-h-screen text-white overflow-x-clip" style={{ background: '#0f0f0f' }}>
@@ -624,7 +608,15 @@ export default function EventsPageClient({ events, isMember, member, registeredE
         </div>
 
         {/* ── event calendar ────────────────────────────────────────────────── */}
-        {showCalendar && <div ref={calendarSectionRef} className="mt-12" style={{ opacity: 0 }}>
+        {showCalendar && <div
+          ref={calendarSectionRef}
+          className="mt-12"
+          style={{
+            opacity: calendarVisible ? 1 : 0,
+            transform: calendarVisible ? 'translateY(0)' : 'translateY(12px)',
+            transition: 'opacity 500ms var(--ease-smooth), transform 500ms var(--ease-smooth)',
+          }}
+        >
           <SectionLabel label="Event Calendar" />
           <div className="fc-dark rounded-[18px] overflow-hidden p-4" style={{ background: '#131313', border: '1px solid rgba(255,255,255,0.08)' }}>
             {calendarLegend.length > 0 && (

@@ -8,39 +8,15 @@
 // data:  none — static copy, mirrors what used to live inline in app/page.tsx
 // ─────────────────────────────────────────────────────────────
 
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import BaybayinRule from '@/components/BaybayinRule'
+import { useRevealOnScroll } from '@/lib/useRevealOnScroll'
 
 export default function MissionStatementSection() {
   const dividerRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
-  const [dividerVisible, setDividerVisible] = useState(false)
-  const [pillarsVisible, setPillarsVisible] = useState(false)
-
-  useEffect(() => {
-    const divider = dividerRef.current
-    const copy = copyRef.current
-    if (!divider || !copy) return
-
-    const dividerObserver = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return
-      setDividerVisible(true)
-      dividerObserver.disconnect()
-    }, { threshold: 0.3 })
-    dividerObserver.observe(divider)
-
-    const copyObserver = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return
-      setPillarsVisible(true)
-      copyObserver.disconnect()
-    }, { threshold: 0.4 })
-    copyObserver.observe(copy)
-
-    return () => {
-      dividerObserver.disconnect()
-      copyObserver.disconnect()
-    }
-  }, [])
+  const dividerVisible = useRevealOnScroll(dividerRef)
+  const pillarsVisible = useRevealOnScroll(copyRef)
 
   return (
     <section className="bg-section-bg px-4 sm:px-8 lg:px-16 py-14 sm:py-20 lg:py-24 min-h-[400px] lg:min-h-[575px]">

@@ -13,6 +13,7 @@ import { useState, useMemo, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Gallery } from '@/types/database'
+import { useStaggeredReveal } from '@/lib/useRevealOnScroll'
 
 interface Props {
   galleries: Gallery[]
@@ -72,38 +73,26 @@ export default function ArchivesClient({ galleries }: Props) {
     })
   }, [])
 
-  // ── gallery card entrance (scroll-triggered) — re-runs on filter change so
-  // switching filters replays the same staggered reveal as the first load ──
-  useEffect(() => {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (reduced) return
-
-    const grid = gridRef.current
-    if (!grid) return
-
-    const cards = Array.from(grid.querySelectorAll('.gcard')) as HTMLElement[]
-    cards.forEach(card => {
-      card.style.opacity = '0'
+  // ── gallery card entrance (scroll-triggered) — resetKey re-arms the reveal
+  // on filter change so switching filters replays the same staggered reveal
+  // as the first load. delay is scoped to the card's row (grouped by
+  // offsetTop, same pattern as AboutClient's officer board) rather than
+  // visible-batch order, so cards that reveal on load together stagger by
+  // grid position instead of observer callback order ──
+  useStaggeredReveal(
+    () => (gridRef.current ? (Array.from(gridRef.current.querySelectorAll('.gcard')) as HTMLElement[]) : []),
+    (card, cards) => {
+      const row = cards.filter(c => Math.abs(c.offsetTop - card.offsetTop) < 4)
+      const delay = Math.min(row.indexOf(card) * 75, 225)
       card.style.transform = 'translateY(24px) scale(0.98)'
-    })
-
-    const observer = new IntersectionObserver((entries) => {
-      const visible = entries.filter(e => e.isIntersecting)
-      visible.forEach((entry, i) => {
-        const card = entry.target as HTMLElement
-        const delay = Math.min(i * 75, 225)
-        card.style.transition = `opacity 600ms var(--ease-smooth) ${delay}ms, transform 600ms var(--ease-smooth) ${delay}ms`
-        card.style.opacity = '1'
-        card.style.transform = 'translateY(0) scale(1)'
-        observer.unobserve(card)
-        // Remove inline styles after entrance so CSS hover transitions take back over
-        setTimeout(() => { card.style.cssText = '' }, 600 + delay + 50)
-      })
-    }, { threshold: 0.05 })
-
-    cards.forEach(card => observer.observe(card))
-    return () => observer.disconnect()
-  }, [displayFilter])
+      card.style.transition = `opacity 600ms var(--ease-smooth) ${delay}ms, transform 600ms var(--ease-smooth) ${delay}ms`
+      card.style.opacity = '1'
+      card.style.transform = 'translateY(0) scale(1)'
+      // remove inline styles after entrance so CSS hover transitions take back over
+      setTimeout(() => { card.style.cssText = '' }, 600 + delay + 50)
+    },
+    { resetKey: displayFilter },
+  )
 
   // ── filter change: crossfade grid, then swap cards ────────
   function handleFilterChange(option: string) {

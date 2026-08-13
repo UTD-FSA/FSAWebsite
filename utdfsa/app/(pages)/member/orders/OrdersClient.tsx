@@ -11,8 +11,7 @@
 //        app/(pages)/member/orders/page.tsx.
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { useStaggeredReveal } from '@/lib/useRevealOnScroll'
+import { useState, useEffect } from 'react'
 
 type Ticket = {
   id: string
@@ -115,15 +114,6 @@ export default function OrdersClient({ registrations, pendingRegistrations, even
     ? registrations
     : [...registrations].reverse()
 
-  const listRef = useRef<HTMLDivElement>(null)
-  useStaggeredReveal(
-    () => Array.from(listRef.current?.querySelectorAll<HTMLElement>('[data-order-card]') ?? []),
-    (card, cards) => {
-      const i = cards.indexOf(card)
-      card.style.animation = `fadeUp 0.5s var(--ease-smooth) ${i * 70}ms both`
-    },
-  )
-
   return (
     <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
       <h1 className="font-display text-2xl font-bold text-white mb-1">Order History</h1>
@@ -217,7 +207,7 @@ export default function OrdersClient({ registrations, pendingRegistrations, even
           </p>
         </div>
       ) : (
-        <div ref={listRef} className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
           {sortedRegistrations.map(reg => {
             // look up event details from the pre-fetched map by event_id
             const event = reg.event_id ? eventsData[reg.event_id] ?? null : null
@@ -228,7 +218,6 @@ export default function OrdersClient({ registrations, pendingRegistrations, even
             return (
               <div
                 key={reg.id}
-                data-order-card
                 className="rounded-2xl overflow-hidden"
                 style={{
                   background: '#1a1a1a',

@@ -12,14 +12,12 @@ import { useRevealOnScroll } from '@/lib/useRevealOnScroll'
 export default function ScrollFadeIn({
   children,
   className,
-  threshold = 0.2,
 }: {
   children: ReactNode
   className?: string
-  threshold?: number
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const visible = useRevealOnScroll(ref, threshold)
+  const visible = useRevealOnScroll(ref)
   return (
     <div
       ref={ref}

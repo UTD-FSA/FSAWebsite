@@ -10,7 +10,7 @@
 
 'use client'
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useRef, type CSSProperties } from 'react'
 import Image from 'next/image'
 import SmoothImage from '@/components/SmoothImage'
 import Link from 'next/link'
@@ -40,35 +40,28 @@ function hexToRgba(hex: string, alpha: number) {
 export default function GoodphilAboutPage() {
   // "WHAT IS GOODPHIL?" heading — three words fade in in sequence on scroll
   const headingRef = useRef<HTMLDivElement>(null)
-  const headingVisible = useRevealOnScroll(headingRef, 0.3)
+  const headingVisible = useRevealOnScroll(headingRef)
 
   // team grid — staggered fade/slide-up once scrolled into view
   const teamGridRef = useRef<HTMLDivElement>(null)
-  const teamGridVisible = useRevealOnScroll(teamGridRef, 0.2)
+  const teamGridVisible = useRevealOnScroll(teamGridRef)
 
   // requirements card — fades in and scales up slightly once scrolled into view
   const reqCardRef = useRef<HTMLDivElement>(null)
-  const reqCardVisible = useRevealOnScroll(reqCardRef, 0.25)
+  const reqCardVisible = useRevealOnScroll(reqCardRef)
 
   // host-school logo grid — staggered fade/slide-up once scrolled into view
   const hostSchoolsRef = useRef<HTMLDivElement>(null)
-  const hostSchoolsVisible = useRevealOnScroll(hostSchoolsRef, 0.2)
+  const hostSchoolsVisible = useRevealOnScroll(hostSchoolsRef)
 
-  // "Filipino Student Associations..." clause — green highlight sweeps in behind the text on scroll
+  // "Filipino Student Associations..." clause — green highlight sweeps in behind the text on
+  // scroll. kept a stricter line (0.6, well into view) rather than the default reveal-on-load
+  // line — this is a mid-paragraph color sweep, not an entrance, so it should read as something
+  // the user scrolls to trigger rather than firing immediately with the rest of the paragraph.
+  // routed through the shared hook so it inherits the reduced-motion bypass and never-blank poll
+  // the hand-rolled IntersectionObserver here didn't have.
   const highlightRef = useRef<HTMLElement>(null)
-  const [highlightVisible, setHighlightVisible] = useState(false)
-
-  useEffect(() => {
-    const el = highlightRef.current
-    if (!el) return
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return
-      setHighlightVisible(true)
-      observer.disconnect()
-    }, { threshold: 0.6 })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
+  const highlightVisible = useRevealOnScroll(highlightRef, { line: 0.6 })
 
   return (
     <main className="bg-section-bg text-white overflow-x-clip">

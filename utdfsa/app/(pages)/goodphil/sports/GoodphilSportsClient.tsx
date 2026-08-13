@@ -24,21 +24,21 @@ import { useRevealOnScroll, useStaggeredReveal } from '@/lib/useRevealOnScroll'
 
 export default function SportsPage() {
   // Right-column reveal (the two captain CTA cards) — ref sits on that
-  // column itself, not the whole Section-2 <section>. The section also
-  // contains the heading + long paragraph, so on mobile's short hero
-  // (h-[40vh]) a big chunk of that tall section is already on screen at
-  // load, tripping the 30%-of-element threshold before the user scrolls —
-  // even though the CTA cards are still stacked below the fold. Targeting
-  // the column directly means it only reveals once it's actually in view.
+  // column itself, not the whole Section-2 <section>. The reveal hook
+  // triggers off the viewport (top edge crossing a fixed line down the
+  // screen), not a fraction of the ref'd element's own height, so a tall
+  // <section> and a short column inside it reveal at the same moment — still
+  // worth targeting the column directly so its entrance timing matches the
+  // CTA cards visually settling into place, not the section's outer edge.
   const headingRef = useRef<HTMLDivElement>(null)
-  const headingVisible = useRevealOnScroll(headingRef, 0.3)
+  const headingVisible = useRevealOnScroll(headingRef)
 
   // title (h2) + Baybayin + paragraph now share one scroll trigger anchored on
   // the centered header block itself — was gated on page-mount before, which
   // meant the cascade played (and finished) while Section 2 was still off
   // desktop's fold, out of sync with the CTA cards' own scroll trigger
   const headerRef = useRef<HTMLDivElement>(null)
-  const titleVisible = useRevealOnScroll(headerRef, 0.3)
+  const titleVisible = useRevealOnScroll(headerRef)
 
   // sports card grid — row-staggered scroll-triggered fade-up (same pattern as
   // About's officer board), now with the shared never-blank + reduced-motion guard
@@ -58,7 +58,6 @@ export default function SportsPage() {
           c.style.animation = 'fadeUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'
         })
     },
-    0.4,
   )
 
   return (

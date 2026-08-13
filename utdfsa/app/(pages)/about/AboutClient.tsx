@@ -258,7 +258,7 @@ export default function AboutClient() {
 
   // ── contact + connect sections — scroll reveal (were static; rest of page animates) ──
   const contactRef = useRef<HTMLDivElement>(null)
-  const contactVisible = useRevealOnScroll(contactRef, 0.3)
+  const contactVisible = useRevealOnScroll(contactRef)
 
   const connectGridRef = useRef<HTMLDivElement>(null)
   useStaggeredReveal(
@@ -427,8 +427,8 @@ export default function AboutClient() {
             className="font-sans text-white/60 leading-relaxed mb-8"
             style={{ fontSize: 'clamp(14px, 1.4vw, 17px)' }}
           >
-            Have questions about UTD FSA? Reach out to us on Instagram — we respond to DMs and
-            are happy to help with anything from membership questions to event details!
+            Have questions about UTD FSA? Reach out to us on Instagram! We respond to DMs and
+            are happy to help with anything from membership questions to event details.
           </p>
           <a
             href="https://instagram.com/fsautd"

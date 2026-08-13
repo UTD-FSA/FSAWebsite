@@ -353,23 +353,11 @@ export default function PamilyasClient({
 
   // Baybayin subheader — opacity fade-in as it scrolls into view (matches goodphil subpages)
   const baybayinRef = useRef<HTMLDivElement>(null)
-  const [baybayinVisible, setBaybayinVisible] = useState(false)
-
-  useEffect(() => {
-    const el = baybayinRef.current
-    if (!el) return
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting) return
-      setBaybayinVisible(true)
-      observer.disconnect()
-    }, { threshold: 0.3 })
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
+  const baybayinVisible = useRevealOnScroll(baybayinRef)
 
   // "Meet the Pamilyas" coming-soon card — scroll reveal
   const comingSoonRef = useRef<HTMLDivElement>(null)
-  const comingSoonVisible = useRevealOnScroll(comingSoonRef, 0.3)
+  const comingSoonVisible = useRevealOnScroll(comingSoonRef)
 
   // sign-up FormCards — staggered entrance
   const formGridRef = useRef<HTMLDivElement>(null)

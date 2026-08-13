@@ -19,24 +19,27 @@ import { useRevealOnScroll, useStaggeredReveal } from '@/lib/useRevealOnScroll'
 export default function ModernPage() {
   // Right-column reveal (photo collage + logo badge + Instagram CTA pill) —
   // ref sits on that column itself, not the whole Section-2 <section>. The
-  // section also contains the heading + long paragraph, so on mobile's short
-  // hero (h-[40vh]) a big chunk of that tall section is already on screen at
-  // load, tripping the 30%-of-element threshold before the user scrolls —
-  // even though the photo group is still stacked below the fold. Targeting
-  // the column directly means it only reveals once it's actually in view.
+  // reveal hook triggers off the viewport (top edge crossing a fixed line
+  // down the screen), not a fraction of the ref'd element's own height, so a
+  // tall <section> and a short column inside it reveal at the same moment —
+  // still worth targeting the column directly so its entrance timing matches
+  // the photo group visually settling into place, not the section's outer edge.
   const headingRef = useRef<HTMLDivElement>(null)
-  const headingVisible = useRevealOnScroll(headingRef, 0.3)
+  const headingVisible = useRevealOnScroll(headingRef)
 
   // title (h2) + Baybayin + paragraph now share one scroll trigger anchored on
   // the centered header block itself — was gated on page-mount before, which
   // meant the cascade played (and finished) while Section 2 was still off
   // desktop's fold, out of sync with the photo collage's own scroll trigger
   const headerRef = useRef<HTMLDivElement>(null)
-  const titleVisible = useRevealOnScroll(headerRef, 0.3)
+  const titleVisible = useRevealOnScroll(headerRef)
 
-  // "noble warrior class" — color eases from white to green as it enters the viewport
+  // "noble warrior class" — color eases from white to green as it enters the
+  // viewport. kept a stricter line (0.6) than the default reveal-on-load line —
+  // this is a mid-paragraph color sweep meant to trigger on scroll, not fire
+  // immediately alongside the rest of the paragraph.
   const nobleRef = useRef<HTMLElement>(null)
-  const nobleVisible = useRevealOnScroll(nobleRef, 0.6)
+  const nobleVisible = useRevealOnScroll(nobleRef, { line: 0.6 })
 
   // past-performances video vault — each card animates independently as it individually
   // scrolls into view (mirrors the officer board card pattern in AboutClient.tsx),
@@ -45,7 +48,7 @@ export default function ModernPage() {
   // fold; heading/subtext/button stagger in on the same reveal like the
   // Instagram CTA pill above it
   const ctaRef = useRef<HTMLDivElement>(null)
-  const ctaVisible = useRevealOnScroll(ctaRef, 0.3)
+  const ctaVisible = useRevealOnScroll(ctaRef)
 
   const perfCardRefs = useRef<(HTMLDivElement | null)[]>([])
   useStaggeredReveal(
@@ -56,7 +59,6 @@ export default function ModernPage() {
       void card.offsetHeight
       card.style.animation = `videoCardIn 700ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms both`
     },
-    0.3,
   )
 
   return (
