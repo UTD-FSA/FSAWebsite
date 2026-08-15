@@ -247,14 +247,12 @@ export default function AboutClient() {
   )
 
   // ── past officer boards — staggered fade-up entrance ──────
+  // one observer on the whole group (not one per card, like useStaggeredReveal) —
+  // on a slow scroll each card crossing the reveal line at its own moment made the
+  // stagger read as "one at a time" instead of a single wave. gating every card off
+  // one boolean fires them together, staggered only by the fixed per-index delay below.
   const pastGridRef = useRef<HTMLDivElement>(null)
-  useStaggeredReveal(
-    () => Array.from(pastGridRef.current?.querySelectorAll<HTMLElement>('[data-past-card]') ?? []),
-    (card, cards) => {
-      const i = cards.indexOf(card)
-      card.style.animation = `fadeUp 0.6s var(--ease-smooth) ${i * 80}ms both`
-    },
-  )
+  const pastVisible = useRevealOnScroll(pastGridRef)
 
   // ── contact + connect sections — scroll reveal (were static; rest of page animates) ──
   const contactRef = useRef<HTMLDivElement>(null)
@@ -479,12 +477,19 @@ export default function AboutClient() {
             PAST OFFICER BOARDS
           </h2>
           <div ref={pastGridRef} className="flex flex-col gap-3">
-            {PAST_OFFICERS.map(({ year, officers }) => {
+            {PAST_OFFICERS.map(({ year, officers }, i) => {
               const isOpen = openYear === year
               // format "2024-2025" → "2024 – 2025" for display
               const displayYear = year.replace('-', ' – ')
               return (
-                <div key={year} data-past-card className="rounded-xl border border-white/10 overflow-hidden">
+                <div
+                  key={year}
+                  className="rounded-xl border border-white/10 overflow-hidden"
+                  style={{
+                    opacity: pastVisible ? 1 : 0,
+                    animation: pastVisible ? `fadeUp 0.6s var(--ease-smooth) ${i * 80}ms both` : undefined,
+                  }}
+                >
                   {/* border + radius live on this constant outer wrapper (not on the button
                       or panel below), mirroring the FAQ accordion in MembershipClient.tsx —
                       a radius toggled per open/closed state snaps instantly (border-radius
