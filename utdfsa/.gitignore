@@ -52,3 +52,6 @@ next-env.d.ts
 
 # docs
 docs/
+
+# load testing
+loadtest/results-*.json
