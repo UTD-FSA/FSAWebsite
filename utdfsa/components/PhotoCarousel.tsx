@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useRef, type PointerEvent, type MouseEvent } from 'react'
 import SmoothImage from '@/components/SmoothImage'
+import { prefersReducedMotion } from '@/lib/useRevealOnScroll'
 
 const slides = [
   { src: '/carousel-1.jpg', alt: 'FSA Event 1' },
@@ -55,6 +56,8 @@ export default function PhotoCarousel() {
   const [timerKey, setTimerKey] = useState(0)
   // slide index of the flanking card currently hovered, so it can brighten toward HOVER_OPACITY
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
+  // true while hovered/focused — pauses autoplay so it doesn't fight manual navigation
+  const [paused, setPaused] = useState(false)
 
   // responsive breakpoint detection: sets isMobile on mount and on every window resize
   useEffect(() => {
@@ -66,11 +69,12 @@ export default function PhotoCarousel() {
 
   // auto-advance every 4 s; timerKey in dep array lets manual nav reset the interval
   useEffect(() => {
+    if (paused || prefersReducedMotion()) return
     const timer = setInterval(() => {
       setCurrent(i => (i + 1) % slides.length)
     }, 4000)
     return () => clearInterval(timer)
-  }, [timerKey])
+  }, [timerKey, paused])
 
   const total = slides.length
   const resetTimer = () => setTimerKey(k => k + 1)
@@ -151,7 +155,13 @@ export default function PhotoCarousel() {
   }
 
   return (
-    <div className="flex flex-col gap-6 w-full">
+    <div
+      className="flex flex-col gap-6 w-full"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
 
       {/* Stage — all 5 cards always in the DOM; only styles change per transition */}
       <div
@@ -225,8 +235,9 @@ export default function PhotoCarousel() {
               key={i}
               onClick={() => { setCurrent(i); resetTimer() }}
               aria-label={`Go to slide ${i + 1}`}
-              className={`rounded-full bg-white transition-all duration-200 ${
-                i === current ? 'w-4 h-4' : 'w-3 h-3 opacity-50'
+              aria-current={i === current ? 'true' : undefined}
+              className={`rounded-full transition-all duration-200 ${
+                i === current ? 'w-4 h-4 bg-accent-green' : 'w-3 h-3 bg-white/50'
               }`}
             />
           ))}

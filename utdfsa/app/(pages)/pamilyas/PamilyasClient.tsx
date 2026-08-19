@@ -17,7 +17,7 @@ import AnimatedLetters from '@/components/AnimatedLetters'
 import BaybayinRule from '@/components/BaybayinRule'
 import HeroWatermark from '@/components/HeroWatermark'
 import QuickNavRail from '@/components/QuickNavRail'
-import { useRevealOnScroll, useStaggeredReveal } from '@/lib/useRevealOnScroll'
+import { useRevealOnScroll, useStaggeredReveal, prefersReducedMotion } from '@/lib/useRevealOnScroll'
 
 const PAMILYAS_NAV_ITEMS = [
   { label: 'What Is a Pamilya', href: '#what-is-a-pamilya' },
@@ -78,6 +78,8 @@ function PamilyasCarousel() {
   const [timerKey, setTimerKey] = useState(0)
   // slide index of the flanking card currently hovered, so it can brighten toward PAM_HOVER_OPACITY
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
+  // true while hovered/focused — pauses autoplay so it doesn't fight manual navigation
+  const [paused, setPaused] = useState(false)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -87,11 +89,12 @@ function PamilyasCarousel() {
   }, [])
 
   useEffect(() => {
+    if (paused || prefersReducedMotion()) return
     const timer = setInterval(() => {
       setCurrent(i => (i + 1) % PAM_SLIDES.length)
     }, 4000)
     return () => clearInterval(timer)
-  }, [timerKey])
+  }, [timerKey, paused])
 
   const total = PAM_SLIDES.length
   const resetTimer = () => setTimerKey(k => k + 1)
@@ -167,7 +170,13 @@ function PamilyasCarousel() {
   }
 
   return (
-    <div className="flex flex-col gap-6 w-full">
+    <div
+      className="flex flex-col gap-6 w-full"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
       {/* stage height accommodates 4:3 active card with breathing room */}
       <div
         className="relative h-[280px] md:h-[560px] cursor-grab touch-pan-y select-none"
@@ -235,8 +244,9 @@ function PamilyasCarousel() {
               key={i}
               onClick={() => { setCurrent(i); resetTimer() }}
               aria-label={`Go to slide ${i + 1}`}
-              className={`rounded-full bg-white transition-all duration-200 ${
-                i === current ? 'w-4 h-4' : 'w-3 h-3 opacity-50'
+              aria-current={i === current ? 'true' : undefined}
+              className={`rounded-full transition-all duration-200 ${
+                i === current ? 'w-4 h-4 bg-accent-green' : 'w-3 h-3 bg-white/50'
               }`}
             />
           ))}
@@ -283,7 +293,7 @@ function FormCard({
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         quality={85}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-black/40" />
       <span className="absolute inset-0 flex items-center justify-center text-center text-white font-display font-black text-xl uppercase tracking-wide px-4">
         {title}
       </span>
@@ -299,7 +309,7 @@ function FormCard({
     </>
   )
 
-  const cls = 'group relative aspect-[4/5] rounded-[27px] overflow-hidden block hover:scale-[1.02] hover:brightness-110 active:scale-[0.98] transition-all duration-200 cursor-pointer bg-transparent border-0 p-0 w-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-blue focus-visible:outline-offset-2'
+  const cls = 'group relative aspect-[4/5] rounded-3xl overflow-hidden block hover:scale-[1.02] hover:brightness-110 active:scale-[0.98] transition-all duration-200 cursor-pointer bg-transparent border-0 p-0 w-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent-blue focus-visible:outline-offset-2'
 
   // eligibility caption — surfaces who each form is for at the decision point itself,
   // instead of requiring visitors to scroll back and recall role definitions
@@ -564,7 +574,7 @@ export default function PamilyasClient({
       <section id="what-is-a-pamilya" className="scroll-mt-20">
 
         <div className="bg-brand-bg py-10 px-4">
-          <h2 className="font-display font-black text-[clamp(18px,4.2vw,64px)] text-white text-center whitespace-nowrap mb-4">
+          <h2 className="font-display font-black text-[clamp(28px,4.2vw,64px)] text-white text-center md:whitespace-nowrap mb-4">
             WHAT IS A PAMILYA?
           </h2>
           <div ref={baybayinRef} className="mb-8">
@@ -597,7 +607,7 @@ export default function PamilyasClient({
               The pamilya system is <strong className="font-bold text-white">exclusive to UTD FSA members only.</strong>
             </p>
 
-            <a href="#signup" className="pamilya-cta-glow group inline-block mt-6 rounded-2xl border border-accent-green/30 bg-accent-green/10 px-6 py-4 sm:px-8 sm:py-5 transition-colors hover:bg-accent-green/15">
+            <a href="#signup" className="group inline-block mt-6 rounded-2xl border border-accent-green/30 bg-accent-green/10 px-6 py-4 sm:px-8 sm:py-5 transition-colors hover:bg-accent-green/15">
               <p className="font-sans font-semibold text-white text-[clamp(16px,1.8vw,22px)] leading-snug text-center">
                 Please pay your dues before filling out the{' '}
                 <span className="relative inline-block">
@@ -611,7 +621,7 @@ export default function PamilyasClient({
               <svg
                 aria-hidden="true"
                 width="18" height="18" viewBox="0 0 24 24" fill="none"
-                className="mx-auto mt-2 text-accent-green nudge-down"
+                className="mx-auto mt-2 text-accent-green"
               >
                 <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -631,7 +641,7 @@ export default function PamilyasClient({
       <section id="meet" className="scroll-mt-20">
 
         <div className="bg-brand-bg py-10 px-4">
-          <h2 className="font-display font-black text-[clamp(18px,4.2vw,64px)] text-white text-center whitespace-nowrap">
+          <h2 className="font-display font-black text-[clamp(28px,4.2vw,64px)] text-white text-center md:whitespace-nowrap">
             MEET THE PAMILYAS
           </h2>
         </div>
@@ -660,7 +670,7 @@ export default function PamilyasClient({
       <section id="signup" className="scroll-mt-20">
 
         <div className="bg-brand-bg py-10 px-4">
-          <h2 className="font-display font-black text-[clamp(18px,4.2vw,64px)] text-white text-center whitespace-nowrap">
+          <h2 className="font-display font-black text-[clamp(28px,4.2vw,64px)] text-white text-center md:whitespace-nowrap">
             WHERE DO I SIGN UP?
           </h2>
         </div>
