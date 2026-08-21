@@ -211,7 +211,7 @@ export default function ScanClient({ events }: { events: ScannableEvent[] }) {
       {result && (
         <div
           role="alert"
-          className={`fixed inset-0 flex flex-col items-center justify-center z-50
+          className={`fixed inset-0 flex flex-col items-center justify-center text-center z-50
           ${result.valid ? 'bg-green-600' : 'bg-red-600'}`}
         >
           <div className="text-8xl mb-6">
