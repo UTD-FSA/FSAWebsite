@@ -1,15 +1,20 @@
 // ── page.tsx ─────────────────────────────────────────────────
 // attend page — QR code check-in handler; records attendance and awards points
 //
-// data:  events (by attend_qr_token), members (id); attendance + points
-//        written via the record_attendance RPC (duplicate-guarded there)
+// data:  events (by attend_qr_token), members (id, membership_status,
+//        membership_expires_at); attendance + points written via the
+//        record_attendance RPC (duplicate-guarded there)
 // notes: all guard checks must remain in order — token → auth → event validity →
-//        qr open → expiry → member lookup → duplicate → then write;
+//        qr open → expiry → member lookup → membership → duplicate → then write;
 //        attendance + points are written via the record_attendance RPC (admin
 //        client) — client roles are write-restricted, so this is the only path
+//        membership gate is isMembershipActive() with no role exemption —
+//        officers get attendance credit by holding an active membership row
+//        (comped via a code), same as any other member
 // ─────────────────────────────────────────────────────────────
 import { createAdminClient } from '@/utils/supabase/server'
 import { requireUser } from '@/lib/auth'
+import { isMembershipActive } from '@/lib/membership'
 import { redirect } from 'next/navigation'
 
 interface Props {
@@ -21,8 +26,9 @@ export default async function AttendPage({ searchParams }: Props) {
   // DATA — do not modify this section
   // reads searchParams.token, authenticates the user, queries:
   //   events (by attend_qr_token) — to validate the QR and get event details
-  //   members — id for the record_attendance RPC, which inserts the
-  //     attendance row (duplicate-guarded) and awards points atomically
+  //   members — id for the record_attendance RPC (inserts the attendance row,
+  //     duplicate-guarded, and awards points atomically), plus status/expiry
+  //     for the membership gate
   // all redirects and early-exit returns below guard data integrity
   // ============================================================
   const { token } = await searchParams
@@ -50,10 +56,11 @@ export default async function AttendPage({ searchParams }: Props) {
       .select('id, name, event_date, points, is_active, attend_qr_open, attend_qr_expires_at')
       .eq('attend_qr_token', token)
       .maybeSingle(),
-    // members table — need id for the attendance RPC (points are handled server-side)
+    // members table — id for the attendance RPC, plus status/expiry for the
+    // membership gate below (points themselves are handled server-side)
     supabase
       .from('members')
-      .select('id')
+      .select('id, membership_status, membership_expires_at')
       .eq('email', user.email!)
       .maybeSingle(),
   ])
@@ -99,6 +106,18 @@ export default async function AttendPage({ searchParams }: Props) {
 
   // member not found — user is authenticated but hasn't completed onboarding; redirect to profile
   if (!member) redirect('/member/profile')
+
+  // membership required to earn attendance credit — no role exemption, officers
+  // get credit by holding an active membership row like anyone else
+  if (!isMembershipActive(member)) {
+    return (
+      <main className="flex flex-col items-center justify-center min-h-screen gap-4 text-center px-6" style={{ animation: 'fadeUp 0.5s var(--ease-smooth) both' }}>
+        <h1 className="text-2xl font-bold text-yellow-600">Membership required</h1>
+        <p className="text-gray-500 max-w-sm">Looks like your dues aren&apos;t paid yet, so this check-in won&apos;t count toward your points. Pay up and come scan again!</p>
+        <a href="/membership" className="text-green-700 font-semibold underline">Go to membership</a>
+      </main>
+    )
+  }
 
   // record attendance + award points atomically via the service-role RPC.
   // client roles are read-only (migration: harden_client_write_privileges_and_atomic_attendance),
