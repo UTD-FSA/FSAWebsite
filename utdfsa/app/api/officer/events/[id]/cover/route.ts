@@ -3,10 +3,12 @@
 //
 // data:  events (cover_photo_url field)
 // deps:  s3 (cover photo upload)
-// notes: key is deterministic per event id (overwriting on re-upload);
-//        officer/admin only
+// notes: key is unique per upload (timestamp+random suffix), not deterministic per event id —
+//        next/image caches a given url for 31 days (see next.config.ts minimumCacheTTL), so
+//        overwriting the same key would leave the old photo showing after a re-upload. the
+//        previous object is deleted once the new url is saved to the row. officer/admin only
 import { requireOfficer } from '@/lib/auth'
-import { uploadToS3, deleteFromS3 } from '@/utils/s3'
+import { uploadToS3, deleteFromS3, s3KeyFromUrl } from '@/utils/s3'
 import { imageMagicBytesMatch } from '@/utils/validate-image'
 import { NextResponse } from 'next/server'
 import { revalidateTag } from 'next/cache'
@@ -60,13 +62,22 @@ export async function POST(req: Request, { params }: RouteContext) {
   // derive extension from mime type for a consistent key
   const extMap: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' }
   const ext = extMap[file.type] ?? 'jpg'
-  const key = `covers/events/${id}.${ext}`
+  // timestamp + random suffix makes each upload's url unique — see header note on why
+  const key = `covers/events/${id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
   const buffer = Buffer.from(await file.arrayBuffer())
 
   if (!imageMagicBytesMatch(file.type, buffer)) {
     console.warn('[security] magic-bytes mismatch on cover upload', { route: `/api/officer/events/${id}/cover`, declaredType: file.type, ts: new Date().toISOString() })
     return fail('File content does not match declared image type.', 400)
   }
+
+  // fetched before upload so the old object can be cleaned up once the new one is saved
+  const { data: existing } = await ctx.admin
+    .from('events')
+    .select('cover_photo_url')
+    .eq('id', id)
+    .maybeSingle()
+  const oldCoverUrl = existing?.cover_photo_url ?? null
 
   let publicUrl: string
   try {
@@ -94,6 +105,13 @@ export async function POST(req: Request, { params }: RouteContext) {
     // 0 rows affected and no error, so this has to be checked explicitly)
     await deleteFromS3(key).catch(err => console.error('[events/[id]/cover] orphan cleanup error:', err))
     return fail('Event not found.', 404)
+  }
+
+  // clean up the previous cover object now that the row points at the new one —
+  // best-effort, matching the orphan cleanup above (see utils/s3.ts deleteFromS3 note)
+  const oldKey = s3KeyFromUrl(oldCoverUrl)
+  if (oldKey && oldKey !== key) {
+    await deleteFromS3(oldKey).catch(err => console.error('[events/[id]/cover] old cover cleanup error:', err))
   }
 
   // bust the cached public events listing (see lib/data/events.ts)
