@@ -29,7 +29,7 @@ export default async function ProfilePage() {
   // of the middleware gate — see lib/auth.ts) without a second members round-trip
   const { data: member } = await supabase
     .from('members')
-    .select('id, email, contact_email, first_name, last_name, role, membership_status, membership_expires_at, points, phone, year, major, shirt_size, pamilya, avatar_url, member_type')
+    .select('id, email, contact_email, first_name, last_name, role, membership_status, membership_expires_at, points, phone, year, major, shirt_size, pamilya, avatar_url, member_type, onboarding_complete')
     .eq('email', user.email!)
     .maybeSingle()
 
@@ -237,6 +237,24 @@ export default async function ProfilePage() {
             )}
           </div>
         </section>
+
+        {/* Finish onboarding section — only for paid members who never picked ading/kuyate (dropped off before choosing) */}
+        {/* do not remove this condition */}
+        {!member.onboarding_complete && !member.member_type && (
+          <section
+            className="mb-4 p-6 border-2 border-accent-gold/40 rounded-2xl bg-[#1a1a1a]"
+            style={{ animation: 'fadeUp 500ms cubic-bezier(0.16,1,0.3,1) 360ms both' }}
+          >
+            <h3 className="font-display font-black text-sm text-white uppercase mb-1">Finish setting up your profile</h3>
+            <p className="font-sans text-sm text-white/50 mb-4">You paid for membership but never picked ading or kuya/ate. Pick up where you left off.</p>
+            <Link
+              href="/onboarding"
+              className="inline-flex items-center font-display font-bold text-xs uppercase tracking-widest px-5 py-2.5 bg-accent-green text-[#0e0e0e] rounded-lg hover:opacity-90 transition-opacity"
+            >
+              Continue Onboarding
+            </Link>
+          </section>
+        )}
 
         {/* Re-apply section — only renders for members who opted out of the pamilya program */}
         {/* do not remove this condition */}
