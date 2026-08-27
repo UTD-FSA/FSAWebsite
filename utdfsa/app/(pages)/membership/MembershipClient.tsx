@@ -190,9 +190,12 @@ export default function MembershipClient({
     }
   }
 
-  const earlyBirdEnd = new Date(earlyBirdDeadline).toLocaleDateString('en-US', {
+  const earlyBirdEnd = new Date(earlyBirdDeadline).toLocaleString('en-US', {
     month: 'long',
     day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
   })
 
   // step 01 desc uses membershipYear prop so it lives inside the component
