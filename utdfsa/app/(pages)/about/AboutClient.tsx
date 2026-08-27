@@ -44,7 +44,7 @@ const OFFICERS_2025_2026 = [
   { position: 'Event Coordinator',   name: 'Kim Pham' },
   { position: 'Pamilya Chair',       name: 'Christopher Hay' },
   { position: 'Webmaster',           name: 'Adrian Hautea' },
-  { position: 'Sports Coordinator',  name: 'Nikhil Jeeva' },
+  { position: 'Sports Coordinator',  name: 'Aidan Liu' },
   { position: 'Sports Coordinator',  name: 'Shayna Silvestre' },
   { position: 'Modern Director',     name: 'Livy Ker' },
   { position: 'Cultural Director',   name: 'Gianna Toledo' },
