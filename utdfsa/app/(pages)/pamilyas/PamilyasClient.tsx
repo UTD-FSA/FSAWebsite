@@ -697,7 +697,7 @@ export default function PamilyasClient({
               <FormCard
                 photo="/ading-form.png"
                 title="ADING FORM"
-                caption="New to FSA and looking for guidance? Start here."
+                caption="Looking for a Pamilya? Start here."
                 href={ading.href}
                 onClick={ading.onClick}
               />
@@ -707,7 +707,7 @@ export default function PamilyasClient({
               <FormCard
                 photo="/protect-form.png"
                 title="PAMILYA PROTECTION FORM"
-                caption="Reporting a pamilya concern? Click here."
+                caption="Have a Pamilya concern? We're here to help."
                 href={protection.href}
                 externalHref={protection.externalHref}
               />

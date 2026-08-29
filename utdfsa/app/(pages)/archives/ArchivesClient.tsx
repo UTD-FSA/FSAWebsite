@@ -249,9 +249,11 @@ export default function ArchivesClient({ galleries }: Props) {
           <div className="flex justify-center pt-10">
             <Link
               href="/membership"
-              className="text-[14px] font-medium text-[#7a7a7a] hover:text-[#75ba78] transition-colors"
+              className="text-[14px] font-medium text-[#7a7a7a] hover:text-[#75ba78] transition-colors text-center"
             >
-              Want to be in the next album? Become a Member →
+              Want to be in the next album?
+              <br />
+              Become a Member →
             </Link>
           </div>
         )}
