@@ -11,6 +11,7 @@ import { useState, useRef } from 'react'
 import Link from 'next/link'
 import Modal from '@/components/Modal'
 import RegisterModal from '@/app/(pages)/events/RegisterModal'
+import SectionHeader from '@/components/SectionHeader'
 import type { Event } from '@/types/database'
 import { getBadge } from '@/utils/eventTypes'
 import { useStaggeredReveal } from '@/lib/useRevealOnScroll'
@@ -74,15 +75,11 @@ export default function UpcomingEventsSection({ events, isMember, member, regist
   if (events.length === 0) return null
 
   return (
-    <section className="bg-brand-bg px-4 sm:px-8 lg:px-16 py-14 sm:py-20 lg:py-24">
+    <section id="upcoming-events" className="scroll-mt-20 bg-brand-bg px-4 sm:px-8 lg:px-16 pt-6 sm:pt-8 lg:pt-10 pb-14 sm:pb-20 lg:pb-24">
       <div className="max-w-[1241px] mx-auto">
 
-        {/* mobile: centered; sm+: left-aligned with divider line extending to the right */}
-        <div className="flex items-center gap-5 mb-10 lg:mb-14 justify-center sm:justify-start">
-          <h2 className="font-display font-black text-[29px] sm:text-[42px] lg:text-[51px] text-white tracking-[-1.5px] sm:tracking-[-2.5px] lg:tracking-[-3px] leading-none flex-none">
-            UPCOMING EVENTS
-          </h2>
-          <div className="hidden sm:block flex-1 h-px mt-1" style={{ background: 'rgba(255,255,255,0.15)' }} />
+        <div className="mb-10 lg:mb-14">
+          <SectionHeader index="03" title="Upcoming Events" />
         </div>
 
         {/* horizontal scrollable strip — matches "This Week" style on events page */}

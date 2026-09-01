@@ -1,65 +1,75 @@
 'use client'
 
 // ── MissionStatementSection.tsx ─────────────────────────────
-// homepage mission statement — scroll-reveals the Baybayin divider
-// and sweeps an animated underline under "service, leadership, and
-// unity" once the section enters the viewport
+// homepage mission statement — numbered section header, then a
+// text/photo split: both paragraphs stacked in the left column
+// (white lede closing on a green clause, muted support copy below
+// it), a 4-tile photo grid on the right.
+//
+// notes: white / green / muted only — no gold, and no highlight
+//        sweep behind the lede's closing clause (both removed
+//        deliberately; the green clause carries the emphasis now).
 //
 // data:  none — static copy, mirrors what used to live inline in app/page.tsx
 // ─────────────────────────────────────────────────────────────
 
 import { useRef } from 'react'
-import BaybayinRule from '@/components/BaybayinRule'
+import SectionHeader from '@/components/SectionHeader'
+import SmoothImage from '@/components/SmoothImage'
 import { useRevealOnScroll } from '@/lib/useRevealOnScroll'
 
+function MissionPhoto({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  return (
+    <div className={`relative overflow-hidden rounded-lg ${className ?? ''}`}>
+      <SmoothImage src={src} alt={alt} fill className="object-cover object-center" sizes="(max-width: 1024px) 50vw, 260px" quality={85} />
+    </div>
+  )
+}
+
 export default function MissionStatementSection() {
-  const dividerRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
-  const dividerVisible = useRevealOnScroll(dividerRef)
   const pillarsVisible = useRevealOnScroll(copyRef)
 
   return (
-    <section className="bg-section-bg px-4 sm:px-8 lg:px-16 py-14 sm:py-20 lg:py-24 min-h-[400px] lg:min-h-[575px]">
-      <div className="max-w-[1241px] mx-auto text-center">
-        <h2 className="font-display font-black text-[36px] sm:text-[52px] lg:text-[64px] xl:text-[96px] text-white tracking-[-2px] sm:tracking-[-3px] lg:tracking-[-4.8px] leading-none mb-6 lg:mb-8">
-          OUR MISSION
-        </h2>
+    <section className="bg-section-bg px-4 sm:px-8 lg:px-16 pt-6 sm:pt-8 lg:pt-10 pb-6 sm:pb-8 lg:pb-10">
+      <div className="max-w-[1241px] mx-auto">
+        <SectionHeader index="02" title="Our Mission" baybayin="ᜋᜒᜐ᜔ᜌᜓᜈ᜔" />
 
-        <div ref={dividerRef}>
-          <BaybayinRule word="ᜋᜒᜐ᜔ᜌᜓᜈ᜔" size="clamp(16px,2.6vw,40px)" reveal={dividerVisible} delayMs={140} draw />
-        </div>
-
-        <div ref={copyRef} className="font-sans text-[16px] sm:text-[18px] xl:text-[24px] text-white/60 leading-relaxed max-w-[1100px] mx-auto space-y-6 mt-10 lg:mt-16">
-          <p>
-            Founded in 2001, the <strong className="font-bold text-accent-green">Filipino Student Association</strong> at{' '}
-            <strong className="font-bold text-accent-gold">The University of Texas at Dallas</strong> is committed to promoting
-            Filipino culture while empowering students to{' '}
-            <strong
-              className="relative z-0 inline-block font-bold text-white"
-              style={{ paddingInline: '0.22em', marginInline: '-0.22em' }}
+        <div ref={copyRef} className="grid lg:grid-cols-[1.15fr_1fr] gap-8 lg:gap-12 pt-8">
+          <div className="flex flex-col gap-6">
+            <p className="font-sans text-[20px] md:text-[23px] leading-snug text-white">
+              Founded in 2001, the Filipino Student Association at UT Dallas is committed to
+              promoting Filipino culture while empowering students to{' '}
+              <strong className="font-normal text-accent-green">grow as leaders, serve their
+              communities, and make a significant impact on campus.</strong>
+            </p>
+            <p
+              className="font-sans text-[16px] leading-relaxed text-[#e8e4dd]/60"
+              style={{
+                opacity: pillarsVisible ? 1 : 0,
+                transform: pillarsVisible ? 'translateY(0)' : 'translateY(10px)',
+                transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
+                transitionDelay: pillarsVisible ? '180ms' : '0ms',
+              }}
             >
-              <span
-                aria-hidden="true"
-                style={{
-                  position: 'absolute',
-                  inset: '-0.06em 0',
-                  zIndex: -1,
-                  borderRadius: '4px',
-                  background: 'rgba(117,186,120,0.32)',
-                  transformOrigin: 'left center',
-                  transform: pillarsVisible ? 'scaleX(1)' : 'scaleX(0)',
-                  transition: 'transform 1200ms cubic-bezier(0.16, 1, 0.3, 1)',
-                  transitionDelay: pillarsVisible ? '300ms' : '0ms',
-                }}
-              />
-              grow as leaders, serve their communities, and make a significant impact on campus.
-            </strong>
-          </p>
-          <p>
-            Through cultural education, volunteer initiatives, and leadership opportunities, we strive to{' '}
-            <strong className="font-bold text-white">inspire pride in our heritage</strong> while helping students of all
-            backgrounds <strong className="font-bold text-white">grow and support one another.</strong>
-          </p>
+              Through cultural education, volunteer initiatives, and leadership opportunities, we
+              strive to inspire pride in our heritage while helping students of all backgrounds
+              grow and support one another.
+            </p>
+          </div>
+
+          {/* photo grid — 2 columns, 2 stacked photos each, independent heights
+              per the reference layout (roughly 55/45 top/bottom) */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-3">
+              <MissionPhoto src="/mission-photo-1.jpg" alt="UTD FSA members" className="h-[180px]" />
+              <MissionPhoto src="/mission-photo-2.jpg" alt="UTD FSA members" className="h-[140px]" />
+            </div>
+            <div className="flex flex-col gap-3">
+              <MissionPhoto src="/mission-photo-3.jpg" alt="UTD FSA members" className="h-[220px]" />
+              <MissionPhoto src="/mission-photo-4.jpg" alt="UTD FSA pamilya" className="h-[160px]" />
+            </div>
+          </div>
         </div>
       </div>
     </section>

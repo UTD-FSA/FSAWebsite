@@ -268,7 +268,7 @@ export default function MembershipClient({
             <AnimatedTitle as="div" animation="fadeIn" delay={200} className="hidden md:grid grid-cols-2 grid-rows-[170px_170px] gap-3.5 relative z-10">
               <div className="row-span-2 relative rounded-[18px] overflow-hidden border border-white/[0.08]">
                 <Image
-                  src="/mem1.jpg"
+                  src="/membership-photo-1.jpg"
                   alt="FSA pamilya"
                   fill
                   className="object-cover"
@@ -277,7 +277,7 @@ export default function MembershipClient({
               </div>
               <div className="relative rounded-[18px] overflow-hidden border border-white/[0.08]">
                 <Image
-                  src="/mem2.jpg"
+                  src="/membership-photo-2.jpg"
                   alt="FSA events"
                   fill
                   className="object-cover"
@@ -286,7 +286,7 @@ export default function MembershipClient({
               </div>
               <div className="relative rounded-[18px] overflow-hidden border border-white/[0.08]">
                 <Image
-                  src="/mem3.jpg"
+                  src="/membership-photo-3.jpg"
                   alt="Goodphil"
                   fill
                   className="object-cover"
@@ -300,7 +300,7 @@ export default function MembershipClient({
           {/* mobile: single pamilya photo at 3:2 below the copy block */}
           <AnimatedTitle as="div" animation="fadeIn" delay={100} className="md:hidden relative aspect-[3/2] rounded-2xl overflow-hidden border border-white/[0.08] mt-8 z-10">
             <Image
-              src="/mem1.jpg"
+              src="/membership-photo-1.jpg"
               alt="FSA pamilya"
               fill
               className="object-cover"

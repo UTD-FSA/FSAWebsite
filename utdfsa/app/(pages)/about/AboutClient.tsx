@@ -15,11 +15,10 @@
 // ─────────────────────────────────────────────────────────────
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import SmoothImage from '@/components/SmoothImage'
-import AnimatedTitle from '@/components/AnimatedTitle'
-import BaybayinRule from '@/components/BaybayinRule'
+import { useState, useRef } from 'react'
 import QuickNavRail from '@/components/QuickNavRail'
+import PageHero from '@/components/PageHero'
+import SectionHeader from '@/components/SectionHeader'
 import { useRevealOnScroll, useStaggeredReveal } from '@/lib/useRevealOnScroll'
 
 const ABOUT_NAV_ITEMS = [
@@ -31,15 +30,16 @@ const ABOUT_NAV_ITEMS = [
 
 // ── officer data ──────────────────────────────────────────────
 // update position/name entries each year; add new year block to PAST_OFFICERS
-// leadership (President, VP) render in their own dedicated row above the rest of the board
+// leadership (President, VP, Secretary, Treasurer) render in their own dedicated
+// row above the rest of the board
 const OFFICERS_LEADERSHIP = [
   { position: 'President',           name: 'Genna Ibarra' },
   { position: 'Vice President',      name: 'Simon Choi' },
+  { position: 'Secretary',           name: 'Kevalin Staats' },
+  { position: 'Treasurer',           name: 'Tristan Casillan' },
 ]
 
 const OFFICERS_2025_2026 = [
-  { position: 'Secretary',           name: 'Kevalin Staats' },
-  { position: 'Treasurer',           name: 'Tristan Casillan' },
   { position: 'Board Advisor',       name: 'Leo dos Remedios' },
   { position: 'Event Coordinator',   name: 'Kim Pham' },
   { position: 'Pamilya Chair',       name: 'Christopher Hay' },
@@ -226,13 +226,6 @@ export default function AboutClient() {
     setOpenYear(prev => prev === year ? '' : year)
   }
 
-  // hero Baybayin draw-in fires on mount (matches the Goodphil subpages' cinematic hero)
-  const [heroIn, setHeroIn] = useState(false)
-  useEffect(() => {
-    const raf = requestAnimationFrame(() => setHeroIn(true))
-    return () => cancelAnimationFrame(raf)
-  }, [])
-
   // ── current officer board — staggered fade-up entrance ────
   // delay is scoped to the card's row (grouped by offsetTop), not its global index —
   // an 18-card grid staggered globally leaves the last card blank ~1.4s after it is
@@ -272,75 +265,56 @@ export default function AboutClient() {
       <QuickNavRail mode="sections" ariaLabel="About page sections" items={ABOUT_NAV_ITEMS} />
 
       {/* ── SECTION 1 — WHO WE ARE ──────────────────────────────────── */}
-      {/* hero height: compact on mobile, taller on desktop */}
-      <section className="relative w-full overflow-hidden"
-        style={{ minHeight: 'clamp(320px, 50vh, 620px)' }}>
+      <PageHero
+        src="/about-us-hero.jpg"
+        alt="UTD FSA"
+        eyebrow="EST. 2001 · UT DALLAS"
+        title="About Us"
+        baybayin="ᜆᜓᜅ᜔ᜃᜓᜎ᜔"
+        objectPosition="object-center"
+        heightClassName="h-[45vh] md:h-[500px]"
+      />
 
-        {/* background photo — object-center keeps composition; settles in from a
-            slight zoom (1.08 → 1.0) as the title lifts on top of it, matching the
-            cinematic hero on the Goodphil subpages */}
-        <div className="absolute inset-0 z-0" style={{ animation: 'heroPhotoSettle 1200ms cubic-bezier(0.16, 1, 0.3, 1) both' }}>
-          <SmoothImage
-            src="/about-us-hero.jpg"
-            alt="UTD FSA"
-            fill
-            className="object-cover object-center"
-            preload
-            quality={90}
-            sizes="100vw"
-          />
-        </div>
-
-        {/* dark overlay — ensures text stays readable over any photo */}
-        <div className="absolute inset-0 z-10 bg-black/55" />
-
-        {/* text content — centered, sits above overlay */}
-        <div className="relative z-20 flex flex-col items-center justify-center text-center px-6 py-20 min-h-[inherit]"
-          style={{ minHeight: 'clamp(320px, 50vh, 620px)' }}>
-          <div className="max-w-3xl mx-auto">
-
-            <AnimatedTitle
-              as="h1"
-              animation="fadeUp"
-              ease="cubic-bezier(0.16, 1, 0.3, 1)"
-              className="font-display font-black text-white mb-3"
-              style={{ fontSize: 'clamp(36px, 5.5vw, 80px)', letterSpacing: '-0.02em' }}
-            >
-              ABOUT US
-            </AnimatedTitle>
-            <div className="mb-8">
-              <BaybayinRule word="ᜆᜓᜅ᜔ᜃᜓᜎ᜔" size="clamp(14px,2.2vw,32px)" reveal={heroIn} delayMs={80} draw />
-            </div>
-            <AnimatedTitle
-              as="p"
-              animation="fadeUp"
-              delay={150}
-              className="font-sans text-white leading-relaxed max-w-2xl mx-auto"
-              style={{ fontSize: 'clamp(15px, 1.5vw, 18px)' }}
-            >
-              Throughout the year, UTD FSA offers a wide variety of opportunities for members to get involved both on and off campus. 
-              From our Pamilya program, GoodPhil and Isang Mahal performances, cultural showcases, and some of our most anticipated social events, there's always something to look forward to! 
-              No matter your interests, every experience is an opportunity to meet new people, try something new, and become part of our traditions.
-
-            </AnimatedTitle>
-
+      {/* ── SECTION 1.5 — OUR IMPACT ─────────────────────────────────── */}
+      <section className="py-16 px-6 bg-brand-bg">
+        <div className="max-w-6xl mx-auto">
+          <SectionHeader index="01" title="Our Impact" baybayin="ᜋᜒᜐ᜔ᜌᜓᜈ᜔" />
+          <div className="grid lg:grid-cols-[1.15fr_1fr] gap-8 lg:gap-12 pt-8">
+            <p className="font-sans text-[20px] md:text-[23px] leading-snug text-white">
+              Throughout the year, <strong className="font-medium text-accent-green">UTD FSA
+              offers a wide variety of opportunities</strong> for members to get involved both
+              on and off campus.
+            </p>
+            <p className="font-sans text-[16px] leading-relaxed text-[#e8e4dd]/60">
+              From our Pamilya program, GoodPhil and Isang Mahal performances, cultural
+              showcases, and some of our most anticipated social events, there&rsquo;s always
+              something to look forward to! No matter your interests, every experience is an
+              opportunity to meet new people, try something new, and{' '}
+              <strong className="font-semibold text-white">become part of our
+              traditions.</strong>
+            </p>
           </div>
         </div>
-
       </section>
 
       {/* ── SECTION 2 — OFFICER BOARD ───────────────────────────────── */}
       <section id="officers" className="py-16 px-6 bg-section-bg scroll-mt-20">
         <div className="max-w-6xl mx-auto">
+          {/* centered plain heading, not a numbered SectionHeader — the board is
+              the page's own masthead rather than another numbered read-through */}
           <h2
-            className="font-display font-black text-white text-center mb-12"
+            className="font-display font-black text-white text-center"
             style={{ fontSize: 'clamp(16px, 2.2vw, 32px)', letterSpacing: '0.02em' }}
           >
-            2026 - 2027 OFFICER BOARD
+            2026 – 2027 Officer Board
           </h2>
-          <div ref={boardGridRef} className="flex flex-col gap-6">
-            {/* leadership row — President + VP always share their own row, 2-up at every breakpoint */}
-            <div className="grid grid-cols-2 gap-6 max-w-xl mx-auto w-full">
+          <p className="text-center font-display font-semibold text-[12px] tracking-[0.14em] text-accent-green mt-10">
+            EXECUTIVE BOARD
+          </p>
+          <div ref={boardGridRef} className="flex flex-col gap-6 mt-5">
+            {/* leadership row — President, VP, Secretary, Treasurer share their own
+                row, 2-up on mobile and 4-up from md on */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto w-full">
               {OFFICERS_LEADERSHIP.map(({ position, name }, i) => (
                 <div
                   key={`${position}-${name}`}
@@ -354,7 +328,7 @@ export default function AboutClient() {
                     className="relative w-full aspect-square flex items-center justify-center overflow-hidden"
                     style={{ background: AVATAR_TONES[i % AVATAR_TONES.length] }}
                   >
-                    <span className="font-display font-bold text-white/70 text-3xl tracking-wide">
+                    <span className="font-display font-bold text-[#e8e4dd]/70 text-3xl tracking-wide">
                       {initials(name)}
                     </span>
                   </div>
@@ -362,7 +336,7 @@ export default function AboutClient() {
                     <p className="font-sans font-bold text-white text-sm leading-snug mb-0.5">
                       {name}
                     </p>
-                    <p className="font-sans text-white/55 text-[13px] leading-snug">
+                    <p className="font-sans text-[#e8e4dd]/55 text-[13px] leading-snug">
                       {position}
                     </p>
                   </div>
@@ -371,6 +345,9 @@ export default function AboutClient() {
             </div>
 
             {/* remaining officer board — normal responsive grid */}
+            <p className="text-center font-display font-semibold text-[12px] tracking-[0.14em] text-[#e8e4dd]/50 mt-6 mb-1">
+              OFFICER BOARD
+            </p>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {OFFICERS_2025_2026.map(({ position, name }, i) => (
                 <div
@@ -385,7 +362,7 @@ export default function AboutClient() {
                     className="relative w-full aspect-square flex items-center justify-center overflow-hidden"
                     style={{ background: AVATAR_TONES[i % AVATAR_TONES.length] }}
                   >
-                    <span className="font-display font-bold text-white/70 text-3xl tracking-wide">
+                    <span className="font-display font-bold text-[#e8e4dd]/70 text-3xl tracking-wide">
                       {initials(name)}
                     </span>
                   </div>
@@ -393,7 +370,7 @@ export default function AboutClient() {
                     <p className="font-sans font-bold text-white text-sm leading-snug mb-0.5">
                       {name}
                     </p>
-                    <p className="font-sans text-white/55 text-[13px] leading-snug">
+                    <p className="font-sans text-[#e8e4dd]/55 text-[13px] leading-snug">
                       {position}
                     </p>
                   </div>
@@ -419,10 +396,10 @@ export default function AboutClient() {
             className="font-display font-black text-white mb-6"
             style={{ fontSize: 'clamp(16px, 2.2vw, 32px)', letterSpacing: '0.02em' }}
           >
-            GET IN TOUCH
+            Get in Touch
           </h2>
           <p
-            className="font-sans text-white/60 leading-relaxed mb-8"
+            className="font-sans text-[#e8e4dd]/60 leading-relaxed mb-8"
             style={{ fontSize: 'clamp(14px, 1.4vw, 17px)' }}
           >
             Have questions about UTD FSA? Reach out to us on Instagram! We respond to DMs and
@@ -447,7 +424,7 @@ export default function AboutClient() {
             className="font-display font-black text-white mb-10"
             style={{ fontSize: 'clamp(16px, 2.2vw, 32px)', letterSpacing: '0.02em' }}
           >
-            CONNECT WITH US
+            Connect with Us
           </h2>
           <div ref={connectGridRef} className="flex flex-wrap justify-center gap-4">
             {SOCIALS.map(({ label, href, icon }) => (
@@ -457,7 +434,7 @@ export default function AboutClient() {
                 href={href}
                 target={href === '#' ? undefined : '_blank'}
                 rel={href === '#' ? undefined : 'noopener noreferrer'}
-                className="flex flex-col items-center gap-3 px-8 py-6 bg-[#1a1a1a] border border-white/10 rounded-xl text-white/60 hover:text-white hover:brightness-110 hover:border-white/20 transition-all duration-200 min-w-[110px]"
+                className="flex flex-col items-center gap-3 px-8 py-6 bg-[#1a1a1a] border border-white/10 rounded-xl text-[#e8e4dd]/60 hover:text-white hover:brightness-110 hover:border-white/20 transition-all duration-200 min-w-[110px]"
               >
                 {icon}
                 <span className="font-sans text-xs font-semibold tracking-wide">{label}</span>
@@ -474,7 +451,7 @@ export default function AboutClient() {
             className="font-display font-black text-white text-center mb-10"
             style={{ fontSize: 'clamp(16px, 2.2vw, 32px)', letterSpacing: '0.02em' }}
           >
-            PAST OFFICER BOARDS
+            Past Officer Boards
           </h2>
           <div ref={pastGridRef} className="flex flex-col gap-3">
             {PAST_OFFICERS.map(({ year, officers }, i) => {
@@ -505,7 +482,7 @@ export default function AboutClient() {
                   >
                     <span className="font-sans font-bold text-white text-base">{displayYear}</span>
                     <ChevronDown
-                      className={`w-5 h-5 text-white/50 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                      className={`w-5 h-5 text-[#e8e4dd]/50 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                     />
                   </button>
                   {/* grid-template-rows 0fr→1fr — animates the collapse without touching
@@ -527,7 +504,7 @@ export default function AboutClient() {
                             key={`${year}-${position}`}
                             className={`flex flex-col sm:flex-row gap-1 sm:gap-6 py-3 ${i < officers.length - 1 ? 'border-b border-white/10' : ''}`}
                           >
-                            <span className="font-sans text-[11px] uppercase tracking-widest text-white/60 sm:w-52 sm:flex-shrink-0 sm:pt-0.5">
+                            <span className="font-sans text-[11px] uppercase tracking-widest text-[#e8e4dd]/60 sm:w-52 sm:flex-shrink-0 sm:pt-0.5">
                               {position}
                             </span>
                             <span className="font-sans text-sm text-white">{names}</span>

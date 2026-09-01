@@ -2,43 +2,45 @@
 // goodphil sports page — 9-sport grid, captain interest form,
 // and captain meeting booking cta
 //
-// notes: fully static; hero: sports-hero.jpg (/public);
-//        individual sport card photos listed inline per card;
-//        captain form and booking links are hardcoded google
-//        forms/calendar urls; no purple highlights anywhere;
-//        captain CTA stack sits beside the description (left-
-//        justified paragraph, same wide-grid pattern as the
-//        Cultural/Modern/Spirit mini CTAs); Our Sports section
-//        uses bg-brand-bg (#0e0e0e), same dark tone as the About
-//        page's "Get in Touch" section
+// notes: fully static; hero: sports-hero.jpg (/public); band photos are
+//        sports-photo-1.jpg, goodphil-games.jpg, sports-photo-3.jpg;
+//        sport photos live in the SPORTS array below (photo: null
+//        renders the mystery-sport placeholder tile); captain form
+//        and booking links are hardcoded google forms/calendar urls;
+//        no purple highlights anywhere; Our Sports section uses
+//        bg-brand-bg (#0e0e0e), same dark tone as the About page's
+//        "Get in Touch" section.
+//        copy palette is white / green / muted only, no gold.
 // ──────────────────────────────────────────────────────────
 
 'use client'
 
 import { useRef } from 'react'
 import SmoothImage from '@/components/SmoothImage'
-import AnimatedTitle from '@/components/AnimatedTitle'
-import BaybayinRule from '@/components/BaybayinRule'
 import GoodphilNavRail from '@/components/GoodphilNavRail'
+import PageHero from '@/components/PageHero'
+import PhotoBand from '@/components/PhotoBand'
+import SectionHeader from '@/components/SectionHeader'
 import { useRevealOnScroll, useStaggeredReveal } from '@/lib/useRevealOnScroll'
 
+// ── sport roster ──────────────────────────────────────────────
+// order is the display order; photo: null = the not-yet-announced tile
+const SPORTS: { name: string; photo: string | null }[] = [
+  { name: "Men's Basketball",   photo: '/sport-mens-basketball.jpg' },
+  { name: "Women's Basketball", photo: '/sport-womens-basketball.jpg' },
+  { name: "Men's Volleyball",   photo: '/sport-mens-volleyball.jpg' },
+  { name: "Women's Volleyball", photo: '/sport-womens-volleyball.jpg' },
+  { name: 'Coed Volleyball',    photo: '/sport-coed-volleyball.jpg' },
+  { name: "Men's Flag Football", photo: '/sport-mens-flag-football.jpg' },
+  { name: 'Coed Soccer',        photo: '/sport-coed-soccer.jpg' },
+  { name: 'Ultimate Frisbee',   photo: '/sport-ultimate-frisbee.jpg' },
+  { name: 'Mystery Sport: TBD', photo: null },
+]
+
 export default function SportsPage() {
-  // Right-column reveal (the two captain CTA cards) — ref sits on that
-  // column itself, not the whole Section-2 <section>. The reveal hook
-  // triggers off the viewport (top edge crossing a fixed line down the
-  // screen), not a fraction of the ref'd element's own height, so a tall
-  // <section> and a short column inside it reveal at the same moment — still
-  // worth targeting the column directly so its entrance timing matches the
-  // CTA cards visually settling into place, not the section's outer edge.
+  // captain CTA cards — own scroll trigger since they sit below the fold
   const headingRef = useRef<HTMLDivElement>(null)
   const headingVisible = useRevealOnScroll(headingRef)
-
-  // title (h2) + Baybayin + paragraph now share one scroll trigger anchored on
-  // the centered header block itself — was gated on page-mount before, which
-  // meant the cascade played (and finished) while Section 2 was still off
-  // desktop's fold, out of sync with the CTA cards' own scroll trigger
-  const headerRef = useRef<HTMLDivElement>(null)
-  const titleVisible = useRevealOnScroll(headerRef)
 
   // sports card grid — row-staggered scroll-triggered fade-up (same pattern as
   // About's officer board), now with the shared never-blank + reduced-motion guard
@@ -65,125 +67,118 @@ export default function SportsPage() {
       <GoodphilNavRail />
 
       {/* ── SECTION 1 — HERO ──────────────────────────────────────── */}
-      <section className="relative w-full h-[40vh] md:h-[600px] overflow-hidden">
+      <PageHero
+        src="/sports-hero.jpg"
+        alt="UTD FSA Sports team"
+        eyebrow="GOODPHIL · SPORTS"
+        title="Sports"
+        baybayin="ᜉᜎᜃᜐᜈ᜔"
+        objectPosition="object-[center_20%]"
+      />
 
-        {/* Background layer: dark radial gradient (no bg PNG for Sports) */}
-        <div
-          className="absolute inset-0 z-0"
-          style={{
-            background:
-              'radial-gradient(ellipse at center, rgba(40,40,40,0.8) 0%, rgba(10,10,10,1) 100%)',
-          }}
-        />
+      {/* ── SECTION 2 — WHAT IS UTD FSA SPORTS? ──────────────────── */}
+      <section className="bg-section-bg py-16 px-6">
+        <div className="max-w-6xl mx-auto">
+          <SectionHeader index="01" title="What Is UTD FSA Sports?" baybayin="ᜉᜎᜃᜐᜈ᜔" />
 
-        {/* Middle layer: sports-hero.jpg — full-bleed cover at all sizes, settles
-            in from a slight zoom (1.08 → 1.0) as the title lifts on top of it */}
-        <div className="absolute inset-0 z-10" style={{ animation: 'heroPhotoSettle 1200ms cubic-bezier(0.16, 1, 0.3, 1) both' }}>
-          <SmoothImage
-            src="/sports-hero.jpg"
-            alt="UTD FSA Sports team"
-            fill
-            className="object-cover object-[center_20%]"
-            preload
-            quality={85}
-            sizes="100vw"
-          />
+          <div className="grid lg:grid-cols-[1.15fr_1fr] gap-8 lg:gap-12 pt-8">
+            <p className="font-sans text-[20px] md:text-[23px] leading-snug text-white">
+              UTD FSA Sports is where our{' '}
+              <strong className="font-normal text-accent-green">competitive spirit comes
+              alive.</strong> Throughout the weekend, members represent UTD in a variety of sports
+              while competing against Filipino Student Associations from across Texas.
+            </p>
+            <p className="font-sans text-[16px] leading-relaxed text-[#e8e4dd]/60">
+              From first-time players to seasoned competitors, there&rsquo;s a place for everyone.
+              Whether you&rsquo;re chasing a championship or trying a new sport with friends,
+              it&rsquo;s all about teamwork, sportsmanship, and{' '}
+              <strong className="font-semibold text-white">creating lasting memories both on and
+              off the court</strong>.
+            </p>
+          </div>
         </div>
-
-        {/* Top layer: SPORTS title + Baybayin, centered over hero photo — rises
-            up as it fades in, on an ease-out-expo curve for a snappier settle */}
-        <AnimatedTitle
-          as="div"
-          animation="fadeUp"
-          ease="cubic-bezier(0.16, 1, 0.3, 1)"
-          delay={150}
-          className="absolute inset-0 z-30 flex flex-col items-center justify-center select-none"
-          style={{ gap: 'clamp(12px, 1.5vw, 24px)' }}
-        >
-          <h1
-            className="text-center font-display font-black text-white leading-none"
-            style={{
-              fontSize: 'clamp(48px, 8.5vw, 128px)',
-              textShadow: '0px 4px 28px rgba(0,0,0,0.72), 0px 2px 8px rgba(0,0,0,0.5)',
-            }}
-          >
-            SPORTS
-          </h1>
-        </AnimatedTitle>
-
       </section>
 
-      {/* ── SECTION 2 — WHAT IS GOODPHIL SPORTS? ─────────────────── */}
-      <section className="bg-section-bg py-16 px-6 md:px-8">
+      {/* ── SECTION 2.5 — PHOTO BAND ─────────────────────────────── */}
+      <PhotoBand
+        photos={[
+          { src: '/sports-photo-1.jpg', alt: 'UTD FSA Sports at Goodphil', objectPosition: 'object-center' },
+          { src: '/goodphil-games.jpg', alt: 'UTD FSA Sports at Goodphil', objectPosition: 'object-center' },
+          { src: '/sports-photo-3.jpg', alt: 'UTD FSA Sports at Goodphil', objectPosition: 'object-center' },
+        ]}
+      />
 
-        {/* heading + Baybayin stay centered, matching the Cultural/Modern/Spirit convention;
-            ref anchors the shared scroll trigger for this whole header→paragraph cascade */}
-        <div ref={headerRef} className="max-w-3xl mx-auto text-center mb-10 md:mb-12">
-          <h2
-            className="font-display font-black text-white mb-4"
-            style={{
-              fontSize: 'clamp(28px, 3.5vw, 44px)',
-              letterSpacing: '-0.01em',
-              opacity: titleVisible ? 1 : 0,
-              transform: titleVisible ? 'translateY(0)' : 'translateY(10px)',
-              transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
-            }}
-          >
-            WHAT IS UTD FSA SPORTS?
-          </h2>
-          <BaybayinRule word="ᜉᜎᜃᜐᜈ᜔" size="clamp(16px,2vw,27px)" reveal={titleVisible} delayMs={140} draw />
+      {/* ── SECTION 3 — OUR SPORTS ───────────────────────────────── */}
+      <section className="bg-brand-bg py-16 px-6">
+        <div className="max-w-6xl mx-auto">
+          <SectionHeader index="02" title="Our Sports" baybayin="ᜉᜎᜃᜐᜈ᜔" />
+
+          {/* photo tiles with the label set over the crop — the bordered
+              card chrome around each photo read as nine separate widgets
+              rather than one roster */}
+          <div ref={sportsGridRef} className="grid grid-cols-2 md:grid-cols-3 gap-1 pt-10">
+            {SPORTS.map(({ name, photo }) => (
+              <div key={name} className="relative aspect-[4/3] overflow-hidden group">
+                {photo ? (
+                  <SmoothImage
+                    src={photo}
+                    alt={name}
+                    fill
+                    className="object-cover object-center transform-gpu will-change-transform group-hover:scale-[1.04]"
+                    sizes="(max-width: 640px) 50vw, 33vw"
+                    quality={85}
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-[#111] flex items-center justify-center">
+                    <span className="text-5xl" aria-hidden="true">❓</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+                <h3
+                  className="absolute bottom-3 left-4 font-display font-bold text-white leading-none"
+                  style={{ fontSize: '19px', letterSpacing: '-0.01em' }}
+                >
+                  {name}
+                </h3>
+              </div>
+            ))}
+          </div>
         </div>
+      </section>
 
-        {/* left-justified paragraph + captain CTA stack — same wide-grid pattern
-            as Cultural/Modern/Spirit's mini CTAs, but the right column holds the
-            two captain CTA cards (Sports has no team photo collage) */}
-        <div className="max-w-[1400px] mx-auto grid lg:grid-cols-[1fr_460px] gap-10 lg:gap-16 items-start">
-          <p
-            className="font-sans leading-relaxed text-white/60 text-left"
-            style={{
-              fontSize: 'clamp(16px, 1.9vw, 29px)',
-              opacity: titleVisible ? 1 : 0,
-              transform: titleVisible ? 'translateY(0)' : 'translateY(10px)',
-              transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
-              transitionDelay: titleVisible ? '510ms' : '0ms',
-            }}
-          >
-            <strong className="font-bold text-white">UTD FSA Sports</strong>
-            {' '}is where UTD FSA&apos;s <strong className="font-bold text-accent-green">competitive spirit comes alive.</strong> Throughout the weekend, members represent UTD in a variety of sports while competing against Filipino Student Associations from across Texas.
-            From first-time players to seasoned competitors, <strong className="font-bold text-accent-green">there's a place for everyone!</strong> You'll build friendships, challenge yourself, and experience the excitement of representing UTD alongside your teammates. Whether you're <strong className="font-bold text-accent-gold">chasing a championship or trying a new sport with friends</strong>, it's all about teamwork, sportsmanship, and <strong className="font-bold text-accent-green">creating lasting memories both on and off the court.</strong>
-          </p>
+      {/* ── SECTION 4 — CAPTAINS ─────────────────────────────────── */}
+      <section className="bg-section-bg py-16 px-6">
+        <div className="max-w-6xl mx-auto">
+          <SectionHeader index="03" title="Captains" />
 
-          <div ref={headingRef} className="flex flex-col gap-6 mx-auto lg:mx-0 w-full max-w-[460px]">
+          <div ref={headingRef} className="grid sm:grid-cols-2 gap-6 pt-10">
 
-            {/* primary cta — captain interest form; triggers alongside the
-                paragraph (same headingVisible trigger, same 320ms delay) */}
+            {/* primary cta — captain interest form */}
             <div
-              className="relative border border-white/20 rounded-[22px] px-8 py-10 text-center overflow-hidden"
+              className="bg-[#141414] border border-white/10 rounded-2xl px-8 py-10 text-center"
               style={{
-                background: 'linear-gradient(180deg, #191919 0%, #111111 100%)',
                 opacity: headingVisible ? 1 : 0,
                 transform: headingVisible ? 'translateY(0)' : 'translateY(10px)',
                 transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
-                transitionDelay: headingVisible ? '320ms' : '0ms',
               }}
             >
               <h3
                 className="font-display font-black text-white mb-3"
                 style={{ fontSize: 'clamp(20px, 2.2vw, 26px)', letterSpacing: '-0.02em', lineHeight: 1.1 }}
               >
-                WANT TO CAPTAIN A SPORT?
+                Want to Captain a Sport?
               </h3>
               <p
-                className="font-sans text-white/60 mb-6"
+                className="font-sans text-[#e8e4dd]/60 mb-6"
                 style={{ fontSize: '14.5px', lineHeight: 1.6, fontWeight: 500 }}
               >
-                Sports captains lead their team throughout Goodphil season. If you&apos;re interested in taking on a leadership role, fill out the captain interest form below.
+                Sports captains lead their team throughout Goodphil season. If you&apos;re interested in taking on a leadership role, fill out the captain interest form!
               </p>
               <a
                 href="https://docs.google.com/forms/d/e/1FAIpQLSc4CPQXu9A_CaCMmZO9xJiUl_7Up5R8bBxLPKlo2fFZpuxFGg/viewform?pli=1"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-accent-green text-[#0e0e0e] rounded-[13px] font-sans font-bold transition-all duration-200 hover:brightness-[1.08]"
+                className="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-accent-green text-[#0e0e0e] rounded-xl font-sans font-bold transition-all duration-200 hover:brightness-[1.08]"
                 style={{ fontSize: '14px', letterSpacing: '0.01em' }}
               >
                 Fill Out Captain Interest Form
@@ -191,23 +186,21 @@ export default function SportsPage() {
               </a>
             </div>
 
-            {/* secondary cta — book a captain meeting; same trigger + delay as
-                the primary CTA and the paragraph above */}
+            {/* secondary cta — book a captain meeting */}
             <div
-              className="border border-white/20 rounded-[22px] px-8 py-10 text-center flex flex-col items-center"
+              className="bg-[#141414] border border-white/10 rounded-2xl px-8 py-10 text-center flex flex-col items-center"
               style={{
-                background: 'linear-gradient(180deg, #191919 0%, #111111 100%)',
                 opacity: headingVisible ? 1 : 0,
                 transform: headingVisible ? 'translateY(0)' : 'translateY(10px)',
                 transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
-                transitionDelay: headingVisible ? '320ms' : '0ms',
+                transitionDelay: headingVisible ? '80ms' : '0ms',
               }}
             >
               <h3
                 className="font-display font-black text-white mb-3"
                 style={{ fontSize: 'clamp(20px, 2.2vw, 26px)', letterSpacing: '-0.02em', lineHeight: 1.1 }}
               >
-                BOOK A CAPTAIN MEETING
+                Book a Captain Meeting
               </h3>
               <p
                 className="font-sans text-[#8a8a8a] mb-6"
@@ -219,173 +212,12 @@ export default function SportsPage() {
                 href="https://calendar.app.google/DeGvXnzB5Ux2DEQa8"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 border border-white/40 text-white/80 rounded-[13px] font-sans font-bold transition-all duration-200 hover:border-white/60 hover:text-white"
+                className="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 border border-white/40 text-[#e8e4dd]/80 rounded-xl font-sans font-bold transition-all duration-200 hover:border-white/60 hover:text-white"
                 style={{ fontSize: '14px', letterSpacing: '0.01em' }}
               >
                 Book a Meeting
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
               </a>
-            </div>
-
-          </div>
-        </div>
-
-      </section>
-
-      {/* ── SECTION 3 — OUR SPORTS ───────────────────────────────── */}
-      <section className="bg-brand-bg py-16 px-6 md:px-8">
-        <div className="max-w-6xl mx-auto">
-
-          <h2 className="font-display font-black text-white text-center mb-8" style={{ fontSize: 'clamp(28px, 3.5vw, 44px)', letterSpacing: '-0.01em' }}>
-            OUR SPORTS
-          </h2>
-
-          <div ref={sportsGridRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-            {/* Card 1: Men's Basketball — /mens-bbal.jpg */}
-            <div className="bg-[#181818] border border-white/[0.12] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
-              <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <SmoothImage
-                  src="/mens-bbal.jpg"
-                  alt="Men's Basketball"
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  quality={85}
-                />
-              </div>
-              <div className="px-5 py-[18px]">
-                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Men&apos;s Basketball</h3>
-              </div>
-            </div>
-
-            {/* Card 2: Women's Basketball — /womens-bbal.jpg */}
-            <div className="bg-[#181818] border border-white/[0.12] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
-              <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <SmoothImage
-                  src="/womens-bbal.jpg"
-                  alt="Women's Basketball"
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  quality={85}
-                />
-              </div>
-              <div className="px-5 py-[18px]">
-                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Women&apos;s Basketball</h3>
-              </div>
-            </div>
-
-            {/* Card 3: Men's Volleyball — /mens-vb.jpg */}
-            <div className="bg-[#181818] border border-white/[0.12] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
-              <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <SmoothImage
-                  src="/mens-vb.jpg"
-                  alt="Men's Volleyball"
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  quality={85}
-                />
-              </div>
-              <div className="px-5 py-[18px]">
-                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Men&apos;s Volleyball</h3>
-              </div>
-            </div>
-
-            {/* Card 4: Women's Volleyball — /womens-vb.jpg */}
-            <div className="bg-[#181818] border border-white/[0.12] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
-              <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <SmoothImage
-                  src="/womens-vb.jpg"
-                  alt="Women's Volleyball"
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  quality={85}
-                />
-              </div>
-              <div className="px-5 py-[18px]">
-                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Women&apos;s Volleyball</h3>
-              </div>
-            </div>
-
-            {/* Card 5: Coed Volleyball — /coed-vb.jpg */}
-            <div className="bg-[#181818] border border-white/[0.12] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
-              <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <SmoothImage
-                  src="/coed-vb.jpg"
-                  alt="Coed Volleyball"
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  quality={85}
-                />
-              </div>
-              <div className="px-5 py-[18px]">
-                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Coed Volleyball</h3>
-              </div>
-            </div>
-
-            {/* Card 6: Men's Flag Football — /mens-ff.jpg */}
-            <div className="bg-[#181818] border border-white/[0.12] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
-              <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <SmoothImage
-                  src="/mens-ff.jpg"
-                  alt="Men's Flag Football"
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  quality={85}
-                />
-              </div>
-              <div className="px-5 py-[18px]">
-                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Men&apos;s Flag Football</h3>
-              </div>
-            </div>
-
-            {/* Card 7: Coed Soccer — /coed-soccer.jpg */}
-            <div className="bg-[#181818] border border-white/[0.12] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
-              <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <SmoothImage
-                  src="/coed-soccer.jpg"
-                  alt="Coed Soccer"
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  quality={85}
-                />
-              </div>
-              <div className="px-5 py-[18px]">
-                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Coed Soccer</h3>
-              </div>
-            </div>
-
-            {/* Card 8: Ultimate Frisbee — /ultimate-frisbee.jpg */}
-            <div className="bg-[#181818] border border-white/[0.12] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
-              <div className="relative w-full aspect-video overflow-hidden rounded-t-xl">
-                <SmoothImage
-                  src="/ultimate-frisbee.jpg"
-                  alt="Ultimate Frisbee"
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  quality={85}
-                />
-              </div>
-              <div className="px-5 py-[18px]">
-                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Ultimate Frisbee</h3>
-              </div>
-            </div>
-
-            {/* Card 9: Super Secret Special Sport — dark placeholder, no photo */}
-            <div className="bg-[#181818] border border-white/[0.12] rounded-xl overflow-hidden transition-all duration-200 hover:border-white/20 hover:brightness-105">
-              <div className="relative w-full aspect-video overflow-hidden rounded-t-xl bg-[#111] flex items-center justify-center border-b border-white/[0.08]">
-                <span className="text-6xl">❓</span>
-              </div>
-              <div className="px-5 py-[18px]">
-                <h3 className="font-display font-bold text-white" style={{ fontSize: '19px', letterSpacing: '-0.01em' }}>Mystery Sport: TBD</h3>
-              </div>
             </div>
 
           </div>

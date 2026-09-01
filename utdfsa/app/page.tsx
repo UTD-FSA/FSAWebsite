@@ -13,6 +13,11 @@
 //        one instance is enough per Google's guidance, and reading x-nonce for
 //        it is what used to force every route in the app to render dynamically;
 //        this page is already dynamic (cookies() below), so it's a free home.
+//        UpcomingEvents is its own async component wrapped in Suspense — it's
+//        the only part of the page that needs auth/member/registration data,
+//        so the hero/marquee/mission-statement stream immediately instead of
+//        waiting on those Supabase round trips (see UpcomingEventsSkeleton
+//        below for the loading placeholder).
 // ─────────────────────────────────────────────────────────────
 
 import type { Metadata } from "next"
@@ -20,9 +25,9 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 }
 
+import { Suspense } from "react"
 import { headers } from "next/headers"
 import SmoothImage from "@/components/SmoothImage"
-import PhotoCarousel from "@/components/PhotoCarousel"
 import HeroSection from "@/components/HeroSection"
 import UpcomingEventsSection from "@/components/UpcomingEventsSection"
 import MissionStatementSection from "@/components/MissionStatementSection"
@@ -52,26 +57,27 @@ const ORGANIZATION_JSON_LD = {
   ],
 }
 
-export default async function Home() {
-  // nonce set per-request by proxy.ts — required for the inline JSON-LD script below
-  // to run under a nonce-based CSP (script-src no longer allows 'unsafe-inline')
-  const nonce = (await headers()).get('x-nonce')
-
+// ── upcoming events — isolated async boundary ─────────────────
+// resolves caller server-side — same pattern as app/(pages)/events/page.tsx — so the
+// Register/Already-registered button state is correct on first paint instead of
+// popping in after a client-side auth/registration waterfall.
+// events + auth are independent, so they're fetched in parallel; member and
+// registration lookups stay sequential since each depends on the previous result.
+async function UpcomingEvents() {
   const admin = createAdminClient()
+  const supabase = await createUserClient()
+
+  const [visibleEvents, { data: { user } }] = await Promise.all([
+    getCachedVisibleEvents(),
+    supabase.auth.getUser(),
+  ])
 
   // filtered/sliced live (not baked into the cached query) so "upcoming" stays
   // correct as events start, without needing a separate cache entry per window
-  const visibleEvents = await getCachedVisibleEvents()
   const now = new Date()
   const upcomingEvents = visibleEvents
     .filter(e => new Date(e.event_date) >= now)
     .slice(0, 4)
-
-  // resolve caller server-side — same pattern as app/(pages)/events/page.tsx — so the
-  // Register/Already-registered button state is correct on first paint instead of
-  // popping in after a client-side auth/registration waterfall
-  const supabase = await createUserClient()
-  const { data: { user } } = await supabase.auth.getUser()
 
   let member: {
     id: string
@@ -105,6 +111,47 @@ export default async function Home() {
   }
 
   const isMember = isMembershipActive(member)
+
+  return (
+    <UpcomingEventsSection
+      events={upcomingEvents}
+      isMember={isMember}
+      member={member}
+      registeredEventIds={[...registeredEventIds]}
+    />
+  )
+}
+
+// loading placeholder shown while UpcomingEvents resolves — mirrors the real
+// section's container/heading so there's no large layout jump on swap-in
+function UpcomingEventsSkeleton() {
+  return (
+    <section className="bg-brand-bg px-4 sm:px-8 lg:px-16 py-14 sm:py-20 lg:py-24">
+      <div className="max-w-[1241px] mx-auto">
+        <div className="flex items-center gap-5 mb-10 lg:mb-14 justify-center sm:justify-start">
+          <h2 className="font-display font-black text-[29px] sm:text-[42px] lg:text-[51px] text-white tracking-[-1.5px] sm:tracking-[-2.5px] lg:tracking-[-3px] leading-none flex-none">
+            UPCOMING EVENTS
+          </h2>
+          <div className="hidden sm:block flex-1 h-px mt-1" style={{ background: 'rgba(255,255,255,0.15)' }} />
+        </div>
+        <div className="flex gap-4 overflow-hidden pb-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex-none rounded-2xl animate-pulse"
+              style={{ width: '240px', height: '108px', background: '#161616', border: '1px solid rgba(255,255,255,0.08)' }}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+export default async function Home() {
+  // nonce set per-request by proxy.ts — required for the inline JSON-LD script below
+  // to run under a nonce-based CSP (script-src no longer allows 'unsafe-inline')
+  const nonce = (await headers()).get('x-nonce')
 
   return (
     <main className="bg-brand-bg text-white overflow-x-clip">
@@ -145,9 +192,9 @@ export default async function Home() {
         {/* 8 copies so the loop seam is never visible — animation slides to -50% */}
         <div className="flex gap-[34px] whitespace-nowrap w-max animate-marquee">
           {Array.from({ length: 8 }).map((_, i) => (
-            <span key={i} className="inline-flex items-center gap-[34px] font-display font-bold text-[15px] sm:text-[22px] md:text-[32px] text-white shrink-0 tracking-wide">
-              <span>PARA SA KULTURA.</span>
-              <span>FOR THE CULTURE.</span>
+            <span key={i} className="inline-flex items-center gap-[34px] font-display font-bold text-[15px] sm:text-[22px] md:text-[32px] shrink-0 tracking-wide">
+              <span className="text-white">PARA SA KULTURA.</span>
+              <span className="text-accent-green">FOR THE CULTURE.</span>
             </span>
           ))}
         </div>
@@ -156,37 +203,38 @@ export default async function Home() {
       {/* ── WHO ARE WE? ───────────────────────────────────────────── */}
       <section className="bg-section-bg">
         <div className="max-w-[1512px] mx-auto flex flex-col px-4 sm:px-8 lg:px-16 py-12 lg:py-20 gap-8">
-
-          {/* Title and description */}
           <WhoAreWeText />
-
-          {/* Photo carousel */}
-          <div className="w-full flex items-center justify-center">
-            <PhotoCarousel />
-          </div>
-
         </div>
       </section>
 
-      {/* ── FULL-BLEED PHOTO — static, no scroll-reveal ─────────────── */}
-      <div className="relative h-[255px] md:h-[383px] lg:h-[510px] w-full overflow-hidden">
-        <SmoothImage src="/event-photo.jpg" alt="FSA Event" fill className="object-cover object-[center_60%]" sizes="100vw" />
+      {/* ── PHOTO MOSAIC — static, no scroll-reveal ─────────────────── */}
+      <div className="bg-section-bg">
+        <div className="max-w-[1512px] mx-auto px-4 sm:px-8 lg:px-16 pb-4 lg:pb-6 grid md:grid-cols-[2fr_1fr] gap-4">
+          <div className="relative h-[255px] md:h-[400px] w-full overflow-hidden rounded-xl">
+            <SmoothImage src="/home-mosaic-main.jpg" alt="FSA Event" fill className="object-cover object-[center_55%]" sizes="(max-width: 768px) 100vw, 66vw" />
+          </div>
+          <div className="hidden md:grid grid-rows-2 gap-4 h-[400px]">
+            <div className="relative w-full h-full overflow-hidden rounded-xl">
+              <SmoothImage src="/home-mosaic-top.jpg" alt="FSA members" fill className="object-cover" sizes="33vw" />
+            </div>
+            <div className="relative w-full h-full overflow-hidden rounded-xl">
+              <SmoothImage src="/home-mosaic-bottom.jpg" alt="FSA members" fill className="object-cover" sizes="33vw" />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ── MISSION STATEMENT ─────────────────────────────────────── */}
       <MissionStatementSection />
 
       {/* ── UPCOMING EVENTS ───────────────────────────────────────── */}
-      <UpcomingEventsSection
-        events={upcomingEvents}
-        isMember={isMember}
-        member={member}
-        registeredEventIds={[...registeredEventIds]}
-      />
+      <Suspense fallback={<UpcomingEventsSkeleton />}>
+        <UpcomingEvents />
+      </Suspense>
 
       {/* ── SECOND FULL-BLEED PHOTO — static, no scroll-reveal ──────── */}
       <div className="relative h-[255px] md:h-[383px] lg:h-[510px] w-full overflow-hidden">
-        <SmoothImage src="/event-photo-2.jpg" alt="FSA Event" fill className="object-cover" sizes="100vw" />
+        <SmoothImage src="/home-closing-photo.jpg" alt="FSA Event" fill className="object-cover" sizes="100vw" />
       </div>
 
     </main>

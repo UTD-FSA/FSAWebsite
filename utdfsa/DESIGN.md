@@ -161,12 +161,39 @@ Dark and stepped, lit by one warm-green accent; gold and blue are rare seconds, 
 **Character:** Unbounded is geometric and heavyweight — used only at identity moments (hero titles, section headers) where the brand needs to shout a little. Geist is quiet and highly legible underneath it, carrying all the reading weight. The pairing is a deliberate contrast: loud display, calm body.
 
 ### Hierarchy
-- **Display** (900, `clamp(2.25rem, 1rem + 5vw, 6rem)`, 0.96 line-height): hero titles ("PAMILYAS", "MISSION STATEMENT"). One per page, max.
-- **Headline** (700, `clamp(2.3rem, 1.5rem + 2.8vw, 3.375rem)`, 1.08 line-height): section titles ("WHAT IS A PAMILYA?", "UPCOMING EVENTS").
+- **Display** (900, `clamp(2.25rem, 1rem + 5vw, 6rem)`, 0.96 line-height): hero titles ("Pamilyas", "About Us"). One per page, max.
+- **Headline** (700, `clamp(2.3rem, 1.5rem + 2.8vw, 3.375rem)`, 1.08 line-height): section titles ("What Is a Pamilya?", "Upcoming Events").
 - **Title** (600, 28px, 1.2 line-height): card/subsection titles.
 - **Body** (400, 16px, 1.5 line-height, 65–75ch max): all prose. Never drop below Text Faint (#787878) for body copy.
 - **Label** (600, 12px, 0.12em tracking, uppercase): small-caps section labels, form labels.
 - **Script** (400, 16px, Noto Sans Tagalog): the Baybayin motif — always rendered in white and paired with subtle rule lines on either side. It serves as a structural cultural element rather than a source of color, allowing Banig Green and Parol Gold to remain the site's accent colors.
+
+### Ramp
+The steps above are the roles; these are the literal sizes the codebase actually
+ships. Anything outside this list is drift — either reuse a step or add it here
+deliberately.
+
+| Size | Where it's used |
+|---|---|
+| 10px | placement badge pills on the dance pages' past-performance cards |
+| 11px | photo-band placeholder captions, host-school tile names |
+| 12px | Label role — section eyebrows, form labels |
+| 13px | form-card captions |
+| 14–16px | Body role — all prose, muted support columns |
+| 19px | sport roster tile labels |
+| 20 / 23px | intro lede paragraphs (`text-[20px] md:text-[23px]`), the white opening line of every 2-column section intro |
+| 21px | section-header Baybayin glyphs |
+| 27px | hero Baybayin glyphs (the 21px step +30%) |
+| 28px | Title role — card/subsection titles |
+| `clamp(22px, 2.6vw, 34px)` | GoodPhil team card labels |
+| `clamp(16px, 2.2vw, 32px)` | centered page mastheads (officer board, sign-up, contact) |
+| `clamp(26px, 3.2vw, 44px)` / `clamp(24px, 2.8vw, 38px)` | `SectionHeader` title, `lg` and `md` sizes |
+| `clamp(45px, 7.5vw, 62.5px)` | `PageHero` title |
+
+### Capitalization
+- **Headings** (hero titles, section headers, card and masthead headings): **title case** — capitalize the significant words, leave articles, short prepositions, and conjunctions lowercase. "What Is a Pamilya?", "Connect with Us", "Book a Captain Meeting". Note `Is` is a verb, so it stays capitalized.
+- **Everything else** — body copy, button labels, captions, form hints, empty states, error and confirmation messages: **sentence case**, casual/warm per PRODUCT.md.
+- **Uppercase** is reserved for the Label role (eyebrows, form labels), the marquee, and photo-overlay card labels where the design already calls for it. The existing ones are typed as literal caps in the source; for anything new prefer the `uppercase` class over typing caps, so screen readers and copy-paste get real words.
 
 ### Named Rules
 **The Shout-Once Rule.** Unbounded Black (900) is reserved for one hero moment per page. Everywhere else, drop to 700 or 600 — a page where everything shouts, shouts at nothing.

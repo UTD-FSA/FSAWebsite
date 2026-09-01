@@ -56,7 +56,7 @@ CSP is split: static headers live in `next.config.ts` (`headers()`); the per-req
 
 - **Read-first, report-then-act**: before making any code change in this repo, read the relevant files, report findings (what you found, root cause, proposed fix options), and wait for explicit authorization before implementing — don't assume the obvious fix is wanted. (Enforced via the `read-first-report` skill.)
 - Comment blocks use DATA/UI-style headers, lowercase text (see the `── file.ts ──` header + lowercase notes style already used throughout `lib/`, `utils/supabase/`, `proxy.ts`).
-- Frontend copy is sentence-case, casual/warm tone per PRODUCT.md (never institutional or corporate-SaaS-sounding — see PRODUCT.md's anti-references).
+- Headings (hero titles, section headers, card/masthead headings) are title-case — significant words capitalized, articles/short prepositions/conjunctions lowercase ("What Is a Pamilya?", "Connect with Us"). All other frontend copy — body, buttons, captions, form hints, empty states, errors — is sentence-case, casual/warm tone per PRODUCT.md (never institutional or corporate-SaaS-sounding — see PRODUCT.md's anti-references). Full rule in DESIGN.md § Typography > Capitalization.
 - No orange. No purple glow/ring effects.
 - CSV exports stay wired to status-filter arrays, never search-filtered arrays.
 - Design tokens (colors, type scale, spacing, component styles) come from DESIGN.md — Banig Green is the only solid-fill CTA color; don't introduce a second one.

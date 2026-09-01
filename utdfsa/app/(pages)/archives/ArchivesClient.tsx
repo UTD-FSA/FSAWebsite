@@ -249,9 +249,11 @@ export default function ArchivesClient({ galleries }: Props) {
           <div className="flex justify-center pt-10">
             <Link
               href="/membership"
-              className="text-[14px] font-medium text-[#7a7a7a] hover:text-[#75ba78] transition-colors"
+              className="text-[14px] font-medium text-[#7a7a7a] hover:text-[#75ba78] transition-colors text-center"
             >
-              Want to be in the next album? Become a Member →
+              Want to be in the next album?
+              <br />
+              Become a Member →
             </Link>
           </div>
         )}
@@ -284,9 +286,9 @@ export default function ArchivesClient({ galleries }: Props) {
         .gcard-linked .g-reveal { opacity: 0; transition: opacity .3s ease; }
         .gcard-linked:hover .g-reveal { opacity: 1; }
         .gcard:not(.gcard-linked) .g-reveal { opacity: 1; }
-        .gcard-linked .g-photo { transition: transform .35s cubic-bezier(.2,.7,.2,1); }
+        .gcard-linked .g-photo { transition: transform .35s var(--ease-gallery, cubic-bezier(.2,.7,.2,1)); }
         .gcard-linked:hover .g-photo { transform: scale(1.04); }
-        .gcard-linked { transition: transform .3s cubic-bezier(.2,.7,.2,1); }
+        .gcard-linked { transition: transform .3s var(--ease-gallery, cubic-bezier(.2,.7,.2,1)); }
         .gcard-linked:hover { transform: scale(1.02); z-index: 3; }
         .filter-pill:hover { border-color: rgba(255,255,255,0.34) !important; }
       `}</style>

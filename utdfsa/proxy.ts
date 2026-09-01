@@ -45,7 +45,7 @@ export async function proxy(request: NextRequest) {
     default-src 'self';
     ${scriptSrc}
     style-src 'self' 'unsafe-inline';
-    img-src 'self' data: https://lh3.googleusercontent.com https://cover-photos-gal.s3.us-east-2.amazonaws.com;
+    img-src 'self' data: https://lh3.googleusercontent.com https://cover-photos-gal.s3.us-east-2.amazonaws.com https://i.ytimg.com;
     font-src 'self';
     connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL} https://api.stripe.com;
     frame-src https://www.youtube-nocookie.com;
