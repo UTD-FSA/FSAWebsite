@@ -167,7 +167,7 @@ export default function PrivacyPage() {
                 Officers and administrators can access member application data and event registration records for purposes required to run the organization — including conducting pamilya matching, managing event check-in, and verifying membership. This access is provided through a server-side administrative client and does not expose one member&rsquo;s data to another member.
               </p>
               <p>
-                Officer actions that affect member records are logged with the acting officer's identity. This includes checking in an event ticket and reviewing applications — accepting, rejecting, or otherwise changing the status of an ading or kuya/ate application records which officer made that decision and when.
+                Officer actions that affect member records are logged with the acting officer&apos;s identity. This includes checking in an event ticket and reviewing applications — accepting, rejecting, or otherwise changing the status of an ading or kuya/ate application records which officer made that decision and when.
               </p>
             </div>
           </section>

@@ -84,7 +84,7 @@ export default function CulturalPage() {
         photos={[
           { src: '/cultural-photo-1.jpg', alt: 'UTD Pamana performing at Goodphil', objectPosition: 'object-[center_25%]' },
           { src: '/cultural-photo-2.jpg', alt: 'UTD Pamana dancer mid-performance', objectPosition: 'object-[center_65%]' },
-          { src: '/cultural-photo-3.jpg', alt: 'UTD Pamana group performance at Goodphil', objectPosition: 'object-[center_30%]' },
+          { src: '/cultural-photo-3.jpg', alt: 'UTD Pamana group performance at Goodphil', objectPosition: 'object-[center_55%]' },
         ]}
       />
 

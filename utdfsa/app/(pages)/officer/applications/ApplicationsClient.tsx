@@ -735,27 +735,6 @@ export default function ApplicationsClient({
   const adingSearchRef = useRef<HTMLInputElement>(null)
   const kuyateSearchRef = useRef<HTMLInputElement>(null)
 
-  // keyboard shortcuts: / → focus search, 1/2 → switch tabs, ? → shortcuts dialog
-  useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      const tag = (e.target as HTMLElement).tagName
-      const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
-      if (e.key === '/' && !inInput) {
-        e.preventDefault()
-        const ref = tab === 'ading' ? adingSearchRef : kuyateSearchRef
-        ref.current?.focus()
-      } else if (e.key === '?' && !inInput) {
-        e.preventDefault()
-        setShowShortcuts(s => !s)
-      } else if (e.key === '1' && !inInput) {
-        setTab('ading')
-      } else if (e.key === '2' && !inInput) {
-        setTab('kuyate')
-      }
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [tab])
   // id of the application whose detail modal is open; null means closed
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null)
   const [selectedAppType, setSelectedAppType] = useState<'ading' | 'kuyate'>('ading')
@@ -780,6 +759,30 @@ export default function ApplicationsClient({
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [showShortcuts, setShowShortcuts] = useState(false)
+
+  // keyboard shortcuts: / → focus search, 1/2 → switch tabs, ? → shortcuts dialog
+  // declared after the state it sets — the effect body only runs post-render, so
+  // hoisting it above those useState calls was safe but read as a TDZ error
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement).tagName
+      const inInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
+      if (e.key === '/' && !inInput) {
+        e.preventDefault()
+        const ref = tab === 'ading' ? adingSearchRef : kuyateSearchRef
+        ref.current?.focus()
+      } else if (e.key === '?' && !inInput) {
+        e.preventDefault()
+        setShowShortcuts(s => !s)
+      } else if (e.key === '1' && !inInput) {
+        setTab('ading')
+      } else if (e.key === '2' && !inInput) {
+        setTab('kuyate')
+      }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [tab])
 
   // Derive the live modal app from current state so status/pamilya changes are reflected
   const currentModalApp: AdingApplication | KuyateApplication | null = selectedAppId

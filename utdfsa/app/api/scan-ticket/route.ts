@@ -99,7 +99,17 @@ export async function POST(req: Request) {
 
   // ── validation ────────────────────────────────────────────────────────────
 
-  const registration = ticket.event_registrations as any
+  // supabase's generated types model this one-to-one join loosely, so the shape
+  // is narrowed here rather than left as `any` — a typo in event_id or
+  // payment_status below would otherwise compile silently, and those two fields
+  // are the whole reason a wrong-event or unpaid ticket doesn't scan green
+  type ScannedRegistration = {
+    event_id: string | null
+    payment_status: string | null
+    events: { name: string | null } | null
+  } | null
+
+  const registration = ticket.event_registrations as unknown as ScannedRegistration
 
   // reject tickets that belong to a different event — a valid paid ticket for
   // next week's party must not scan green at tonight's door (and must not
