@@ -14,6 +14,7 @@
 
 import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/utils/supabase/server'
+import { computeMembershipExpiry } from '@/lib/membership-expiry'
 
 // ── cached key/value fetch ─────────────────────────────────
 
@@ -50,17 +51,13 @@ export async function getSettings() {
 
   // ── membership expiry date arithmetic ──────────────────
 
-  // calculate membership expiry based on stored month/day
+  // calculate membership expiry based on stored month/day — anchored to america/chicago
+  // (not the server process's own timezone) and set to end-of-day so the full day counts
+  // as valid; see lib/membership-expiry.ts
   const now = new Date()
-  // month from db is 1-indexed; Date constructor expects 0-indexed
-  const expiryMonth = parseInt(map.membership_expiry_month ?? '6') - 1
+  const expiryMonth = parseInt(map.membership_expiry_month ?? '6')
   const expiryDay = parseInt(map.membership_expiry_day ?? '30')
-  const currentYear = now.getFullYear()
-
-  // if we're already past the expiry month this year, push to next year
-  const expiryYear = now.getMonth() > expiryMonth ? currentYear + 1 : currentYear
-  // set expiry to end-of-day (23:59:59) so the full day counts as valid
-  const membershipExpiry = new Date(expiryYear, expiryMonth, expiryDay, 23, 59, 59)
+  const membershipExpiry = computeMembershipExpiry(now, expiryMonth, expiryDay)
 
   return {
     membershipPriceCents: parseInt(map.membership_price_cents),
