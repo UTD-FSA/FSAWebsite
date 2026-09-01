@@ -196,6 +196,10 @@ export default function MembershipClient({
     year: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
+    // pinned to chicago like fmtRegDeadline in the event clients — without it the
+    // static prerender formats in the server's zone and the client re-renders in
+    // the visitor's, so the cutoff both reads wrong and mismatches on hydration
+    timeZone: 'America/Chicago',
   })
 
   // step 01 desc uses membershipYear prop so it lives inside the component
