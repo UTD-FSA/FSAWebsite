@@ -22,10 +22,11 @@ const PUBLIC = path.join(process.cwd(), 'public')
 // [svgFile, displayPx, outFile] — outFile sized to 2x display for retina
 // note: hero-logo.svg is intentionally excluded — reverted to the original
 // SVG per product preference, keep it out of future re-runs
+// cultural-logo / modern-logo were dropped here when the team pages' floating
+// logo badges were replaced by the PhotoBand — neither the SVG sources nor the
+// extracted PNGs are referenced by the app any more
 const LOGOS = [
   ['bare-logo.svg', 43, 'bare-logo.png'],
-  ['cultural-logo.svg', 264, 'cultural-logo.png'],
-  ['modern-logo.svg', 264, 'modern-logo.png'],
 ]
 
 async function extractLogos() {
@@ -52,10 +53,10 @@ async function extractLogos() {
 // [sourceJpg, outName] -> public/og/outName.jpg
 const OG_CROPS = [
   ['hero-officers.jpg', 'home.jpg'],
-  ['event-photo.jpg', 'events.jpg'],
-  ['pam-hero.jpg', 'pamilyas.jpg'],
+  ['home-mosaic-main.jpg', 'events.jpg'],
+  ['pamilyas-hero.jpg', 'pamilyas.jpg'],
   ['about-us-hero.jpg', 'about.jpg'],
-  ['hero-1-gp.jpg', 'goodphil-about.jpg'],
+  ['goodphil-games.jpg', 'goodphil-about.jpg'],
   ['cultural-hero.jpg', 'goodphil-cultural.jpg'],
   ['modern-hero.jpg', 'goodphil-modern.jpg'],
   ['spirit-hero.jpg', 'goodphil-spirit.jpg'],
@@ -83,9 +84,9 @@ async function generateOgCrops() {
 // camera-resolution originals down to something a cold transform can decode fast.
 const MAX_WIDTH = 2560
 const SIZE_THRESHOLD_KB = 500 // only touch files actually worth shrinking
-// hero-officers.jpg and pam-hero.jpg are intentionally excluded — reverted to
+// hero-officers.jpg and pamilyas-hero.jpg are intentionally excluded — reverted to
 // the original quality per product preference, keep them out of future re-runs
-const DOWNSCALE_EXCLUDE = new Set(['hero-officers.jpg', 'pam-hero.jpg'])
+const DOWNSCALE_EXCLUDE = new Set(['hero-officers.jpg', 'pamilyas-hero.jpg'])
 
 async function downscaleSources() {
   const { readdirSync } = await import('node:fs')
