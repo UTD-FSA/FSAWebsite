@@ -4,6 +4,10 @@
 // an English section title. Rule width/gap are em-based so the
 // ratio holds at any `size` (title-proportional Baybayin).
 //
+// `size` is carried on --bay-size rather than set as an inline
+// font-size, so the row can render 15% smaller below md — matching
+// the hero title's mobile step-down — without a per-call-site prop.
+//
 // data:  none — plain presentational component
 // deps:  --font-tagalog (Noto Sans Tagalog, registered in layout.tsx);
 //        baybayinGlint keyframe (app/globals.css) for the draw-mode rule sheen
@@ -12,7 +16,8 @@
 type Props = {
   /** Baybayin glyphs (Unicode), e.g. "ᜃᜓᜎ᜔ᜆᜓᜍ" */
   word: string
-  /** font-size for the Baybayin row (px or clamp()); rule/gap scale in em */
+  /** font-size for the Baybayin row at md+ (px or clamp()); renders at 85% of
+      this below md; rule/gap scale in em */
   size: string
   /** adds a soft shadow so the script stays legible over a hero photo */
   onPhoto?: boolean
@@ -83,8 +88,8 @@ export default function BaybayinRule({ word, size, onPhoto, reveal, delayMs = 0,
 
   return (
     <div
-      className="flex items-center justify-center select-none"
-      style={{ fontSize: size, gap: '0.47em' }}
+      className="flex items-center justify-center select-none text-[length:calc(var(--bay-size)*0.85)] md:text-[length:var(--bay-size)]"
+      style={{ '--bay-size': size, gap: '0.47em' } as React.CSSProperties}
       aria-hidden="true"
     >
       <span style={ruleStyle} />

@@ -18,7 +18,7 @@ import GoodphilNavRail from '@/components/GoodphilNavRail'
 import PageHero from '@/components/PageHero'
 import PhotoBand from '@/components/PhotoBand'
 import SectionHeader from '@/components/SectionHeader'
-import YouTubeFacade from '@/components/YouTubeFacade'
+import YouTubeEmbed from '@/components/YouTubeEmbed'
 import { useRevealOnScroll, useStaggeredReveal } from '@/lib/useRevealOnScroll'
 
 export default function CulturalPage() {
@@ -49,7 +49,7 @@ export default function CulturalPage() {
         src="/cultural-hero.jpg"
         alt="UTD Pamana cultural dance team"
         eyebrow="GOODPHIL · CULTURAL"
-        title="UTD Pamana"
+        title="Pamana"
         baybayin="ᜃᜓᜎ᜔ᜆᜓᜍ"
         objectPosition="object-[center_43%]"
       />
@@ -91,7 +91,7 @@ export default function CulturalPage() {
       {/* ── SECTION 3 — PAST PERFORMANCES ────────────────────────── */}
       {/* Goodphil group (featured + 2-col secondary row for older years) followed
           by the Isang Mahal group (2-col row, most-recent-first); each card is
-          a click-to-play YouTube facade — no JS/thumbnail loads until clicked */}
+          a lazy-loaded YouTube embed (components/YouTubeEmbed.tsx) */}
       <section className="bg-brand-bg py-16 px-6">
         <div className="max-w-6xl mx-auto">
           <SectionHeader index="02" title="Past Performances" rule={false} />
@@ -118,7 +118,7 @@ export default function CulturalPage() {
               <span className="font-medium">AUSTIN</span>
             </p>
             <div className="max-w-[60rem] mx-auto">
-              <YouTubeFacade videoId="q6mxXQuX4ek" title="Goodphil 2026 - Austin" />
+              <YouTubeEmbed videoId="q6mxXQuX4ek" title="Goodphil 2026 - Austin" />
             </div>
           </div>
 
@@ -134,7 +134,7 @@ export default function CulturalPage() {
                 <span className="font-black">GOODPHIL 2025 - </span>
                 <span className="font-medium">COLLEGE STATION</span>
               </p>
-              <YouTubeFacade videoId="ru_9K8ygmRg" title="Goodphil 2025 - College Station" />
+              <YouTubeEmbed videoId="ru_9K8ygmRg" title="Goodphil 2025 - College Station" />
             </div>
 
             {/* Performance — Goodphil 2024, Arlington */}
@@ -146,7 +146,7 @@ export default function CulturalPage() {
                 <span className="font-black">GOODPHIL 2024 - </span>
                 <span className="font-medium">ARLINGTON</span>
               </p>
-              <YouTubeFacade videoId="j9v1Lt1-xu4" title="Goodphil 2024 - Arlington" />
+              <YouTubeEmbed videoId="j9v1Lt1-xu4" title="Goodphil 2024 - Arlington" />
             </div>
 
           </div>
@@ -180,7 +180,7 @@ export default function CulturalPage() {
                 <span className="font-black">ISANG MAHAL 2025 - </span>
                 <span className="font-medium">COLLEGE STATION</span>
               </p>
-              <YouTubeFacade videoId="IKyewqDOnBg" title="Isang Mahal 2025 - College Station" />
+              <YouTubeEmbed videoId="IKyewqDOnBg" title="Isang Mahal 2025 - College Station" />
             </div>
 
             {/* Performance — Isang Mahal 2024, College Station */}
@@ -198,7 +198,7 @@ export default function CulturalPage() {
                 <span className="font-black">ISANG MAHAL 2024 - </span>
                 <span className="font-medium">COLLEGE STATION</span>
               </p>
-              <YouTubeFacade videoId="Dj88LAg6_O4" title="Isang Mahal 2024 - College Station" />
+              <YouTubeEmbed videoId="Dj88LAg6_O4" title="Isang Mahal 2024 - College Station" />
             </div>
 
           </div>

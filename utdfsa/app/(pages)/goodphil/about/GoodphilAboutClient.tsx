@@ -105,9 +105,10 @@ export default function GoodphilAboutPage() {
             </p>
           </div>
 
-          {/* Host-school logo grid — one row on desktop, aligned to the section's
-              left edge. Each tile is tinted to that school's signature color,
-              composited over the section's dark background rather than a
+          {/* Host-school logo grid — one row on desktop, 2+2+1 (last tile
+              centered) on mobile, aligned to the section's left edge. Each
+              tile is tinted to that school's signature color, composited
+              over the section's dark background rather than a
               painted-in base — the low tint keeps UT's thin line-art and TAMU's
               maroon legible while the border carries the color identity. */}
           <div
@@ -117,6 +118,13 @@ export default function GoodphilAboutPage() {
             {HOST_SCHOOLS.map((school, i) => (
               <div
                 key={school.abbr}
+                // odd tile out (5th of 5) centers itself across the mobile
+                // 2-col grid instead of hanging off the left edge — 2+2+1
+                className={
+                  i === HOST_SCHOOLS.length - 1
+                    ? 'col-span-2 w-[calc(50%-0.5rem)] mx-auto sm:col-span-1 sm:w-auto sm:mx-0'
+                    : undefined
+                }
                 style={{
                   transform: hostSchoolsVisible ? 'translateY(0)' : 'translateY(16px)',
                   opacity: hostSchoolsVisible ? 1 : 0,

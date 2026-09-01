@@ -17,7 +17,7 @@ import GoodphilNavRail from '@/components/GoodphilNavRail'
 import PageHero from '@/components/PageHero'
 import PhotoBand from '@/components/PhotoBand'
 import SectionHeader from '@/components/SectionHeader'
-import YouTubeFacade from '@/components/YouTubeFacade'
+import YouTubeEmbed from '@/components/YouTubeEmbed'
 import { useRevealOnScroll, useStaggeredReveal } from '@/lib/useRevealOnScroll'
 
 export default function SpiritPage() {
@@ -87,8 +87,8 @@ export default function SpiritPage() {
 
       {/* ── SECTION 3 — PAST PERFORMANCES ────────────────────────── */}
       {/* featured (most recent year) + 2-col secondary row for older years;
-          each card is a click-to-play YouTube facade — no JS/thumbnail loads
-          until clicked (see components/YouTubeFacade.tsx) */}
+          each card is a lazy-loaded YouTube embed
+          (see components/YouTubeEmbed.tsx) */}
       <section className="bg-brand-bg py-16 px-6">
         <div className="max-w-6xl mx-auto">
           <SectionHeader index="02" title="Past Performances" rule={false} />
@@ -121,7 +121,7 @@ export default function SpiritPage() {
               <span className="font-medium">AUSTIN</span>
             </p>
             <div className="max-w-[60rem] mx-auto">
-              <YouTubeFacade videoId="R79EE9wmbTc" title="Goodphil 2026 - Austin" />
+              <YouTubeEmbed videoId="R79EE9wmbTc" title="Goodphil 2026 - Austin" />
             </div>
           </div>
 
@@ -143,7 +143,7 @@ export default function SpiritPage() {
                 <span className="font-black">GOODPHIL 2025 - </span>
                 <span className="font-medium">COLLEGE STATION</span>
               </p>
-              <YouTubeFacade videoId="02wg-b1WghI" title="Goodphil 2025 - College Station" />
+              <YouTubeEmbed videoId="02wg-b1WghI" title="Goodphil 2025 - College Station" />
             </div>
 
             {/* Performance — Goodphil 2024, Arlington */}
@@ -161,7 +161,7 @@ export default function SpiritPage() {
                 <span className="font-black">GOODPHIL 2024 - </span>
                 <span className="font-medium">ARLINGTON</span>
               </p>
-              <YouTubeFacade videoId="4JeGsfOV27E" title="Goodphil 2024 - Arlington" />
+              <YouTubeEmbed videoId="4JeGsfOV27E" title="Goodphil 2024 - Arlington" />
             </div>
 
           </div>

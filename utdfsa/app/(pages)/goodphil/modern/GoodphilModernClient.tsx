@@ -18,7 +18,7 @@ import GoodphilNavRail from '@/components/GoodphilNavRail'
 import PageHero from '@/components/PageHero'
 import PhotoBand from '@/components/PhotoBand'
 import SectionHeader from '@/components/SectionHeader'
-import YouTubeFacade from '@/components/YouTubeFacade'
+import YouTubeEmbed from '@/components/YouTubeEmbed'
 import { useRevealOnScroll, useStaggeredReveal } from '@/lib/useRevealOnScroll'
 
 export default function ModernPage() {
@@ -49,7 +49,7 @@ export default function ModernPage() {
         src="/modern-hero.jpg"
         alt="UTD Maharlika modern dance team"
         eyebrow="GOODPHIL · MODERN"
-        title="UTD Maharlika"
+        title="Maharlika"
         baybayin="ᜋᜓᜇᜒᜍ᜔ᜈ᜔"
         objectPosition="object-center"
       />
@@ -88,7 +88,7 @@ export default function ModernPage() {
       {/* ── SECTION 3 — PAST PERFORMANCES ────────────────────────── */}
       {/* Goodphil group (featured + 2-col secondary row for older years) followed
           by the Isang Mahal group (2-col row, most-recent-first); each card is
-          a click-to-play YouTube facade — no JS/thumbnail loads until clicked */}
+          a lazy-loaded YouTube embed (components/YouTubeEmbed.tsx) */}
       <section className="bg-brand-bg py-16 px-6">
         <div className="max-w-6xl mx-auto">
           <SectionHeader index="02" title="Past Performances" rule={false} />
@@ -115,7 +115,7 @@ export default function ModernPage() {
               <span className="font-medium">AUSTIN</span>
             </p>
             <div className="max-w-[60rem] mx-auto">
-              <YouTubeFacade videoId="Xj-rTIWYX3U" title="Goodphil 2026 - Austin" />
+              <YouTubeEmbed videoId="Xj-rTIWYX3U" title="Goodphil 2026 - Austin" />
             </div>
           </div>
 
@@ -137,7 +137,7 @@ export default function ModernPage() {
                 <span className="font-black">GOODPHIL 2025 - </span>
                 <span className="font-medium">COLLEGE STATION</span>
               </p>
-              <YouTubeFacade videoId="ngXiLlF_lYY" start={127} title="Goodphil 2025 - College Station" />
+              <YouTubeEmbed videoId="ngXiLlF_lYY" start={127} title="Goodphil 2025 - College Station" />
             </div>
 
             {/* Performance — Goodphil 2024, Arlington */}
@@ -158,7 +158,7 @@ export default function ModernPage() {
                 <span className="font-black">GOODPHIL 2024 - </span>
                 <span className="font-medium">ARLINGTON</span>
               </p>
-              <YouTubeFacade videoId="OM55XxSDYew" title="Goodphil 2024 - Arlington" />
+              <YouTubeEmbed videoId="OM55XxSDYew" title="Goodphil 2024 - Arlington" />
             </div>
 
           </div>
@@ -186,7 +186,7 @@ export default function ModernPage() {
                 <span className="font-black">ISANG MAHAL 2024 - </span>
                 <span className="font-medium">COLLEGE STATION</span>
               </p>
-              <YouTubeFacade videoId="gVq9zsGRIgY" title="Isang Mahal 2024 - College Station" />
+              <YouTubeEmbed videoId="gVq9zsGRIgY" title="Isang Mahal 2024 - College Station" />
             </div>
 
             {/* Performance — Isang Mahal 2023, College Station (no placement) */}
@@ -198,7 +198,7 @@ export default function ModernPage() {
                 <span className="font-black">ISANG MAHAL 2023 - </span>
                 <span className="font-medium">COLLEGE STATION</span>
               </p>
-              <YouTubeFacade videoId="0P2wnd3Ncnk" title="Isang Mahal 2023 - College Station" />
+              <YouTubeEmbed videoId="0P2wnd3Ncnk" title="Isang Mahal 2023 - College Station" />
             </div>
 
           </div>

@@ -7,6 +7,11 @@
 // four subpages). Ported from the "FSA Public Layout Directions" mockup —
 // replaces the previous centered-giant-title hero pattern on those pages.
 //
+// mobile (<md): eyebrow and the right-hand slot are hidden and the title
+// floor drops 15% (45px -> 38.25px) — the small viewport only has room for
+// the title + baybayin mark. the clamp floor is what binds below ~600px,
+// so lowering it is inherently a mobile-only change.
+//
 // data:  none — presentational
 // deps:  SmoothImage, AnimatedTitle (fadeUp entrance + bfcache replay),
 //        BaybayinRule; heroPhotoSettle keyframe (app/globals.css)
@@ -79,12 +84,12 @@ export default function PageHero({
       >
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 md:gap-6">
           <div className="flex flex-col gap-3 items-start">
-            <span className="font-display font-semibold text-[12px] tracking-[0.14em] text-[#e8e4dd]/72">
+            <span className="hidden md:inline font-display font-semibold text-[12px] tracking-[0.14em] text-[#e8e4dd]/72">
               {eyebrow}
             </span>
             <h1
               className="font-display font-black text-white leading-none tracking-[-0.03em]"
-              style={{ fontSize: 'clamp(45px,7.5vw,62.5px)' }}
+              style={{ fontSize: 'clamp(38.25px,7.5vw,62.5px)' }}
             >
               {title}
             </h1>
@@ -92,7 +97,9 @@ export default function PageHero({
                 reads at title scale rather than at subheading scale */}
             <BaybayinRule word={baybayin} size="27px" onPhoto />
           </div>
-          {right && <div className="max-w-[30ch] md:text-right text-[#e8e4dd]/90">{right}</div>}
+          {right && (
+            <div className="hidden md:block max-w-[30ch] md:text-right text-[#e8e4dd]/90">{right}</div>
+          )}
         </div>
       </AnimatedTitle>
     </section>

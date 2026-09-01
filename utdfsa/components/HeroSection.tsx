@@ -15,7 +15,9 @@
 // Reverted to this pre-mockup-port layout on request (round 2 of the
 // port); the mockup's bottom-left eyebrow/title stack lives on in
 // PageHero.tsx for the interior pages. Second "Upcoming events" CTA
-// (black) added alongside the original "Become a Member" button.
+// (black) added alongside the original "Become a Member" button. Both CTAs
+// render 30% smaller below sm (padding + type) so they don't dominate the
+// phone hero under the logo.
 
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
@@ -87,17 +89,17 @@ export default function HeroSection() {
       <div
         ref={ctaGroupRef}
         style={{ opacity: 0 }}
-        className="mt-1 sm:mt-2 pointer-events-auto flex items-center gap-3"
+        className="mt-1 sm:mt-2 pointer-events-auto flex items-center gap-2 sm:gap-3"
       >
         <Link
           href="/membership"
-          className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-accent-green text-[#08130a] font-display font-extrabold text-sm sm:text-base tracking-[0.01em] hover:brightness-[1.08] active:scale-[0.98] transition-all duration-200"
+          className="inline-flex items-center gap-2 px-5 py-2.5 sm:px-7 sm:py-3.5 rounded-full bg-accent-green text-[#08130a] font-display font-extrabold text-[10px] sm:text-base tracking-[0.01em] hover:brightness-[1.08] active:scale-[0.98] transition-all duration-200"
         >
           Become a Member
         </Link>
         <a
           href="#upcoming-events"
-          className="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-black text-white border border-white/20 font-display font-extrabold text-sm sm:text-base tracking-[0.01em] hover:brightness-125 active:scale-[0.98] transition-all duration-200"
+          className="inline-flex items-center gap-2 px-5 py-2.5 sm:px-7 sm:py-3.5 rounded-full bg-black text-white border border-white/20 font-display font-extrabold text-[10px] sm:text-base tracking-[0.01em] hover:brightness-125 active:scale-[0.98] transition-all duration-200"
         >
           Upcoming Events
         </a>
