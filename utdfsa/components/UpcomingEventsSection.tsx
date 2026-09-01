@@ -244,7 +244,7 @@ export default function UpcomingEventsSection({ events, isMember, member, regist
 
                 {ticketed && (
                   <div className="rounded-[14px] overflow-hidden mb-6" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <div className="grid grid-cols-2" style={{ borderBottom: hybrid && event.points ? '1px solid rgba(255,255,255,0.08)' : undefined }}>
+                    <div className="grid grid-cols-2" style={{ borderBottom: isEB || (hybrid && event.points) ? '1px solid rgba(255,255,255,0.08)' : undefined }}>
                       <div className="px-[18px] py-4" style={{ borderRight: '1px solid rgba(255,255,255,0.08)' }}>
                         <div className="text-[11px] font-bold tracking-[0.06em] uppercase mb-2" style={{ color: '#7a7a7a' }}>Member</div>
                         <div className="flex items-baseline gap-2">
@@ -264,6 +264,20 @@ export default function UpcomingEventsSection({ events, isMember, member, regist
                         </div>
                       </div>
                     </div>
+                    {/* early-bird deadline — qualifies the prices above, so it sits
+                        inside the same card rather than floating under it */}
+                    {isEB && event.eb_deadline && (
+                      <div
+                        className="px-[18px] py-2.5 text-[13px] font-medium"
+                        style={{
+                          color: '#9a9a9a',
+                          borderBottom: hybrid && event.points ? '1px solid rgba(255,255,255,0.08)' : undefined,
+                        }}
+                      >
+                        Early-bird pricing ends{' '}
+                        <span className="font-bold" style={{ color: '#cfcfcf' }}>{fmtRegDeadline(event.eb_deadline)}</span>
+                      </div>
+                    )}
                     {hybrid && event.points != null && event.points > 0 && (
                       <div className="px-[18px] py-2.5 text-[13px] font-medium" style={{ color: '#bb9eff' }}>
                         +{event.points} Goodphil points on check-in

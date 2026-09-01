@@ -4,7 +4,8 @@
 // data:  events prop (Event[]) from events/page.tsx server component
 //        member and registeredEventIds props for pricing and registration state
 // deps:  @fullcalendar/react (dayGrid + interaction plugins) for the calendar view
-// notes: early-bird and grace-period logic determines CTA state in the detail modal;
+// notes: early-bird and grace-period logic determines CTA state in the detail modal,
+//        and the eb deadline renders as a strip in the modal's pricing card;
 //        modal is rendered inline via an IIFE to keep event variable in scope
 // ─────────────────────────────────────────────────────────────
 'use client'
@@ -787,7 +788,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                 {/* pricing block — only for ticketed events — do not remove this condition */}
                 {ticketed && (
                   <div className="rounded-[14px] overflow-hidden mb-6" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
-                    <div className="grid grid-cols-2" style={{ borderBottom: hybrid && event.points ? '1px solid rgba(255,255,255,0.08)' : undefined }}>
+                    <div className="grid grid-cols-2" style={{ borderBottom: isEB || (hybrid && event.points) ? '1px solid rgba(255,255,255,0.08)' : undefined }}>
                       <div className="px-[18px] py-4" style={{ borderRight: '1px solid rgba(255,255,255,0.08)' }}>
                         <div className="text-[11px] font-bold tracking-[0.06em] uppercase mb-2" style={{ color: '#7a7a7a' }}>Member</div>
                         <div className="flex items-baseline gap-2">
@@ -809,6 +810,20 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                         </div>
                       </div>
                     </div>
+                    {/* early-bird deadline — qualifies the prices above, so it sits
+                        inside the same card rather than floating under it */}
+                    {isEB && event.eb_deadline && (
+                      <div
+                        className="px-[18px] py-2.5 text-[13px] font-medium"
+                        style={{
+                          color: '#9a9a9a',
+                          borderBottom: hybrid && event.points ? '1px solid rgba(255,255,255,0.08)' : undefined,
+                        }}
+                      >
+                        Early-bird pricing ends{' '}
+                        <span className="font-bold" style={{ color: '#cfcfcf' }}>{fmtRegDeadline(event.eb_deadline)}</span>
+                      </div>
+                    )}
                     {/* only renders for hybrid (Other) events that award points — do not remove this condition */}
                     {hybrid && event.points != null && event.points > 0 && (
                       <div className="px-[18px] py-2.5 text-[13px] font-medium" style={{ color: '#bb9eff' }}>
