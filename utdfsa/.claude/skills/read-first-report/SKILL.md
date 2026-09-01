@@ -13,6 +13,6 @@ Before making any code change:
 
 ## Project conventions
 - Comment blocks use DATA/UI headers, lowercase text.
-- Frontend copy is sentence-case.
+- Headings are title-case; all other frontend copy is sentence-case (DESIGN.md § Typography > Capitalization).
 - No orange. No purple glow/ring effects.
 - CSV exports stay wired to status-filter arrays, never search-filtered arrays.

@@ -193,7 +193,7 @@ Add a layer of typographic polish across my text content. Replace straight quote
 ### 30. Standardize Text Casing and Labels
 *Area: Typography & Readability. Why it matters: Mixing "Sign up", "Sign Up", and "SIGN UP" across buttons and labels looks careless; one consistent casing convention makes the whole interface feel intentional.*
 
-Audit all UI labels, button text, headings, menu items, and form labels for inconsistent capitalization. Decide on and apply a consistent casing convention — typically sentence case for most UI text since it's friendlier and more readable, reserving title case or uppercase for specific deliberate uses. Apply casing through the actual content rather than CSS `text-transform` where the underlying text matters for accessibility and copy-paste. List the inconsistencies you found and the convention you standardized on.
+Audit all UI labels, button text, headings, menu items, and form labels for inconsistent capitalization. This project's convention is already set (DESIGN.md § Typography > Capitalization): title case for headings, sentence case for everything else, uppercase only for the Label role, marquee, and photo-overlay labels. Apply that rather than picking a new one. For the uppercase cases, prefer the `uppercase` class over typing literal caps into the copy, so the underlying text stays readable to screen readers and copy-paste. List the inconsistencies you found against that convention.
 
 ### 31. Run a Full Performance Audit
 *Area: Performance & Loading Speed. Why it matters: You can't fix what you can't see; a structured audit reveals exactly which assets and code are making your app feel slow before you start optimizing blindly.*
