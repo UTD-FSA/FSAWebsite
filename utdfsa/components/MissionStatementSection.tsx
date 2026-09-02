@@ -58,16 +58,18 @@ export default function MissionStatementSection() {
             </p>
           </div>
 
-          {/* photo grid — 2 columns, 2 stacked photos each, independent heights
-              per the reference layout (roughly 55/45 top/bottom) */}
+          {/* photo grid — 2 columns, 2 stacked photos each, independent aspect
+              ratios per the reference layout (roughly 55/45 top/bottom). ratios
+              rather than fixed heights: below lg the grid goes full-width, and
+              fixed heights stretched the crops badly around 1000px */}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-3">
-              <MissionPhoto src="/mission-photo-1.jpg" alt="UTD FSA members" className="h-[180px]" />
-              <MissionPhoto src="/mission-photo-2.jpg" alt="UTD FSA members" className="h-[140px]" />
+              <MissionPhoto src="/mission-photo-1.jpg" alt="UTD FSA members" className="aspect-[10/7]" />
+              <MissionPhoto src="/mission-photo-2.jpg" alt="UTD FSA members" className="aspect-[16/9]" />
             </div>
             <div className="flex flex-col gap-3">
-              <MissionPhoto src="/mission-photo-3.jpg" alt="UTD FSA members" className="h-[220px]" />
-              <MissionPhoto src="/mission-photo-4.jpg" alt="UTD FSA pamilya" className="h-[160px]" />
+              <MissionPhoto src="/mission-photo-3.jpg" alt="UTD FSA members" className="aspect-[7/6]" />
+              <MissionPhoto src="/mission-photo-4.jpg" alt="UTD FSA pamilya" className="aspect-[8/5]" />
             </div>
           </div>
         </div>

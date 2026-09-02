@@ -19,6 +19,11 @@
 // render smaller below sm (padding + type) so they don't dominate the phone
 // hero under the logo — the base values are the mobile ones, the sm: pair is
 // the full-size desktop set.
+//
+// The stack fits its hero at any viewport height: the logo is the flexible item
+// (flex-1 + min-h-0), so it gives up height first and the subtitle/CTAs can never
+// be sheared off by the hero's overflow-hidden. max-h-* keeps the old fixed sizes
+// (200 / 360 / 515) as the ceiling, so nothing shrinks on a roomy screen.
 
 import { useEffect, useRef } from 'react'
 import Image from 'next/image'
@@ -57,20 +62,20 @@ export default function HeroSection() {
   }, [])
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 sm:gap-4 z-20 px-6 text-center">
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 sm:gap-4 z-20 px-6 py-6 sm:py-8 text-center">
       {/* Logo — starts invisible; useEffect applies heroFadeIn */}
       <div
         ref={logoRef}
         aria-hidden="true"
         style={{ opacity: 0 }}
-        className="pointer-events-none w-[200px] h-[200px] sm:w-[360px] sm:h-[360px] md:w-[515px] md:h-[515px]"
+        className="pointer-events-none flex-1 min-h-0 w-full flex items-center justify-center max-h-[200px] sm:max-h-[360px] md:max-h-[515px]"
       >
         <Image
           src="/hero-logo.svg"
           alt=""
           width={515}
           height={515}
-          className="w-full h-full object-contain"
+          className="h-full w-auto max-w-full object-contain"
           preload
         />
       </div>
@@ -85,8 +90,8 @@ export default function HeroSection() {
         Filipino Student Association <span className="text-[#e8e4dd]/50 mx-1">·</span> University of Texas at Dallas
       </p>
 
-      {/* CTA pair — anchored to the hero's vertical center (not the section's bottom edge),
-          which stays in view regardless of how far h-screen pushes below the navbar */}
+      {/* CTA pair — min-h-[44px] is the touch-target floor; the base padding on
+          its own leaves these ~37px tall on a phone */}
       <div
         ref={ctaGroupRef}
         style={{ opacity: 0 }}
@@ -94,13 +99,13 @@ export default function HeroSection() {
       >
         <Link
           href="/membership"
-          className="inline-flex items-center gap-2 px-[22px] py-[11px] sm:px-7 sm:py-3.5 rounded-full bg-accent-green text-[#08130a] font-display font-extrabold text-[11px] sm:text-base tracking-[0.01em] hover:brightness-[1.08] active:scale-[0.98] transition-all duration-200"
+          className="inline-flex items-center gap-2 min-h-[44px] px-[22px] py-[11px] sm:px-7 sm:py-3.5 rounded-full bg-accent-green text-[#08130a] font-display font-extrabold text-[11px] sm:text-base tracking-[0.01em] hover:brightness-[1.08] active:scale-[0.98] transition-all duration-200"
         >
           Become a Member
         </Link>
         <a
           href="#upcoming-events"
-          className="inline-flex items-center gap-2 px-[22px] py-[11px] sm:px-7 sm:py-3.5 rounded-full bg-black text-white border border-white/20 font-display font-extrabold text-[11px] sm:text-base tracking-[0.01em] hover:brightness-125 active:scale-[0.98] transition-all duration-200"
+          className="inline-flex items-center gap-2 min-h-[44px] px-[22px] py-[11px] sm:px-7 sm:py-3.5 rounded-full bg-black text-white border border-white/20 font-display font-extrabold text-[11px] sm:text-base tracking-[0.01em] hover:brightness-125 active:scale-[0.98] transition-all duration-200"
         >
           Upcoming Events
         </a>

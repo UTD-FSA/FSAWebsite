@@ -4,6 +4,12 @@
 // data:  next 4 upcoming visible events fetched server-side for SSR
 // notes: z-10 overlay and z-20 logo/text layer the hero; marquee duplicates
 //        8 items so the looping seam is never visible at any viewport width.
+//        the hero is sized to the viewport *minus* the 5rem navbar — that navbar
+//        is sticky and sits above this page in flow rather than overlaying it, so
+//        a plain 100vh hero always pushed its own bottom 80px off-screen and took
+//        the CTAs with it on any laptop under ~780px tall. svh, not vh, so the ios
+//        url bar can't resize the hero mid-scroll. HeroSection shrinks its logo to
+//        fit whatever height is left, so nothing there can be clipped.
 //        the events query itself is cached via getCachedVisibleEvents (see
 //        lib/data/events.ts) — there is no route-segment `revalidate` export
 //        here because auth.getUser() below reads cookies() unconditionally,
@@ -167,7 +173,7 @@ export default async function Home() {
       />
 
       {/* ── HERO ──────────────────────────────────────────────────── */}
-      <section className="relative h-[50vh] sm:h-[70vh] md:h-screen w-full overflow-hidden">
+      <section className="relative h-[50svh] sm:h-[70svh] md:h-[calc(100svh-5rem)] w-full overflow-hidden">
         <h1 className="sr-only">UTD FSA — Filipino Student Association at The University of Texas at Dallas</h1>
         {/* Background photo — object-top keeps faces in frame */}
         <SmoothImage
@@ -201,15 +207,15 @@ export default async function Home() {
       </div>
 
       {/* ── WHO ARE WE? ───────────────────────────────────────────── */}
-      <section className="bg-section-bg">
-        <div className="max-w-[1512px] mx-auto flex flex-col px-4 sm:px-8 lg:px-16 py-12 lg:py-20 gap-8">
+      <section className="bg-section-bg px-4 sm:px-8 lg:px-16 py-12 lg:py-20">
+        <div className="max-w-[1241px] mx-auto flex flex-col gap-8">
           <WhoAreWeText />
         </div>
       </section>
 
       {/* ── PHOTO MOSAIC — static, no scroll-reveal ─────────────────── */}
-      <div className="bg-section-bg">
-        <div className="max-w-[1512px] mx-auto px-4 sm:px-8 lg:px-16 pb-4 lg:pb-6 grid md:grid-cols-[2fr_1fr] gap-4">
+      <div className="bg-section-bg px-4 sm:px-8 lg:px-16 pb-4 lg:pb-6">
+        <div className="max-w-[1241px] mx-auto grid md:grid-cols-[2fr_1fr] gap-4">
           <div className="relative h-[255px] md:h-[400px] w-full overflow-hidden rounded-xl">
             <SmoothImage src="/home-mosaic-main.jpg" alt="FSA Event" fill className="object-cover object-[center_55%]" sizes="(max-width: 768px) 100vw, 66vw" />
           </div>
