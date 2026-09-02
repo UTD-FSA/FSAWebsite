@@ -353,7 +353,7 @@ export default function PamilyasClient({
         <div className="max-w-6xl mx-auto">
           <h2
             className="font-display font-black text-white text-center mb-5"
-            style={{ fontSize: 'clamp(16px, 2.2vw, 32px)', letterSpacing: '0.02em' }}
+            style={{ fontSize: 'clamp(17.6px, 2.2vw, 32px)', letterSpacing: '0.02em' }}
           >
             Where Do I Sign Up?
           </h2>

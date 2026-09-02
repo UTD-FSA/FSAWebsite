@@ -271,7 +271,11 @@ export default function AboutClient() {
         eyebrow="EST. 2001 · UT DALLAS"
         title="About Us"
         baybayin="ᜆᜓᜅ᜔ᜃᜓᜎ᜔"
-        objectPosition="object-center"
+        // 2:1 source, and the mobile crop is a narrow vertical slice — centered it
+        // lands on the back wall and cuts the speaker out entirely. she sits ~84%
+        // across, so the crop has to run all the way right to hold her; md+ is wide
+        // enough to show the whole frame and stays centered.
+        objectPosition="object-right md:object-center"
         heightClassName="h-[45vh] md:h-[500px]"
       />
 

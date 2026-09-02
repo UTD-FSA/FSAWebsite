@@ -241,9 +241,12 @@ export default function CulturalPage() {
             href="https://forms.gle/X4o8v3Qjq3CnULRf9"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center flex-none px-[26px] py-[13px] rounded-xl bg-accent-green text-[#0e0e0e] font-sans font-semibold text-[15px] whitespace-nowrap transition-all duration-200 hover:brightness-[1.08]"
+            className="inline-flex items-center gap-2 flex-none px-[26px] py-[13px] rounded-xl bg-accent-green text-[#0e0e0e] font-sans font-semibold text-[15px] whitespace-nowrap transition-all duration-200 hover:brightness-[1.08]"
           >
             Join Pamana
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
           </a>
         </div>
       </section>

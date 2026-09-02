@@ -118,7 +118,15 @@ export default function SportsPage() {
               rather than one roster */}
           <div ref={sportsGridRef} className="grid grid-cols-2 md:grid-cols-3 gap-1 pt-10">
             {SPORTS.map(({ name, photo }) => (
-              <div key={name} className="relative aspect-[4/3] overflow-hidden group">
+              // the roster is 9 tiles, so the 2-col mobile grid leaves the last one
+              // (the mystery tile) orphaned in the left column — span both columns and
+              // center it at one column's width. md+ is an exact 3x3, nothing to fix.
+              <div
+                key={name}
+                className={`relative aspect-[4/3] overflow-hidden group${
+                  photo ? '' : ' max-md:col-span-2 max-md:w-1/2 max-md:mx-auto'
+                }`}
+              >
                 {photo ? (
                   <SmoothImage
                     src={photo}

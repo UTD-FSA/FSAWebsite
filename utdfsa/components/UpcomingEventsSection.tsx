@@ -75,7 +75,7 @@ export default function UpcomingEventsSection({ events, isMember, member, regist
   if (events.length === 0) return null
 
   return (
-    <section id="upcoming-events" className="scroll-mt-20 bg-brand-bg px-4 sm:px-8 lg:px-16 pt-6 sm:pt-8 lg:pt-10 pb-14 sm:pb-20 lg:pb-24">
+    <section id="upcoming-events" className="scroll-mt-20 bg-brand-bg px-4 sm:px-8 lg:px-16 pt-14 sm:pt-20 lg:pt-24 pb-14 sm:pb-20 lg:pb-24">
       <div className="max-w-[1241px] mx-auto">
 
         <div className="mb-10 lg:mb-14">

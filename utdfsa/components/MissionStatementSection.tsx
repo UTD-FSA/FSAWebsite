@@ -31,7 +31,7 @@ export default function MissionStatementSection() {
   const pillarsVisible = useRevealOnScroll(copyRef)
 
   return (
-    <section className="bg-section-bg px-4 sm:px-8 lg:px-16 pt-6 sm:pt-8 lg:pt-10 pb-6 sm:pb-8 lg:pb-10">
+    <section className="bg-section-bg px-4 sm:px-8 lg:px-16 pt-14 sm:pt-20 lg:pt-24 pb-6 sm:pb-8 lg:pb-10">
       <div className="max-w-[1241px] mx-auto">
         <SectionHeader index="02" title="Our Mission" baybayin="ᜋᜒᜐ᜔ᜌᜓᜈ᜔" />
 
