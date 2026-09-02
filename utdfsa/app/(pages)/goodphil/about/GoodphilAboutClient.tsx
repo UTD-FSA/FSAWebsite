@@ -244,9 +244,11 @@ export default function GoodphilAboutPage() {
                 }}
               >
                 {/* the zoom is promoted to its own compositor layer (transform-gpu
-                    + will-change) — without it the browser re-rasterizes the photo
-                    against the parent's rounded overflow clip every frame, which is
-                    what made this read as choppy rather than as a glide */}
+                    + will-change) so the browser stops re-rasterizing the photo
+                    against the parent's rounded overflow clip every frame. that
+                    promotion is worth keeping, but it was never what made the hover
+                    glide — the curve lives in SmoothImage, and until it named the
+                    `scale` property there was no transition here at all. */}
                 <SmoothImage
                   src={photo}
                   alt={name}
