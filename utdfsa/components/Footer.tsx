@@ -14,7 +14,7 @@ const SOCIALS = [
   { href: 'https://instagram.com/fsautd',  label: 'Instagram', icon: '/instagram.svg' },
   { href: 'https://youtube.com/@fsautd',   label: 'YouTube',   icon: '/youtube.svg'   },
   { href: 'https://tiktok.com/@utdfsa',    label: 'TikTok',    icon: '/tiktok.svg'    },
-  { href: 'https://discord.gg/uVRmuF3BT', label: 'Discord',   icon: '/discord.svg'   },
+  { href: 'https://discord.gg/xPrCpvfZjK', label: 'Discord',   icon: '/discord.svg'   },
   { href: 'mailto:fsautd@gmail.com',       label: 'Email (opens mail app)', icon: '/gmail.svg' },
 ]
 

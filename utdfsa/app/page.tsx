@@ -59,7 +59,7 @@ const ORGANIZATION_JSON_LD = {
     "https://instagram.com/fsautd",
     "https://youtube.com/@fsautd",
     "https://tiktok.com/@utdfsa",
-    "https://discord.gg/uVRmuF3BT",
+    "https://discord.gg/xPrCpvfZjK",
   ],
 }
 

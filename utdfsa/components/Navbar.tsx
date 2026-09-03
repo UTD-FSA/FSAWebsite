@@ -205,7 +205,7 @@ export default function Navbar() {
   const navLink = (active: boolean) =>
     `${navBase} ${active ? 'text-accent-green' : 'text-white hover:text-accent-green'}`
   const dropdownItemClass = (active: boolean) =>
-    `block px-5 py-3 text-sm font-display font-semibold uppercase tracking-wide transition-colors ${active ? 'text-accent-green' : 'text-white hover:text-accent-green'}`
+    `block px-5 py-3 text-sm font-display font-semibold uppercase tracking-wide transition-colors hover:bg-white/10 ${active ? 'text-accent-green' : 'text-white hover:text-accent-green'}`
   const mobileBase = "block py-4 px-6 text-lg font-display font-semibold uppercase tracking-wider hover:bg-white/10 transition-colors"
   const mobileNavLink = (active: boolean) =>
     `${mobileBase} ${active ? 'text-accent-green' : 'text-white hover:text-accent-green'}`
