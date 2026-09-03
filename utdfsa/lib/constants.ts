@@ -25,3 +25,9 @@ export const PUBLIC_EVENT_COLUMNS =
   'attend_qr_open, attend_qr_expires_at, price_cents_members, price_cents_nonmembers, ' +
   'eb_price_members, eb_price_nonmembers, eb_deadline, is_active, is_visible, ' +
   'cover_photo_url, registration_closes_at'
+
+// ── pamilya roster ────────────────────────────────────────
+
+// the current list of pams. shared by the officer applications UI (ading + kuyate
+// assign-pamilya dropdowns) and both PATCH route validators — keep all three in sync.
+export const PAMILYA_OPTIONS = ['U-Baes', 'Busog Bandits', 'ABGs'] as const

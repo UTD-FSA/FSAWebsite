@@ -4,12 +4,15 @@
 // data:  ading_applications, kuyate_applications, members (joined)
 // deps:  /api/officer/applications/ading/[id], /api/officer/applications/kuyate/[id]
 // notes: status changes for kuyate trigger a confirmation modal because they fire emails;
-//        ading status changes are optimistic and silent. pamilya assignment is ading-only.
+//        ading status changes are optimistic and silent. pamilya assignment (members.pamilya)
+//        is available on both tabs; it's separate from kuyate's own free-text pamilya_name
+//        (their stated preference to lead a pam) and never touches the status email.
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
 import Modal from '@/components/Modal'
 import type { AdingApplication as AdingRow, KuyateApplication as KuyateRow } from '@/types/database'
+import { PAMILYA_OPTIONS } from '@/lib/constants'
 
 // ── types and constants ───────────────────────────────────
 
@@ -29,11 +32,6 @@ interface MemberInfo {
 // shared db row types + the members join this page's queries embed
 type AdingApplication = AdingRow & { members: MemberInfo }
 type KuyateApplication = KuyateRow & { members: MemberInfo }
-
-const PAMILYA_OPTIONS = [
-  'Shiballers', 'Gutom Gang', 'Sushi Cuchi', 'Hanobe',
-  'Moganda', 'SDIYBT', 'Arigyattos',
-] as const
 
 const ADING_QUESTION_LABELS: Record<string, string> = {
   instagram: 'Instagram',
@@ -264,6 +262,45 @@ function SortMenu({ value, onChange }: { value: SortOption; onChange: (v: SortOp
   )
 }
 
+// ── Assign Pamilya row (shared by both ading and kuyate modal footers) ──────
+
+function AssignPamilyaRow({
+  value,
+  onChange,
+  saving,
+}: {
+  value: string | null
+  onChange: (pamilya: string | null) => void
+  saving?: 'saving' | 'saved' | 'error' | null
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <label className="text-[12px] text-[#7e7e7e] font-semibold shrink-0">Assign Pamilya</label>
+      <select
+        value={value ?? ''}
+        onChange={e => onChange(e.target.value || null)}
+        className="text-[12px] border border-white/12 rounded-[9px] px-2.5 py-1.5 text-[#d4d4d4] bg-[#0d0d0d] focus:outline-none focus:border-[#9747FF] officer-select appearance-none pr-8 font-[inherit]"
+      >
+        <option value="">Not yet assigned</option>
+        {PAMILYA_OPTIONS.map(p => (
+          <option key={p} value={p}>{p}</option>
+        ))}
+      </select>
+      {saving === 'saving' && (
+        <span className="text-[12px] text-text-muted font-medium">Saving…</span>
+      )}
+      {saving === 'saved' && (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5fcf8f" strokeWidth={2.4}>
+          <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      )}
+      {saving === 'error' && (
+        <span className="text-[12px] text-[#ef6f6f] font-medium">Failed</span>
+      )}
+    </div>
+  )
+}
+
 // ── Application Detail Modal ────────────────────────────────────────────────
 
 function ApplicationDetailModal({
@@ -401,37 +438,44 @@ function ApplicationDetailModal({
         {/* Footer — sticky */}
         <div className="px-6 py-4 border-t border-white/8 shrink-0">
           {type === 'kuyate' ? (
-            <div className="flex items-center justify-between gap-3">
-              <button
-                onClick={onDelete}
-                className="text-[12px] font-semibold text-[#ef6f6f]/60 border border-[#ef6f6f]/25 hover:border-[#ef6f6f]/55 hover:text-[#ef6f6f]/90 rounded-[9px] px-2.5 py-1 transition-colors"
-              >
-                Delete
-              </button>
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1.5">
-                  <button
-                    onClick={() => onStatusChange(application.id, 'accepted')}
-                    className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border-none transition-colors ${
-                      application.status === 'accepted'
-                        ? 'bg-[#3a9d63] text-white'
-                        : 'bg-[rgba(58,157,99,0.14)] text-[#5fcf8f] hover:bg-[rgba(58,157,99,0.22)]'
-                    }`}
-                  >
-                    Accept
-                  </button>
-                  <button
-                    onClick={() => onStatusChange(application.id, 'rejected')}
-                    className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border-none transition-colors ${
-                      application.status === 'rejected'
-                        ? 'bg-[#cf4d4d] text-white'
-                        : 'bg-[rgba(207,77,77,0.14)] text-[#ef6f6f] hover:bg-[rgba(207,77,77,0.22)]'
-                    }`}
-                  >
-                    Reject
-                  </button>
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  onClick={onDelete}
+                  className="text-[12px] font-semibold text-[#ef6f6f]/60 border border-[#ef6f6f]/25 hover:border-[#ef6f6f]/55 hover:text-[#ef6f6f]/90 rounded-[9px] px-2.5 py-1 transition-colors"
+                >
+                  Delete
+                </button>
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={() => onStatusChange(application.id, 'accepted')}
+                      className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border-none transition-colors ${
+                        application.status === 'accepted'
+                          ? 'bg-[#3a9d63] text-white'
+                          : 'bg-[rgba(58,157,99,0.14)] text-[#5fcf8f] hover:bg-[rgba(58,157,99,0.22)]'
+                      }`}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      onClick={() => onStatusChange(application.id, 'rejected')}
+                      className={`text-xs font-bold px-3 py-1.5 rounded-[9px] border-none transition-colors ${
+                        application.status === 'rejected'
+                          ? 'bg-[#cf4d4d] text-white'
+                          : 'bg-[rgba(207,77,77,0.14)] text-[#ef6f6f] hover:bg-[rgba(207,77,77,0.22)]'
+                      }`}
+                    >
+                      Reject
+                    </button>
+                  </div>
                 </div>
               </div>
+              <AssignPamilyaRow
+                value={(application as KuyateApplication).members.pamilya}
+                onChange={pamilya => onPamilyaChange?.(application.id, pamilya)}
+                saving={pamilyaSaving}
+              />
             </div>
           ) : (
             <div className="flex flex-col gap-3">
@@ -451,30 +495,11 @@ function ApplicationDetailModal({
                 />
               </div>
               {/* Row 2: Assign Pamilya dropdown */}
-              <div className="flex items-center gap-2">
-                <label className="text-[12px] text-[#7e7e7e] font-semibold shrink-0">Assign Pamilya</label>
-                <select
-                  value={(application as AdingApplication).members.pamilya ?? ''}
-                  onChange={e => onPamilyaChange?.(application.id, e.target.value || null)}
-                  className="text-[12px] border border-white/12 rounded-[9px] px-2.5 py-1.5 text-[#d4d4d4] bg-[#0d0d0d] focus:outline-none focus:border-[#9747FF] officer-select appearance-none pr-8 font-[inherit]"
-                >
-                  <option value="">Not yet assigned</option>
-                  {PAMILYA_OPTIONS.map(p => (
-                    <option key={p} value={p}>{p}</option>
-                  ))}
-                </select>
-                {pamilyaSaving === 'saving' && (
-                  <span className="text-[12px] text-text-muted font-medium">Saving…</span>
-                )}
-                {pamilyaSaving === 'saved' && (
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5fcf8f" strokeWidth={2.4}>
-                    <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                )}
-                {pamilyaSaving === 'error' && (
-                  <span className="text-[12px] text-[#ef6f6f] font-medium">Failed</span>
-                )}
-              </div>
+              <AssignPamilyaRow
+                value={(application as AdingApplication).members.pamilya}
+                onChange={pamilya => onPamilyaChange?.(application.id, pamilya)}
+                saving={pamilyaSaving}
+              />
             </div>
           )}
         </div>
@@ -538,6 +563,9 @@ function KuyateCard({ app, onOpen, onDelete }: { app: KuyateApplication; onOpen:
         <p className="text-[12px] text-text-muted font-medium line-clamp-1 mt-0.5">
           {[m.year, m.major].filter(Boolean).join(' · ')}
         </p>
+        {m.pamilya && (
+          <p className="text-[12px] text-[#9747FF] mt-0.5 line-clamp-1 font-semibold">Pamilya: {m.pamilya}</p>
+        )}
         <div className="mt-auto pt-3 border-t border-white/6 flex items-center justify-between">
           <p className="text-[12px] text-text-muted font-medium">Submitted {fmtDate(app.submitted_at)}</p>
           <button
@@ -873,7 +901,7 @@ export default function ApplicationsClient({
     }
   }
 
-  async function updatePamilya(appId: string, pamilya: string | null) {
+  async function updateAdingPamilya(appId: string, pamilya: string | null) {
     setPamilyaSaving(prev => ({ ...prev, [appId]: 'saving' }))
 
     // api: calls PATCH /api/officer/applications/ading/[id] — updates the assigned pamilya on the member row — do not change this endpoint or method
@@ -885,6 +913,29 @@ export default function ApplicationsClient({
 
     if (res.ok) {
       setAdingApps(apps => apps.map(a => {
+        if (a.id !== appId) return a
+        return { ...a, members: { ...a.members, pamilya } }
+      }))
+      setPamilyaSaving(prev => ({ ...prev, [appId]: 'saved' }))
+      setTimeout(() => setPamilyaSaving(prev => ({ ...prev, [appId]: null })), 2000)
+    } else {
+      setPamilyaSaving(prev => ({ ...prev, [appId]: 'error' }))
+      setTimeout(() => setPamilyaSaving(prev => ({ ...prev, [appId]: null })), 3000)
+    }
+  }
+
+  async function updateKuyatePamilya(appId: string, pamilya: string | null) {
+    setPamilyaSaving(prev => ({ ...prev, [appId]: 'saving' }))
+
+    // api: calls PATCH /api/officer/applications/kuyate/[id] — updates the assigned pamilya on the member row — do not change this endpoint or method
+    const res = await fetch(`/api/officer/applications/kuyate/${appId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pamilya }),
+    })
+
+    if (res.ok) {
+      setKuyateApps(apps => apps.map(a => {
         if (a.id !== appId) return a
         return { ...a, members: { ...a.members, pamilya } }
       }))
@@ -1149,7 +1200,9 @@ export default function ApplicationsClient({
               if (s === 'accepted' || s === 'rejected') setSelectedAppId(null)
             }
           }}
-          onPamilyaChange={(id, pamilya) => updatePamilya(id, pamilya)}
+          onPamilyaChange={(id, pamilya) =>
+            selectedAppType === 'kuyate' ? updateKuyatePamilya(id, pamilya) : updateAdingPamilya(id, pamilya)
+          }
           pamilyaSaving={selectedAppId ? (pamilyaSaving[selectedAppId] ?? null) : null}
           currentIndex={modalNavIndex >= 0 ? modalNavIndex : undefined}
           totalCount={modalNavList.length}

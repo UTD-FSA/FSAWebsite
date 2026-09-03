@@ -7,12 +7,11 @@ import { requireOfficer } from '@/lib/auth'
 import { z } from 'zod'
 import { NextResponse } from 'next/server'
 import { fail, failValidation } from '@/lib/api-response'
-
-const PAMILYA_VALUES = ['Shiballers', 'Gutom Gang', 'Sushi Cuchi', 'Hanobe', 'Moganda', 'SDIYBT', 'Arigyattos'] as const
+import { PAMILYA_OPTIONS } from '@/lib/constants'
 
 const patchSchema = z.object({
   status: z.enum(['pending', 'accepted', 'rejected']).optional(),
-  pamilya: z.enum(PAMILYA_VALUES).nullable().optional(),
+  pamilya: z.enum(PAMILYA_OPTIONS).nullable().optional(),
 }).refine(
   data => data.status !== undefined || data.pamilya !== undefined,
   { message: 'at least one field (status or pamilya) must be provided' }
