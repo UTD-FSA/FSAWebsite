@@ -116,6 +116,8 @@ export default function EventsPageClient({ events, isMember, member, registeredE
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [showPast, setShowPast] = useState(false)
+  // 'all' or a lowercased event_type — filters the All Events grid only (This Week strip and calendar stay unfiltered)
+  const [typeFilter, setTypeFilter] = useState('all')
   // controls the "already registered" info modal for members who have a paid ticket
   const [showAlreadyRegistered, setShowAlreadyRegistered] = useState(false)
   // refreshed every 60s so events that pass their date while the page is open move to past automatically
@@ -126,9 +128,12 @@ export default function EventsPageClient({ events, isMember, member, registeredE
   // gridPhase drives the grid crossfade during page/filter transitions
   // 'exiting': old cards fade out; 'entering': new cards fade in; 'idle': no transition
   const [gridPhase, setGridPhase] = useState<'idle' | 'exiting' | 'entering'>('idle')
-  // contentState lags behind currentPage/showPast by 175ms so the exit animation plays first
+  // contentState lags behind currentPage/showPast/typeFilter by 175ms so the exit animation plays first —
+  // typeFilter must be lagged here too (not read live), or the grid swaps content immediately on filter
+  // change while gridPhase is still 'exiting', then remounts again when the lagged swap fires: two
+  // entrance plays back to back, which reads as the animation restarting mid-flight
   // cardSetKey increments on every content change to force card remounts (re-triggers entrance animations)
-  const [contentState, setContentState] = useState({ page: 1, showPast: false, cardSetKey: 0 })
+  const [contentState, setContentState] = useState({ page: 1, showPast: false, typeFilter: 'all', cardSetKey: 0 })
 
   // header entrance refs
   const titleRef  = useRef<HTMLHeadingElement>(null)
@@ -149,16 +154,27 @@ export default function EventsPageClient({ events, isMember, member, registeredE
     return () => mq.removeEventListener('change', handler)
   }, [])
 
+  // ── event type chips — one per distinct type present, derived from real data ──
+  const typeFilters = useMemo(() => {
+    const seen = new Map<string, EventTypeBadge>()
+    for (const event of events) {
+      const key = event.event_type.toLowerCase()
+      if (!seen.has(key)) seen.set(key, getBadge(event.event_type))
+    }
+    return Array.from(seen, ([key, badge]) => ({ key, badge }))
+  }, [events])
+
   // ── sort: upcoming ascending, past descending ─────────────
   const { upcoming, past } = useMemo(() => {
-    const upcoming = events
+    const filtered = typeFilter === 'all' ? events : events.filter(e => e.event_type.toLowerCase() === typeFilter)
+    const upcoming = filtered
       .filter(e => new Date(e.event_date) >= now)
       .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
-    const past = events
+    const past = filtered
       .filter(e => new Date(e.event_date) < now)
       .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
     return { upcoming, past }
-  }, [events, now])
+  }, [events, now, typeFilter])
 
   // reset to page 1 if an event crosses into past while the tab is open
   const prevUpcomingCount = useRef(upcoming.length)
@@ -175,23 +191,37 @@ export default function EventsPageClient({ events, isMember, member, registeredE
   const totalEvents = displayEvents.length
   const totalPages = Math.ceil(totalEvents / EVENTS_PER_PAGE)
 
-  // ── lagged content — drives which cards actually render during transitions ─
-  const displayEventsForCards = contentState.showPast ? [...upcoming, ...past] : upcoming
+  // ── lagged content — mirrors the upcoming/past sort above, but off contentState.typeFilter
+  // instead of the live typeFilter, so the rendered cards don't swap until the exit animation finishes ─
+  const { upcoming: laggedUpcoming, past: laggedPast } = useMemo(() => {
+    const filtered = contentState.typeFilter === 'all'
+      ? events
+      : events.filter(e => e.event_type.toLowerCase() === contentState.typeFilter)
+    const laggedUpcoming = filtered
+      .filter(e => new Date(e.event_date) >= now)
+      .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+    const laggedPast = filtered
+      .filter(e => new Date(e.event_date) < now)
+      .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
+    return { upcoming: laggedUpcoming, past: laggedPast }
+  }, [events, now, contentState.typeFilter])
+
+  const displayEventsForCards = contentState.showPast ? [...laggedUpcoming, ...laggedPast] : laggedUpcoming
   const paginatedEvents = displayEventsForCards.slice(
     (contentState.page - 1) * EVENTS_PER_PAGE,
     contentState.page * EVENTS_PER_PAGE,
   )
 
   // ── grid crossfade: exit current cards, swap content, enter new cards ─────
-  function animateGridTransition(newPage: number, newShowPast: boolean) {
+  function animateGridTransition(newPage: number, newShowPast: boolean, newTypeFilter: string) {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduced) {
-      setContentState(prev => ({ page: newPage, showPast: newShowPast, cardSetKey: prev.cardSetKey + 1 }))
+      setContentState(prev => ({ page: newPage, showPast: newShowPast, typeFilter: newTypeFilter, cardSetKey: prev.cardSetKey + 1 }))
       return
     }
     setGridPhase('exiting')
     setTimeout(() => {
-      setContentState(prev => ({ page: newPage, showPast: newShowPast, cardSetKey: prev.cardSetKey + 1 }))
+      setContentState(prev => ({ page: newPage, showPast: newShowPast, typeFilter: newTypeFilter, cardSetKey: prev.cardSetKey + 1 }))
       setGridPhase('entering')
       setTimeout(() => setGridPhase('idle'), 350)
     }, 175)
@@ -199,7 +229,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
 
   function handlePageChange(page: number) {
     setCurrentPage(page)
-    animateGridTransition(page, showPast)
+    animateGridTransition(page, showPast, typeFilter)
     document.getElementById('all-events')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
@@ -207,7 +237,14 @@ export default function EventsPageClient({ events, isMember, member, registeredE
     const newShowPast = !showPast
     setShowPast(newShowPast)
     setCurrentPage(1)
-    animateGridTransition(1, newShowPast)
+    animateGridTransition(1, newShowPast, typeFilter)
+  }
+
+  function handleFilterChange(key: string) {
+    if (key === typeFilter) return
+    setTypeFilter(key)
+    setCurrentPage(1)
+    animateGridTransition(1, showPast, key)
   }
 
   function getPageNumbers(current: number, total: number): (number | '...')[] {
@@ -430,11 +467,50 @@ export default function EventsPageClient({ events, isMember, member, registeredE
         <div id="all-events" className="mt-10">
           <SectionLabel label="All Events" />
 
+          {/* type filter chips — reuses the badge dot+tint pattern, only affects this grid */}
+          {typeFilters.length > 1 && (
+            <div className="flex flex-wrap gap-2 mb-6">
+              <button
+                onClick={() => handleFilterChange('all')}
+                className="inline-flex items-center rounded-full text-[12px] font-bold tracking-[0.02em] transition-all active:scale-95"
+                style={{
+                  padding: '7px 15px',
+                  color: typeFilter === 'all' ? '#75ba78' : '#8c8c8c',
+                  background: typeFilter === 'all' ? 'rgba(117,186,120,0.13)' : 'transparent',
+                  border: `1px solid ${typeFilter === 'all' ? 'rgba(117,186,120,0.34)' : 'rgba(255,255,255,0.12)'}`,
+                }}
+              >
+                All
+              </button>
+              {typeFilters.map(({ key, badge }) => {
+                const active = typeFilter === key
+                return (
+                  <button
+                    key={key}
+                    onClick={() => handleFilterChange(key)}
+                    className="inline-flex items-center gap-1.5 rounded-full text-[12px] font-bold tracking-[0.02em] transition-all active:scale-95"
+                    style={{
+                      padding: '7px 15px',
+                      color: active ? badge.text : '#8c8c8c',
+                      background: active ? badge.bg : 'transparent',
+                      border: `1px solid ${active ? badge.border : 'rgba(255,255,255,0.12)'}`,
+                    }}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full flex-none" style={{ background: active ? badge.dot : '#7a7a7a' }} />
+                    {badge.label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
           {/* only renders empty state when no displayable events exist — do not remove this condition */}
           {displayEvents.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-2xl mb-3" role="img" aria-label="party popper">🎉</p>
-              <p className="text-base font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>No upcoming events right now</p>
+              <p className="text-base font-semibold mb-1" style={{ color: 'var(--color-text-secondary)' }}>
+                {typeFilter === 'all' ? 'No upcoming events right now' : `No upcoming ${getBadge(typeFilter).label.toLowerCase()} events`}
+              </p>
               <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>Check back soon — new events drop regularly.</p>
             </div>
           ) : (
@@ -450,7 +526,7 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                 const badge = getBadge(event.event_type)
                 const isPastCard = new Date(event.event_date) < now
                 const globalIndex = (contentState.page - 1) * EVENTS_PER_PAGE + index
-                const isFirstPastEvent = contentState.showPast && globalIndex === upcoming.length
+                const isFirstPastEvent = contentState.showPast && globalIndex === laggedUpcoming.length
                 return (
                   <Fragment key={`${contentState.cardSetKey}-${event.id}`}>
                     {isFirstPastEvent && (
