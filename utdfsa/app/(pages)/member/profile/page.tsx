@@ -8,8 +8,42 @@
 import { requireUser, assertActiveMember } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getSettings } from '@/lib/settings'
+import { memberTypeLabel } from '@/lib/member-type-label'
 import Link from 'next/link'
 import ProgressBars from './ProgressBars'
+import type { SupabaseClient } from '@supabase/supabase-js'
+
+type MemberTypeApplication = { status: string | null; wants_to_be_pam_head?: boolean } | null
+
+// member_type dictates which application table has this member's row (both allow multiple
+// rows per member — order by created_at, the non-nullable timestamp, to get the latest).
+// rls-scoped (ading_select_own / kuyate_select_own) — no admin client needed. pulled into its
+// own function (rather than an inline ternary in the Promise.all array below) so the two
+// branches' selects — one of which has no wants_to_be_pam_head column at all — resolve to a
+// single declared return type instead of a TS union missing the field on one arm.
+async function fetchMemberTypeApplication(
+  supabase: SupabaseClient,
+  memberId: string,
+  memberType: string | null
+): Promise<MemberTypeApplication> {
+  if (memberType === 'kuyate') {
+    const { data } = await supabase.from('kuyate_applications')
+      .select('status, wants_to_be_pam_head')
+      .eq('member_id', memberId)
+      .order('created_at', { ascending: false })
+      .limit(1).maybeSingle()
+    return data
+  }
+  if (memberType === 'ading') {
+    const { data } = await supabase.from('ading_applications')
+      .select('status')
+      .eq('member_id', memberId)
+      .order('created_at', { ascending: false })
+      .limit(1).maybeSingle()
+    return data
+  }
+  return null
+}
 
 export default async function ProfilePage() {
   // ============================================================
@@ -36,14 +70,25 @@ export default async function ProfilePage() {
   // redirect to /login if member row doesn't exist, /membership if unpaid
   assertActiveMember(member)
 
-  // parallel: settings + attendance history (both independent of each other)
+  // parallel: settings + attendance history + the member's own ading/kuyate application
+  // (all three independent of each other)
   const [
     { kuyateApplicationsOpen, pamilyaRevealActive },
     { data: attendanceRecords },
+    application,
   ] = await Promise.all([
     getSettings(),
     supabase.from('attendance').select('id, events (event_type)').eq('member_id', member.id),
+    fetchMemberTypeApplication(supabase, member.id, member.member_type),
   ])
+
+  // display label for the ading/kuyate row — see lib/member-type-label.ts for the matrix
+  // (a rejected application hides the row even though member_type still says ading/kuyate)
+  const memberTypeText = memberTypeLabel(
+    member.member_type,
+    application?.status ?? null,
+    application?.wants_to_be_pam_head ?? false
+  )
 
   // supabase returns the joined row as an object or a single-element array depending on
   // relation cardinality — normalize the same way AttendanceClient's resolveEvent does
@@ -64,6 +109,8 @@ export default async function ProfilePage() {
   //   member (Member) — full member row
   //   kuyateApplicationsOpen (bool) — whether kuyate applications are open;
   //     used to show/hide the kuya/ate re-apply link
+  //   memberTypeText (string | null) — "Ading" / "Kuyate" / "Kuyate (Pam Head)" / "... (pending)",
+  //     or null to hide the row (not_interested, no application yet, or rejected)
   //   meetingCount (number | null) — meetings attended (General Meeting + Risk Management)
   //   riskMgmtCount (number | null) — Risk Management sessions attended
   // change classnames, layout, colors, and typography freely
@@ -130,6 +177,18 @@ export default async function ProfilePage() {
                 {member.membership_status ?? 'Pending'}
               </span>
             </div>
+            {/* only renders when the member has an ading/kuyate application worth showing —
+                hidden for not_interested, no application yet, or a rejected application
+                (member_type still says ading/kuyate then — see lib/member-type-label.ts) */}
+            {memberTypeText && (
+              <>
+                <div className="w-full h-px bg-white/10" />
+                <div className="flex justify-between items-center">
+                  <span className="font-sans text-sm text-white/50">Type</span>
+                  <span className="font-sans text-sm text-white">{memberTypeText}</span>
+                </div>
+              </>
+            )}
             <div className="w-full h-px bg-white/10" />
             <div className="flex justify-between items-center">
               <span className="font-sans text-sm text-white/50">Role</span>
