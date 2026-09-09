@@ -30,4 +30,4 @@ export const PUBLIC_EVENT_COLUMNS =
 
 // the current list of pams. shared by the officer applications UI (ading + kuyate
 // assign-pamilya dropdowns) and both PATCH route validators — keep all three in sync.
-export const PAMILYA_OPTIONS = ['U-Baes', 'Busog Bandits', 'ABGs', 'Full House', 'Totoros'] as const
+export const PAMILYA_OPTIONS = ['U-Baes', 'Busog Bandits', 'ABGs', 'Full House', 'Totoros', 'Pam Next Door'] as const
