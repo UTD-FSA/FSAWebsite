@@ -4,7 +4,9 @@
 // data:  props — event (id, name, date, location, prices, early_bird flag),
 //                isMember (bool), memberInfo (pre-fill | null)
 // deps:  POST /api/events/register → stripe checkout session
-// notes: members are limited to 1 ticket and have their fields pre-filled + disabled;
+// notes: members are limited to 1 ticket; each of their own fields is pre-filled + disabled
+//        only when the member row actually has a value for it (see isLocked) —
+//        a blank one stays editable so an empty name can't submit and 400;
 //        non-members can add up to 10 tickets. free events skip stripe and go to a success url.
 
 'use client'
@@ -82,6 +84,15 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
     setTickets(prev => prev.map((t, idx) => idx === i ? { ...t, [field]: value } : t))
   }
 
+  // a member's own slot locks each field that actually came pre-filled. a blank one stays
+  // editable — google oauth gives no family_name for single-word display names, so
+  // last_name can be '' on the member row; locking it there left the member unable to
+  // register at all (the api rejects an empty name, and a disabled input skips the
+  // browser's own `required` check, so nothing caught it client-side)
+  function isLocked(i: number, field: 'fname' | 'lname' | 'email') {
+    return isMember && i === 0 && !!memberInfo?.[field]
+  }
+
   // hard cap at 10 tickets per order for non-members
   function addTicket() {
     if (tickets.length < 10) {
@@ -102,7 +113,7 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
 
     // validate email confirmation for each editable ticket slot before hitting the api
     const errs = tickets.map((t, i) => {
-      if (isMember && i === 0) return '' // member's first slot email is pre-filled and locked — skip
+      if (isLocked(i, 'email')) return '' // pre-filled and locked — no confirm field to compare against
       if (t.email.trim().toLowerCase() !== t.emailConfirm.trim().toLowerCase()) {
         return 'Email addresses do not match.'
       }
@@ -268,26 +279,26 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label htmlFor={`fname-${i}`} className={labelCls} style={{ color: '#7a7a7a' }}>First Name</label>
-                      {/* disabled for the member's own first ticket — their name comes from memberInfo — do not remove disabled */}
+                      {/* disabled for the member's own first ticket when memberInfo supplied it — do not remove disabled */}
                       <input
                         id={`fname-${i}`}
                         required
                         value={ticket.fname}
                         onChange={e => updateTicket(i, 'fname', e.target.value)}
-                        disabled={isMember && i === 0}
+                        disabled={isLocked(i, 'fname')}
                         className={fieldCls}
                         placeholder="First"
                       />
                     </div>
                     <div>
                       <label htmlFor={`lname-${i}`} className={labelCls} style={{ color: '#7a7a7a' }}>Last Name</label>
-                      {/* disabled for the member's own first ticket — their name comes from memberInfo — do not remove disabled */}
+                      {/* disabled for the member's own first ticket when memberInfo supplied it — do not remove disabled */}
                       <input
                         id={`lname-${i}`}
                         required
                         value={ticket.lname}
                         onChange={e => updateTicket(i, 'lname', e.target.value)}
-                        disabled={isMember && i === 0}
+                        disabled={isLocked(i, 'lname')}
                         className={fieldCls}
                         placeholder="Last"
                       />
@@ -296,21 +307,21 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
 
                   <div>
                     <label htmlFor={`email-${i}`} className={labelCls} style={{ color: '#7a7a7a' }}>Email</label>
-                    {/* disabled for the member's own first ticket — their contact_email comes from memberInfo — do not remove disabled */}
+                    {/* disabled for the member's own first ticket when memberInfo supplied it — do not remove disabled */}
                     <input
                       id={`email-${i}`}
                       required
                       type="email"
                       value={ticket.email}
                       onChange={e => updateTicket(i, 'email', e.target.value)}
-                      disabled={isMember && i === 0}
+                      disabled={isLocked(i, 'email')}
                       className={fieldCls}
                       placeholder="email@example.com"
                     />
                   </div>
 
-                  {/* confirm-email field — shown for all slots except the pre-filled member slot */}
-                  {!(isMember && i === 0) && (
+                  {/* confirm-email field — shown for every slot whose email the user can actually type */}
+                  {!isLocked(i, 'email') && (
                     <div>
                       <label htmlFor={`email-confirm-${i}`} className={labelCls} style={{ color: '#7a7a7a' }}>Confirm Email</label>
                       <input
