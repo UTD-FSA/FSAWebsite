@@ -9,11 +9,20 @@
 //        the officer must pick an event before scans are accepted — the scanner
 //        callback ignores frames until selectedEvent is set, and every scan is
 //        validated against that event server-side (WRONG_EVENT rejection).
+//        a request that fails or times out shows SCAN AGAIN (yellow), never INVALID TICKET —
+//        at the 2026-09-13 party every database timeout read as a fake ticket. the rescan
+//        of that same ticket may find its own write already committed; isRecoveredCheckIn()
+//        turns that into a green instead of ALREADY CHECKED IN.
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
 import Modal from '@/components/Modal'
 import { Html5Qrcode } from 'html5-qrcode'
+import { isRecoveredCheckIn, type FailedScan } from '@/lib/events/scan-retry'
+
+// the route makes several database calls, each able to stall ~5s on a throttled instance —
+// long enough to ride out one stall, short enough not to freeze the door
+const SCAN_TIMEOUT_MS = 10_000
 
 export type ScannableEvent = {
   id: string
@@ -26,10 +35,22 @@ export type ScannableEvent = {
 
 type ScanResult =
   | { valid: true; attendee_name: string; event_name: string; reason: 'SUCCESS'; checked_in_count?: number; total_paid?: number }
-  | { valid: false; reason: 'ALREADY_CHECKED_IN'; message: string; checked_in_at?: string; attendee_name: string; checked_in_count?: number; total_paid?: number }
+  | { valid: false; reason: 'ALREADY_CHECKED_IN'; message: string; checked_in_at?: string | null; checked_in_by_you?: boolean; attendee_name: string; checked_in_count?: number; total_paid?: number }
   | { valid: false; reason: 'WRONG_EVENT'; message: string; attendee_name: string; ticket_event_name: string }
   | { valid: false; reason: 'NOT_PAID' | 'INVALID_TICKET'; message: string }
+  // client-side outcomes — the request never produced a verdict
+  | { valid: false; reason: 'RETRY' | 'SIGNED_OUT'; message: string }
   | null
+
+// turns a non-verdict http response into what the officer should do next. only a 200
+// carries a verdict; 400 is a qr code that isn't a ticket at all, 401/403 a lost session,
+// and anything else (503 from a database timeout, 500 from an auth outage) is worth a rescan
+async function readScanResponse(res: Response): Promise<NonNullable<ScanResult>> {
+  if (res.ok) return res.json()
+  if (res.status === 400) return { valid: false, reason: 'INVALID_TICKET', message: 'Not a ticket' }
+  if (res.status === 401 || res.status === 403) return { valid: false, reason: 'SIGNED_OUT', message: 'Signed out' }
+  return { valid: false, reason: 'RETRY', message: 'Server unavailable' }
+}
 
 function fmtEventDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -45,9 +66,10 @@ function fmtEventDate(iso: string) {
 //   events (ScannableEvent[]) — active events for the picker, soonest first
 //   selectedEvent (ScannableEvent | null) — null until the officer picks one
 //   tally ({ checked_in_count, total_paid } | null) — live door count
+//   checking (boolean) — true while a scanned code is being verified
 //   result (ScanResult | null) — set after each QR scan; null between scans
 //     if valid: { attendee_name, event_name, reason: 'SUCCESS' }
-//     if invalid: { reason: 'ALREADY_CHECKED_IN' | 'WRONG_EVENT' | 'NOT_PAID' | 'INVALID_TICKET', message, ... }
+//     if invalid: { reason: 'ALREADY_CHECKED_IN' | 'WRONG_EVENT' | 'NOT_PAID' | 'INVALID_TICKET' | 'RETRY' | 'SIGNED_OUT', message, ... }
 //   cameraError (string | null) — set when the camera fails to start
 // change classnames, layout, colors, and typography freely
 // do not remove or rename the variables being rendered
@@ -55,6 +77,9 @@ function fmtEventDate(iso: string) {
 export default function ScanClient({ events }: { events: ScannableEvent[] }) {
   // result of the most recent scan — null between scans, set for 2.5 s after each
   const [result, setResult] = useState<ScanResult>(null)
+  // true from the moment a code is decoded until its result arrives — without it a slow
+  // request looks like the camera never read the code
+  const [checking, setChecking] = useState(false)
   // set when the camera fails to start (permission denied, no camera, etc.)
   const [cameraError, setCameraError] = useState<string | null>(null)
   // the event the officer is working the door for — scans are ignored until set
@@ -70,6 +95,8 @@ export default function ScanClient({ events }: { events: ScannableEvent[] }) {
   const scannerRef = useRef<Html5Qrcode | null>(null)
   // tracks whether start() resolved successfully — stop() must not be called if start() never resolved
   const startedRef = useRef(false)
+  // the most recent scan that never got an answer — its rescan may find its own write committed
+  const lastFailedRef = useRef<FailedScan | null>(null)
 
   function pickEvent(ev: ScannableEvent) {
     selectedEventRef.current = ev
@@ -98,8 +125,10 @@ export default function ScanClient({ events }: { events: ScannableEvent[] }) {
         // debounce: ignore while result overlay is showing
         if (processingRef.current) return
         processingRef.current = true
+        setChecking(true)
+        const startedAt = Date.now()
 
-        let scanResult: ScanResult = { valid: false, reason: 'INVALID_TICKET', message: 'Scan failed' }
+        let scanResult: NonNullable<ScanResult>
 
         try {
           // api: calls POST /api/scan-ticket — validates QR code against the selected
@@ -108,10 +137,45 @@ export default function ScanClient({ events }: { events: ScannableEvent[] }) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ qr_code: decodedText, event_id: event.id }),
+            signal: AbortSignal.timeout(SCAN_TIMEOUT_MS),
           })
-          if (res.ok) scanResult = await res.json()
-        } catch {}
+          scanResult = await readScanResponse(res)
+        } catch {
+          // network drop or timeout — the write may still land server-side
+          scanResult = { valid: false, reason: 'RETRY', message: 'Server unavailable' }
+        }
 
+        const lastFailed = lastFailedRef.current
+        if (scanResult.reason === 'RETRY') {
+          lastFailedRef.current = { qrCode: decodedText, startedAt }
+        } else if (lastFailed?.qrCode === decodedText) {
+          // the answer to a ticket whose last attempt failed — consumed either way, so a
+          // screenshot of the same ticket scanned later can't ride this recovery
+          lastFailedRef.current = null
+          if (
+            scanResult.reason === 'ALREADY_CHECKED_IN' &&
+            isRecoveredCheckIn(
+              {
+                qrCode: decodedText,
+                checkedInByYou: scanResult.checked_in_by_you ?? false,
+                checkedInAt: scanResult.checked_in_at ?? null,
+              },
+              lastFailed,
+              Date.now()
+            )
+          ) {
+            scanResult = {
+              valid: true,
+              reason: 'SUCCESS',
+              attendee_name: scanResult.attendee_name,
+              event_name: event.name,
+              checked_in_count: scanResult.checked_in_count,
+              total_paid: scanResult.total_paid,
+            }
+          }
+        }
+
+        setChecking(false)
         setResult(scanResult)
 
         // refresh the door tally when the response carries updated counts
@@ -207,15 +271,26 @@ export default function ScanClient({ events }: { events: ScannableEvent[] }) {
         </div>
       )}
 
+      {/* only renders while a scanned code is being verified — do not remove this condition */}
+      {checking && !result && (
+        <div
+          role="status"
+          className="fixed inset-0 flex flex-col items-center justify-center text-center z-50 bg-[#070707]/90"
+        >
+          <p className="text-3xl font-black">CHECKING…</p>
+          <p className="mt-3 text-[#8c8c8c] text-sm">Hold the ticket steady</p>
+        </div>
+      )}
+
       {/* only renders for 2.5 s after each QR scan to display the pass/fail result — do not remove this condition */}
       {result && (
         <div
           role="alert"
           className={`fixed inset-0 flex flex-col items-center justify-center text-center z-50
-          ${result.valid ? 'bg-green-600' : 'bg-red-600'}`}
+          ${result.valid ? 'bg-green-600' : result.reason === 'RETRY' ? 'bg-yellow-400 text-black' : 'bg-red-600'}`}
         >
           <div className="text-8xl mb-6">
-            {result.valid ? '✅' : '❌'}
+            {result.valid ? '✅' : result.reason === 'RETRY' ? '🔄' : '❌'}
           </div>
 
           {/* only renders for a successful, first-time check-in — do not remove this condition */}
@@ -242,6 +317,18 @@ export default function ScanClient({ events }: { events: ScannableEvent[] }) {
               <h1 className="text-4xl font-black mb-2">WRONG EVENT</h1>
               <p className="text-2xl">{result.attendee_name}</p>
               <p className="text-lg opacity-75 mt-1">Ticket is for: {result.ticket_event_name}</p>
+            </>
+          ) : result.reason === 'RETRY' ? (
+            // only renders when the request failed or timed out — no verdict, not a bad ticket; do not remove this condition
+            <>
+              <h1 className="text-4xl font-black mb-2">SCAN AGAIN</h1>
+              <p className="text-lg">Couldn’t reach the server — this doesn’t mean the ticket is bad</p>
+            </>
+          ) : result.reason === 'SIGNED_OUT' ? (
+            // only renders when the officer's session is gone — do not remove this condition
+            <>
+              <h1 className="text-4xl font-black mb-2">SIGNED OUT</h1>
+              <p className="text-lg">Reload the page and sign in again</p>
             </>
           ) : result.reason === 'NOT_PAID' ? (
             // only renders when the ticket's payment is not confirmed — do not remove this condition

@@ -11,7 +11,12 @@
 //        success and already-checked-in responses include the event's door tally
 //        (checked_in_count / total_paid) so the scanner ui stays current.
 //        checked_in_by is recorded for audit purposes.
-//        auth: officer or admin only (requireOfficer).
+//        a failed database call returns 503, never a verdict — at the 2026-09-13 party a
+//        ticket lookup that timed out reported "Ticket not found" and a check-in write
+//        that timed out reported "already checked in". already-checked-in responses carry
+//        checked_in_by_you so the scanner can recognize its own timed-out write that
+//        committed late (lib/events/scan-retry.ts).
+//        auth: officer or admin only (requireOfficer, verified from token claims).
 
 import { requireOfficer } from '@/lib/auth'
 import { scanTicketSchema } from '@/lib/schemas'
@@ -36,23 +41,31 @@ async function eventTally(admin: AdminClient, eventId: string) {
       .eq('event_registrations.event_id', eventId)
       .eq('event_registrations.payment_status', 'paid')
 
-  const [{ count: totalPaid }, { count: checkedIn }] = await Promise.all([
+  const [paid, checkedIn] = await Promise.all([
     base(),
     base().eq('checked_in', true),
   ])
 
+  // a failed count must not show 0/0 at the door — omit the tally and the scanner
+  // keeps its last one
+  if (paid.error || checkedIn.error) return {}
+
   return {
-    checked_in_count: checkedIn ?? 0,
-    total_paid: totalPaid ?? 0,
+    checked_in_count: checkedIn.count ?? 0,
+    total_paid: paid.count ?? 0,
   }
 }
+
+const DB_UNAVAILABLE = 'Could not reach the database, scan again'
 
 // ── POST /api/scan-ticket ─────────────────────────────────────────────────────
 
 export async function POST(req: Request) {
   // ── auth check ────────────────────────────────────────────────────────────
 
-  const ctx = await requireOfficer()
+  // verify: 'claims' — no auth-server round trip per scan; auth-server timeouts were
+  // 11 of the 17 failed calls at the 2026-09-13 party (see lib/auth.ts)
+  const ctx = await requireOfficer({ verify: 'claims' })
   if (!ctx) return fail('Forbidden', 403)
   const { admin, member: officer } = ctx
 
@@ -68,7 +81,7 @@ export async function POST(req: Request) {
   // ── ticket lookup ─────────────────────────────────────────────────────────
 
   // find the ticket by qr_code and join payment status + event name in one query
-  const { data: ticket } = await admin
+  const { data: ticket, error: lookupError } = await admin
     .from('registration_tickets')
     .select(`
       id,
@@ -77,6 +90,7 @@ export async function POST(req: Request) {
       attendee_email,
       checked_in,
       checked_in_at,
+      checked_in_by,
       registration_id,
       event_registrations (
         payment_status,
@@ -88,6 +102,11 @@ export async function POST(req: Request) {
     `)
     .eq('qr_code', qr_code)
     .maybeSingle()
+
+  if (lookupError) {
+    console.error('[scan-ticket] ticket lookup failed', lookupError)
+    return fail(DB_UNAVAILABLE, 503)
+  }
 
   if (!ticket) {
     return NextResponse.json({
@@ -140,6 +159,7 @@ export async function POST(req: Request) {
       reason: 'ALREADY_CHECKED_IN',
       message: 'Already checked in',
       checked_in_at: ticket.checked_in_at,
+      checked_in_by_you: ticket.checked_in_by === officer.id,
       attendee_name: `${ticket.attendee_fname} ${ticket.attendee_lname}`,
       ...(await eventTally(admin, event_id)),
     })
@@ -151,7 +171,7 @@ export async function POST(req: Request) {
   // .eq('checked_in', false) makes this atomic: if two near-simultaneous scans race,
   // only the first write matches a row; the loser gets zero rows back and is treated
   // as already checked in below, closing the TOCTOU gap between the read above and this write.
-  const { data: updatedTickets } = await admin
+  const { data: updatedTickets, error: writeError } = await admin
     .from('registration_tickets')
     .update({
       checked_in: true,
@@ -162,11 +182,29 @@ export async function POST(req: Request) {
     .eq('checked_in', false)
     .select('id')
 
+  // the write may still commit after this error — the rescan that follows is what
+  // sorts that out (see checked_in_by_you below)
+  if (writeError) {
+    console.error('[scan-ticket] check-in write failed', ticket.id, writeError)
+    return fail(DB_UNAVAILABLE, 503)
+  }
+
   if (!updatedTickets || updatedTickets.length === 0) {
+    // lost the race — possibly to this officer's own earlier attempt, whose write timed
+    // out and committed late while this one waited on the row. re-read who won so the
+    // scanner can tell. a failed re-read falls back to a plain already-checked-in.
+    const { data: winner } = await admin
+      .from('registration_tickets')
+      .select('checked_in_at, checked_in_by')
+      .eq('id', ticket.id)
+      .maybeSingle()
+
     return NextResponse.json({
       valid: false,
       reason: 'ALREADY_CHECKED_IN',
       message: 'Already checked in',
+      checked_in_at: winner?.checked_in_at ?? null,
+      checked_in_by_you: winner?.checked_in_by === officer.id,
       attendee_name: `${ticket.attendee_fname} ${ticket.attendee_lname}`,
       ...(await eventTally(admin, event_id)),
     })
