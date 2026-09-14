@@ -12,12 +12,17 @@
 //          checkout.session.expired  → drop the pending event-ticket cart, if any
 //        email failures are caught and logged — they never fail the webhook response
 //        because payment is already recorded before the email attempt.
-//        idempotency: event.id is claimed in stripe_events before any fulfillment write —
-//        a replayed/retried event no-ops on the duplicate-key insert. the claim is rolled
-//        back before any 500 response so stripe's retry can claim it again.
+//        idempotency: event.id is claimed in stripe_events before any fulfillment write, and
+//        that claim is a LEASE — it means "done" only once markFulfilled() stamps
+//        fulfilled_at. a replayed/retried event hits the duplicate-key insert and no-ops,
+//        UNLESS the existing claim is unfulfilled and older than LEASE_STALE_MS, in which
+//        case this delivery takes it over and finishes the job. nothing is ever rolled back:
+//        a 500 deliberately leaves fulfilled_at null so stripe's retry can resume. see the
+//        migration 20260914180000_stripe_events_fulfillment_lease.sql for why the old
+//        release-on-failure design dropped a paid membership.
 //        refunds: refundUnfulfillable() (see lib/events/refund-error.ts) never swallows a
-//        failed stripe.refunds.create — a transient failure releases the claim and 500s so
-//        stripe redelivers and retries the refund; a permanent one is logged CRITICAL and
+//        failed stripe.refunds.create — a transient failure 500s so stripe redelivers and
+//        retries the refund; a permanent one is logged CRITICAL and
 //        returns 200, since retrying can't fix it. a stripe.refunds.create idempotency key
 //        (refund_<session.id>) keeps a redelivery from double-refunding.
 //
@@ -58,6 +63,13 @@ import { fail } from '@/lib/api-response'
 
 // App Router reads the raw body via req.text() — no special config needed.
 // Do NOT add bodyParser: false here (that's Pages Router only and is ignored in App Router).
+
+// how long an unfulfilled claim is treated as still in flight before another delivery may
+// take it over. must stay comfortably above this function's worst-case execution time
+// (11.6s observed in production on 2026-09-14) or two workers could fulfill the same event
+// concurrently — duplicate ticket emails, duplicate charges refunded twice. raising it only
+// delays recovery of a genuinely dead attempt, so err high.
+const LEASE_STALE_MS = 2 * 60 * 1000
 
 // admin client threaded in explicitly rather than imported at module scope, since it's
 // only ever used inside POST — matches how the rest of this file is structured
@@ -241,22 +253,67 @@ export async function POST(req: Request) {
   // bypass rls — webhook has no user session; all writes are trusted server-side
   const supabase = createAdminClient()
 
-  // ── idempotency claim ──────────────────────────────────────────────────────
-  // claim this event id before any fulfillment write. a replayed/retried delivery
-  // hits the primary-key unique_violation and no-ops (never re-sends emails or
-  // re-stamps membership_expires_at). rolled back before any 500 return below so a
-  // genuine transient failure lets stripe's retry claim the event again.
+  // ── fulfillment lease ──────────────────────────────────────────────────────
+  // claim this event id before any fulfillment write, so a replayed/retried delivery
+  // never re-sends emails or re-stamps membership_expires_at. the claim is a LEASE, not a
+  // permanent tombstone: it only means "done" once markFulfilled() stamps fulfilled_at.
+  //
+  // why: the supabase data api 504s at ~5s when the db is cpu-throttled, and the killed
+  // statement still commits afterwards. the previous design deleted the claim before every
+  // 500 so stripe's retry could re-claim — but that delete could itself 504 and land AFTER
+  // the retry had already collided with the surviving row, which no-op'd. stripe then has a
+  // 200 and never retries, and the payment is dropped with nothing left to recover it.
+  // (production, 2026-09-14 06:00:46Z — a paid $30 membership; see the migration
+  // 20260914180000_stripe_events_fulfillment_lease.sql for the full timeline.)
+  //
+  // so nothing is ever rolled back now. a failed attempt simply leaves fulfilled_at null,
+  // and the next delivery takes the lease over once it has gone stale.
+  const sessionObject = event.data.object as {
+    id?: string
+    metadata?: Record<string, string>
+  }
+
   const { error: claimError } = await supabase
     .from('stripe_events')
-    .insert({ id: event.id, type: event.type })
+    .insert({
+      id: event.id,
+      type: event.type,
+      // recorded for reconciliation — when an event drops, the ledger alone has to be able
+      // to say which payment it was (see scripts/reconcile-stripe.mjs)
+      session_id: sessionObject.id ?? null,
+      metadata: sessionObject.metadata ?? null,
+    })
 
   if (claimError) {
-    if (claimError.code === '23505') {
-      console.log('[webhook] duplicate event, already processed', event.id)
+    if (claimError.code !== '23505') {
+      console.error('[webhook] ledger claim failed', event.id, claimError)
+      return fail('Ledger write failed', 500)
+    }
+
+    // someone holds a claim on this event. take it over only if it was never fulfilled AND
+    // has gone stale — a conditional update, so the db decides the winner and two workers
+    // can't both proceed. a fresh claim means another invocation is still working on it.
+    const { data: takenOver, error: takeoverError } = await supabase
+      .from('stripe_events')
+      .update({ processed_at: new Date().toISOString() })
+      .eq('id', event.id)
+      .is('fulfilled_at', null)
+      .lt('processed_at', new Date(Date.now() - LEASE_STALE_MS).toISOString())
+      .select('id')
+      .maybeSingle()
+
+    if (takeoverError) {
+      // can't tell whether it's safe to proceed — 500 so stripe redelivers and asks again
+      console.error('[webhook] lease takeover probe failed', event.id, takeoverError)
+      return fail('Ledger read failed', 500)
+    }
+
+    if (!takenOver) {
+      console.log('[webhook] duplicate event, already fulfilled or in flight', event.id)
       return NextResponse.json({ received: true, duplicate: true })
     }
-    console.error('[webhook] ledger claim failed', event.id, claimError)
-    return fail('Ledger write failed', 500)
+
+    console.warn('[webhook] resuming a stale unfulfilled event', event.id, event.type)
   }
 
   // ponytail: no pg_cron on this project, so retention runs inline instead of on a
@@ -267,6 +324,10 @@ export async function POST(req: Request) {
       .from('stripe_events')
       .delete()
       .lt('processed_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+      // never prune an unfulfilled row. past stripe's replay window it can no longer be
+      // recovered by a redelivery, which makes it the only remaining record that a payment
+      // was taken and never fulfilled — scripts/reconcile-stripe.mjs reads exactly these.
+      .not('fulfilled_at', 'is', null)
       .then(({ error }) => {
         if (error) console.error('[webhook] stripe_events prune failed', error)
       })
@@ -284,22 +345,25 @@ export async function POST(req: Request) {
       })
   }
 
-  // release the claim on a transient DB failure so stripe's retry of this event
-  // can claim it again — only call before a 500 return, never before a permanent
-  // data-problem 4xx (e.g. missing metadata), which would just loop forever.
+  // close the lease. call before every 2xx return — including the terminal no-fulfillment
+  // outcomes (refunded, non-final payment_status, permanent 4xx data problems), since those
+  // are decisions, not failures, and re-running them on a redelivery would be wrong.
+  // never call it before a 500: leaving fulfilled_at null is exactly what lets stripe's
+  // retry take the lease over and finish the job.
   //
-  // ponytail: no automatic recovery if this delete itself fails — the claim row survives,
-  // so stripe's retry hits the duplicate branch above and no-ops, and this event is never
-  // reprocessed. recovering automatically needs a staleness-gated takeover on that duplicate
-  // branch, which weakens the claim from an absolute mutex to a timing-dependent one, on the
-  // route that handles all money in the app; not worth that risk until this log actually fires.
-  const releaseClaim = async () => {
-    const { error } = await supabase.from('stripe_events').delete().eq('id', event.id)
+  // a failure here is not fatal. the row keeps fulfilled_at null, so a redelivery re-runs
+  // fulfillment — which is idempotent for membership (same expiry from the same settings)
+  // but would re-send a ticket email, so it is still worth shouting about.
+  const markFulfilled = async () => {
+    const { error } = await supabase
+      .from('stripe_events')
+      .update({ fulfilled_at: new Date().toISOString() })
+      .eq('id', event.id)
+
     if (error) {
-      const obj = event.data.object as { id?: string; payment_intent?: string }
       console.error(
-        '[webhook] CRITICAL ledger release failed — event will never be retried, reconcile manually',
-        { eventId: event.id, type: event.type, sessionId: obj?.id, paymentIntent: obj?.payment_intent, error }
+        '[webhook] CRITICAL could not close the fulfillment lease — a redelivery may reprocess this event',
+        { eventId: event.id, type: event.type, sessionId: sessionObject.id, error }
       )
     }
   }
@@ -317,6 +381,8 @@ export async function POST(req: Request) {
     // do not fulfill. checkout is card-only today so this path is defensive, not live.
     if (session.payment_status !== 'paid' && session.payment_status !== 'no_payment_required') {
       console.warn('[webhook] completed event with non-final payment_status', session.id, session.payment_status)
+      // a decision, not a failure — never fulfill this event, so close the lease
+      await markFulfilled()
       return NextResponse.json({ received: true })
     }
 
@@ -330,7 +396,6 @@ export async function POST(req: Request) {
         settings = await getSettings()
       } catch (err) {
         console.error('[webhook] getSettings failed for membership activation, member', member_id, err)
-        await releaseClaim()
         return fail('Settings unavailable', 500)
       }
 
@@ -361,7 +426,6 @@ export async function POST(req: Request) {
 
       if (activationError || !activatedMember) {
         console.error('[webhook] membership activation DB write failed for member', member_id, activationError)
-        await releaseClaim()
         return fail('DB write failed', 500)
       }
 
@@ -419,7 +483,6 @@ export async function POST(req: Request) {
           // legitimate in-flight payment) from a genuinely stale session — must not be
           // refunded, just retried
           console.warn('[webhook] pending registration not yet bound to a session — retrying', { pending_id, sessionId: session.id })
-          await releaseClaim()
           return fail('Pending registration not ready', 500)
         }
 
@@ -427,9 +490,10 @@ export async function POST(req: Request) {
           console.warn('[webhook] pending/session mismatch — not fulfilling, refunding', { pending_id, sessionId: session.id })
           const outcome = await refundUnfulfillable(session, 'superseded_or_missing_pending_registration', pending_id)
           if (outcome === 'retry') {
-            await releaseClaim()
             return fail('Refund failed', 500)
           }
+          // refunded (or permanently stuck and logged) — terminal either way
+          await markFulfilled()
           return NextResponse.json({ received: true })
         }
 
@@ -439,7 +503,6 @@ export async function POST(req: Request) {
         // on the money path.
         if (!pending) {
           console.error('[webhook] unreachable: fulfill action with null pending row', { pending_id, sessionId: session.id })
-          await releaseClaim()
           return fail('Internal error', 500)
         }
 
@@ -480,14 +543,13 @@ export async function POST(req: Request) {
             if (outcome === 'retry') {
               // leave the pending row in place — a redelivery must re-derive the same 23505,
               // not silently fulfill because the conflicting cart disappeared out from under it
-              await releaseClaim()
               return fail('Refund failed', 500)
             }
             await supabase.from('pending_registrations').delete().eq('id', pending_id)
+            await markFulfilled()
             return NextResponse.json({ received: true })
           }
           console.error('[webhook] event_ticket DB write failed for pending registration', pending_id, fulfillmentError)
-          await releaseClaim()
           return fail('DB write failed', 500)
         }
 
@@ -511,7 +573,6 @@ export async function POST(req: Request) {
           const { error: ticketInsertError } = await supabase.from('registration_tickets').insert(ticketRows)
           if (ticketInsertError) {
             console.error('[webhook] ticket insert failed for registration', registration.id, ticketInsertError)
-            await releaseClaim()
             return fail('Ticket insert failed', 500)
           }
         }
@@ -553,7 +614,6 @@ export async function POST(req: Request) {
 
         if (fulfillmentError) {
           console.error('[webhook] event_ticket DB write failed for registration', registration_id, fulfillmentError)
-          await releaseClaim()
           return fail('DB write failed', 500)
         }
 
@@ -569,22 +629,24 @@ export async function POST(req: Request) {
 
           if (row && row.stripe_checkout_session_id === null) {
             console.warn('[webhook] registration not yet bound to a session — retrying', { registration_id, sessionId: session.id })
-            await releaseClaim()
             return fail('Registration not ready', 500)
           }
 
           console.warn('[webhook] session/registration mismatch — not fulfilling, refunding', { registration_id, sessionId: session.id })
           const outcome = await refundUnfulfillable(session, 'superseded_checkout_session', registration_id)
           if (outcome === 'retry') {
-            await releaseClaim()
             return fail('Refund failed', 500)
           }
+          await markFulfilled()
           return NextResponse.json({ received: true })
         }
 
         await sendTicketEmails(supabase, registration_id)
       } else {
         console.error('[webhook] event_ticket missing pending_id/registration_id in session metadata', session.id)
+        // permanent data problem — retrying can't fix it, so close the lease rather than
+        // leaving it open for a redelivery to pick up and fail again
+        await markFulfilled()
         return fail('Missing registration reference', 400)
       }
     }
@@ -608,7 +670,6 @@ export async function POST(req: Request) {
 
         if (deleteError) {
           console.error('[webhook] pending registration delete failed', pending_id, deleteError)
-          await releaseClaim()
           return fail('DB write failed', 500)
         }
       } else if (registration_id) {
@@ -625,12 +686,12 @@ export async function POST(req: Request) {
 
         if (expireError) {
           console.error('[webhook] checkout expiry DB write failed for registration', registration_id, expireError)
-          await releaseClaim()
           return fail('DB write failed', 500)
         }
       }
     }
   }
 
+  await markFulfilled()
   return NextResponse.json({ received: true })
 }

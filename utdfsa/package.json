@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "eslint",
     "check:auth-guards": "node scripts/check-auth-guards.mjs",
+    "reconcile:stripe": "node scripts/reconcile-stripe.mjs",
     "test": "node --experimental-strip-types --test \"lib/**/*.test.ts\""
   },
   "dependencies": {

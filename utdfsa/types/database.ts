@@ -263,7 +263,15 @@ export interface KuyateApplication {
 export interface StripeEvent {
   id: string
   type: string
+  // last time a delivery claimed or renewed the lease on this event
   processed_at: string
+  // null while a delivery is in flight or failed part-way. the webhook's takeover probe
+  // keys on this: unfulfilled + stale means the event may be resumed, not skipped.
+  fulfilled_at: string | null
+  // recorded at claim time so a dropped event can be traced back to its payment without
+  // reaching for the stripe dashboard (see scripts/reconcile-stripe.mjs)
+  session_id: string | null
+  metadata: Record<string, unknown> | null
 }
 
 // ── goodphil eligibility ──────────────────────────────────

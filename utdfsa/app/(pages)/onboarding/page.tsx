@@ -2,13 +2,18 @@
 // server component: orchestrates the full onboarding entry flow
 //
 // data:  supabase admin — members table (select + update); getSettings — kuyateApplicationsOpen, membershipExpiry
-// deps:  stripe (checkout.sessions.retrieve for race condition patch)
+// deps:  stripe (checkout.sessions.retrieve for race condition patch);
+//        lib/membership-activation.ts (shouldActivateFromSession — the payment/ownership/replay gate)
 // notes: admin client is used to bypass rls for member_type + onboarding_complete updates.
 //        handles three special cases before rendering: reapply, stripe race condition, and membership gate.
+//        the race-condition patch is the only automatic recovery for a stripe-webhook delivery
+//        that never landed, so its gate lives in lib/ and is unit-tested — a session-id-based
+//        replay check silently disabled it between 2026-07-30 and 2026-09-14.
 
 import { createAdminClient } from '@/utils/supabase/server'
 import { requireUser } from '@/lib/auth'
 import { isMembershipActive } from '@/lib/membership'
+import { shouldActivateFromSession } from '@/lib/membership-activation'
 import { stripe } from '@/lib/stripe'
 import { redirect } from 'next/navigation'
 import { getSettings } from '@/lib/settings'
@@ -43,7 +48,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
   // supabase: members table — fetch all fields needed for the onboarding gate checks and client props
   const { data: member } = await admin
     .from('members')
-    .select('id, first_name, last_name, phone, year, major, shirt_size, membership_status, membership_expires_at, stripe_checkout_session_id, onboarding_complete, role, member_type')
+    .select('id, first_name, last_name, phone, year, major, shirt_size, membership_status, membership_expires_at, stripe_checkout_session_id, stripe_payment_intent_id, payment_verified_at, onboarding_complete, role, member_type')
     .eq('email', user.email!)
     .maybeSingle()
 
@@ -84,29 +89,29 @@ export default async function OnboardingPage({ searchParams }: Props) {
       // invalid or expired session id — fall through to the membership redirect below
     }
 
-    // payment_status: 'paid' covers normal card payments; 'no_payment_required' covers
-    // 100%-off promotion codes (giveaways, officer fee-bypass — legitimate, intentionally
-    // still supported here). anything else is not a finished payment.
-    const paidOrFree =
-      stripeSession?.payment_status === 'paid' || stripeSession?.payment_status === 'no_payment_required'
-
-    // security: metadata.type/member_id checks are load-bearing, not redundant with the
-    // replay guard below. without them, ANY paid stripe session id activates membership —
-    // e.g. a guest event-ticket checkout's session id (type: 'event_ticket', handed back in
-    // the /events success url) or another member's membership session id shared between
-    // friends. the replay guard alone only stops reusing the SAME member's own prior session.
-    // replay guard: if this session id is already recorded on the member row, the
-    // webhook has fulfilled it once — an expired member re-visiting their old success
-    // url must not be able to re-activate without paying again
+    // payment finality, ownership and replay all live in shouldActivateFromSession()
+    // (lib/membership-activation.ts) — see that file for why the replay fingerprint is
+    // the payment intent and not the checkout session id
     if (
       stripeSession &&
-      paidOrFree &&
-      stripeSession.metadata?.type === 'membership' &&
-      stripeSession.metadata?.member_id === member.id &&
-      stripeSession.id !== member.stripe_checkout_session_id
+      shouldActivateFromSession(
+        {
+          payment_status: stripeSession.payment_status,
+          metadata: stripeSession.metadata,
+          payment_intent: stripeSession.payment_intent ?? null,
+        },
+        member
+      )
     ) {
       // payment confirmed by stripe directly; activate membership now.
       // the stripe webhook will also fire and update, but this prevents a blank onboarding screen.
+      // normalize the same way shouldActivateFromSession() does — the column stores an id,
+      // never an expanded object, or the replay guard can't match it on a later visit
+      const paymentIntentId =
+        typeof stripeSession.payment_intent === 'string'
+          ? stripeSession.payment_intent
+          : stripeSession.payment_intent?.id ?? null
+
       let membershipExpiry: Date
       try {
         ({ membershipExpiry } = await getSettings())
@@ -125,7 +130,7 @@ export default async function OnboardingPage({ searchParams }: Props) {
           payment_verified_at: new Date().toISOString(),
           payment_provider: 'stripe',
           stripe_checkout_session_id: stripeSession.id,
-          stripe_payment_intent_id: stripeSession.payment_intent as string,
+          stripe_payment_intent_id: paymentIntentId,
           amt_paid: stripeSession.amount_total,
           // expiry date sourced from site settings so it can be changed without a deploy
           membership_expires_at: membershipExpiry.toISOString(),

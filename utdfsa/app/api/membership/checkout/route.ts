@@ -4,13 +4,18 @@
 // data:  members, settings (earlyBirdDeadline, membershipPriceCents, membershipYear)
 // deps:  stripe (checkout session)
 // notes: early-bird pricing is applied when current time is before settings.earlyBirdDeadline;
-//        price and expiry are read from the db at request time — never hardcoded
+//        price and expiry are read from the db at request time — never hardcoded.
+//        stripe_checkout_session_id is written eagerly at session creation (not at
+//        fulfillment), so nothing may treat that column as proof of payment — see
+//        lib/membership-activation.ts.
+//        expiring the prior session logs CRITICAL when that session was paid but never
+//        fulfilled: a member back here after paying means a dropped webhook.
 import { requireUser } from '@/lib/auth'
 import { createAdminClient } from '@/utils/supabase/server'
 import { stripe } from '@/lib/stripe'
 import { getSettings } from '@/lib/settings'
 import { isMembershipActive } from '@/lib/membership'
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { fail } from '@/lib/api-response'
 import { isRateLimited } from '@/lib/rate-limit'
 
@@ -68,10 +73,11 @@ export async function POST() {
   const admin = createAdminClient()
   const { data: sessionRow } = await admin
     .from('members')
-    .select('stripe_checkout_session_id')
+    .select('stripe_checkout_session_id, stripe_payment_intent_id')
     .eq('id', member.id)
     .maybeSingle()
   const priorSessionId = sessionRow?.stripe_checkout_session_id ?? null
+  const priorPaymentIntentId = sessionRow?.stripe_payment_intent_id ?? null
 
   // ── pricing ─────────────────────────────────────────────
   // fetch prices dynamically from the database
@@ -159,13 +165,44 @@ export async function POST() {
   }
 
   // best-effort: stripe throws if the prior session is already paid/expired/completed,
-  // which is the common case and fine to ignore — same pattern as events/register/route.ts
+  // which is the common case and fine to ignore — same pattern as events/register/route.ts.
+  //
+  // deferred with after() so none of it blocks the member's redirect. the expire call throws
+  // on every terminal prior session (the usual outcome for anyone who abandoned a checkout
+  // once), and the diagnosis below then costs a second stripe round-trip — together ~0.2-1s
+  // of latency on the response that hands them their payment link. nothing here affects the
+  // session that was just created.
   if (priorSessionId && priorSessionId !== session.id) {
-    try {
-      await stripe.checkout.sessions.expire(priorSessionId)
-    } catch (err) {
-      console.warn('[membership/checkout] prior session expire failed (likely already terminal)', priorSessionId, err)
-    }
+    after(async () => {
+      try {
+        await stripe.checkout.sessions.expire(priorSessionId)
+      } catch (err) {
+        // stripe rejects expiring any non-open session, and the two terminal reasons mean
+        // very different things. 'expired' is the ordinary abandoned-checkout case. 'complete'
+        // means the prior session was PAID and this member is nonetheless back here buying
+        // again — which for anyone but a renewing member is the fingerprint of a fulfillment
+        // that never landed. a renewal is excluded by matching the prior session's payment
+        // intent against the one already recorded on their row (written only at fulfillment).
+        const prior = await stripe.checkout.sessions.retrieve(priorSessionId).catch(() => null)
+        const priorWasPaid = prior?.payment_status === 'paid' || prior?.payment_status === 'no_payment_required'
+        const priorPaidIntentId =
+          typeof prior?.payment_intent === 'string'
+            ? prior.payment_intent
+            : prior?.payment_intent?.id ?? null
+        const priorWasFulfilled = priorPaidIntentId
+          ? priorPaidIntentId === priorPaymentIntentId
+          : priorPaymentIntentId !== null
+
+        if (priorWasPaid && !priorWasFulfilled) {
+          console.error(
+            '[membership/checkout] CRITICAL member re-entering checkout after an unfulfilled paid session — reconcile manually',
+            member.id, priorSessionId
+          )
+        } else {
+          console.warn('[membership/checkout] prior session expire failed (likely already terminal)', priorSessionId, err)
+        }
+      }
+    })
   }
 
   return NextResponse.json({ url: session.url })
