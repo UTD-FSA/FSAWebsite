@@ -20,6 +20,11 @@
 //   3. pending_registrations still sitting there with a bound session id — a paid event
 //      ticket whose registration + QR codes were never materialized.
 //
+// a fully refunded order is skipped: the checkout session reports payment_status 'paid'
+// forever, so refund state has to be read off the charge or every past refund keeps
+// resurfacing as stranded. a DISPUTED charge is still reported, labelled — the money is
+// being clawed back but the order may still need a human decision.
+//
 // usage:
 //   node scripts/reconcile-stripe.mjs           # report only, writes nothing
 //   node scripts/reconcile-stripe.mjs --fix     # apply the missing membership fulfillment
@@ -124,6 +129,32 @@ function isPaid(session) {
   return session.payment_status === 'paid' || session.payment_status === 'no_payment_required'
 }
 
+// a refunded order is settled, not stranded — but the checkout session still reports
+// payment_status 'paid' forever, so isPaid() alone can't tell them apart. refund state lives
+// on the charge, one level down. costs an extra api call, but only for the handful of
+// candidates that already looked paid-and-unfulfilled.
+// a DISPUTED charge is deliberately not treated as settled: the money is being clawed back
+// but the order may still need a decision, so it stays in the report, labelled.
+async function settlement(session) {
+  const intentId = paymentIntentId(session)
+  if (!intentId) return { settled: false }
+
+  try {
+    const pi = await stripe.paymentIntents.retrieve(intentId, { expand: ['latest_charge'] })
+    const charge = pi.latest_charge
+    if (charge?.disputed) return { settled: false, note: 'DISPUTED' }
+    if (charge?.refunded) return { settled: true }
+    // a partial refund still leaves something owed — report it with the shortfall visible
+    if (charge?.amount_refunded > 0) {
+      return { settled: false, note: `partially refunded $${(charge.amount_refunded / 100).toFixed(2)}` }
+    }
+    return { settled: false }
+  } catch {
+    // can't read the intent — report it rather than assume either way
+    return { settled: false, note: 'refund status unknown' }
+  }
+}
+
 // ── sweep ─────────────────────────────────────────────────
 
 const stranded = []
@@ -147,10 +178,13 @@ for (const row of openLeases ?? []) {
     continue
   }
   if (!isPaid(session)) continue
+  const { settled, note } = await settlement(session)
+  if (settled) continue
   stranded.push({
     source: 'unfulfilled lease',
     kind: row.metadata?.type ?? row.type,
     memberId: row.metadata?.member_id || null,
+    note,
     session,
   })
 }
@@ -171,7 +205,9 @@ for (const member of candidates ?? []) {
   if (!isPaid(session)) continue
   // already fulfilled under this exact payment — reconciled by hand, or expired since
   if (paymentIntentId(session) && paymentIntentId(session) === member.stripe_payment_intent_id) continue
-  stranded.push({ source: 'member row', kind: 'membership', memberId: member.id, email: member.email, session })
+  const { settled, note } = await settlement(session)
+  if (settled) continue
+  stranded.push({ source: 'member row', kind: 'membership', memberId: member.id, email: member.email, note, session })
 }
 
 // 3. pending carts bound to a session
@@ -187,7 +223,9 @@ for (const cart of carts ?? []) {
     continue
   }
   if (!isPaid(session)) continue
-  stranded.push({ source: 'pending cart', kind: 'event_ticket', cartId: cart.id, email: cart.guest_email, session })
+  const { settled, note } = await settlement(session)
+  if (settled) continue
+  stranded.push({ source: 'pending cart', kind: 'event_ticket', cartId: cart.id, email: cart.guest_email, note, session })
 }
 
 // ── report ────────────────────────────────────────────────
@@ -213,7 +251,7 @@ console.log(`\n${stranded.length} PAID but unfulfilled:`)
 for (const s of stranded) {
   const who = s.email ?? s.memberId ?? s.cartId
   const amount = ((s.session.amount_total ?? 0) / 100).toFixed(2)
-  console.log(`  [${s.source}] ${s.kind} — ${who}`)
+  console.log(`  [${s.source}] ${s.kind} — ${who}${s.note ? `   (${s.note})` : ''}`)
   console.log(`      session ${s.session.id}`)
   console.log(`      intent  ${paymentIntentId(s.session) ?? '(none)'}   $${amount}`)
 }
