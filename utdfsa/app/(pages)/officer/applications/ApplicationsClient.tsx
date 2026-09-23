@@ -7,6 +7,8 @@
 //        ading status changes are optimistic and silent. pamilya assignment (members.pamilya)
 //        is available on both tabs; it's separate from kuyate's own free-text pamilya_name
 //        (their stated preference to lead a pam) and never touches the status email.
+//        the pam filter (PamMenu) narrows by members.pamilya on top of the status filter;
+//        csv export ignores it and stays wired to the status-filtered list.
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
@@ -220,6 +222,24 @@ const SORT_LABELS: Record<SortOption, string> = {
   'name-za': 'Z-A',
 }
 
+// stacks every label in one grid cell (only the current one visible) so a dropdown
+// button is exactly as wide as its longest option and doesn't resize on selection
+function WidestLabel({ labels, current }: { labels: string[]; current: string }) {
+  return (
+    <span className="grid">
+      {labels.map(label => (
+        <span
+          key={label}
+          aria-hidden={label !== current}
+          className={`[grid-area:1/1] whitespace-nowrap ${label === current ? '' : 'invisible'}`}
+        >
+          {label}
+        </span>
+      ))}
+    </span>
+  )
+}
+
 function SortMenu({ value, onChange }: { value: SortOption; onChange: (v: SortOption) => void }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -234,7 +254,7 @@ function SortMenu({ value, onChange }: { value: SortOption; onChange: (v: SortOp
   }, [open])
 
   return (
-    <div className="relative w-full sm:w-36 shrink-0" ref={ref}>
+    <div className="relative flex-1 min-w-0 sm:flex-none" ref={ref}>
       <button
         onClick={() => setOpen(prev => !prev)}
         aria-expanded={open}
@@ -243,7 +263,7 @@ function SortMenu({ value, onChange }: { value: SortOption; onChange: (v: SortOp
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
           <path d="M4 6h16M7 12h10M10 18h4"/>
         </svg>
-        {SORT_LABELS[value]}
+        <WidestLabel labels={Object.values(SORT_LABELS)} current={SORT_LABELS[value]} />
       </button>
       {open && (
         <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-full sm:w-44 bg-dropdown-bg border border-white/10 rounded-xl py-1 z-30 shadow-xl">
@@ -255,6 +275,74 @@ function SortMenu({ value, onChange }: { value: SortOption; onChange: (v: SortOp
             >
               {SORT_LABELS[opt]}
             </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// pam filter values: 'all', '' (not assigned — members.pamilya is null), or a PAMILYA_OPTIONS name
+const PAM_ALL = 'all'
+const PAM_UNASSIGNED = ''
+
+function matchesPam(pamilya: string | null, pam: string): boolean {
+  if (pam === PAM_ALL) return true
+  if (pam === PAM_UNASSIGNED) return pamilya === null
+  return pamilya === pam
+}
+
+function PamMenu({ value, onChange, apps }: {
+  value: string
+  onChange: (v: string) => void
+  apps: Array<{ members: { pamilya: string | null } }>
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onClick)
+    return () => document.removeEventListener('mousedown', onClick)
+  }, [open])
+
+  const options: { value: string; label: string }[] = [
+    { value: PAM_ALL, label: 'All pams' },
+    { value: PAM_UNASSIGNED, label: 'Not assigned' },
+    ...PAMILYA_OPTIONS.map(p => ({ value: p, label: p })),
+  ]
+  const selectedLabel = options.find(o => o.value === value)?.label ?? 'All pams'
+
+  return (
+    <div className="relative flex-1 min-w-0 sm:flex-none" ref={ref}>
+      <button
+        onClick={() => setOpen(prev => !prev)}
+        aria-expanded={open}
+        className="flex items-center justify-center gap-2 w-full text-[13px] font-semibold px-3.5 py-1.5 rounded-[10px] border border-white/12 bg-[#141414] text-white hover:border-white/24 active:scale-95 transition-all"
+      >
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path d="M3 11l9-7 9 7M5 10v10h14V10" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+        <WidestLabel labels={options.map(o => o.label)} current={selectedLabel} />
+      </button>
+      {open && (
+        <div className="absolute right-0 mt-2 w-52 bg-dropdown-bg border border-white/10 rounded-xl py-1 z-30 shadow-xl">
+          {options.map(opt => (
+            <div key={opt.value}>
+              <button
+                onClick={() => { onChange(opt.value); setOpen(false) }}
+                className={`flex items-center justify-between w-full text-left px-4 py-2.5 text-sm font-medium active:bg-white/10 transition-colors ${value === opt.value ? 'text-[#bb9eff]' : 'text-white/80 hover:text-white'}`}
+              >
+                {opt.label}
+                <span className="text-[12px] opacity-50 tabular-nums">
+                  {apps.filter(a => matchesPam(a.members.pamilya, opt.value)).length}
+                </span>
+              </button>
+              {opt.value === PAM_UNASSIGNED && <div className="my-1 border-t border-white/8" />}
+            </div>
           ))}
         </div>
       )}
@@ -752,10 +840,10 @@ export default function ApplicationsClient({
   // local copy of kuyate apps — optimistically updated on status change
   const [kuyateApps, setKuyateApps] = useState<KuyateApplication[]>(initialKuyateApps)
   // per-tab filter/sort/page/search — keyed by tab name so resets are independent
-  type TabState = { filter: Filter; sort: SortOption; page: number; search: string }
+  type TabState = { filter: Filter; sort: SortOption; pam: string; page: number; search: string }
   const [tabState, setTabState] = useState<Record<'ading' | 'kuyate', TabState>>({
-    ading:  { filter: 'pending', sort: 'newest', page: 1, search: '' },
-    kuyate: { filter: 'pending', sort: 'newest', page: 1, search: '' },
+    ading:  { filter: 'pending', sort: 'newest', pam: PAM_ALL, page: 1, search: '' },
+    kuyate: { filter: 'pending', sort: 'newest', pam: PAM_ALL, page: 1, search: '' },
   })
   function patchTab(t: 'ading' | 'kuyate', patch: Partial<TabState>) {
     setTabState(prev => ({ ...prev, [t]: { ...prev[t], ...patch } }))
@@ -833,20 +921,24 @@ export default function ApplicationsClient({
   const sortedAding = sortApps(filteredAding, tabState.ading.sort)
   const sortedKuyate = sortApps(filteredKuyate, tabState.kuyate.sort)
 
+  // pam filter applied on top of status filter; csv export deliberately ignores it
+  const pamFilteredAding = sortedAding.filter(a => matchesPam(a.members.pamilya, tabState.ading.pam))
+  const pamFilteredKuyate = sortedKuyate.filter(a => matchesPam(a.members.pamilya, tabState.kuyate.pam))
+
   // name search applied on top of sorted+filtered list
   const adingSearchTerm = tabState.ading.search.trim().toLowerCase()
   const searchedAding = adingSearchTerm
-    ? sortedAding.filter(a =>
+    ? pamFilteredAding.filter(a =>
         `${a.members.first_name} ${a.members.last_name}`.toLowerCase().includes(adingSearchTerm)
       )
-    : sortedAding
+    : pamFilteredAding
 
   const kuyateSearchTerm = tabState.kuyate.search.trim().toLowerCase()
   const searchedKuyate = kuyateSearchTerm
-    ? sortedKuyate.filter(a =>
+    ? pamFilteredKuyate.filter(a =>
         `${a.members.first_name} ${a.members.last_name}`.toLowerCase().includes(kuyateSearchTerm)
       )
-    : sortedKuyate
+    : pamFilteredKuyate
 
   // prev/next navigation — operates over the full filtered+searched list, independent of pagination
   const modalNavList = selectedAppType === 'ading' ? searchedAding : searchedKuyate
@@ -1033,7 +1125,10 @@ export default function ApplicationsClient({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-5">
               <div className="order-1 sm:order-1 flex flex-col sm:flex-row sm:items-center gap-3">
                 <FilterBar active={tabState.ading.filter} onChange={f => patchTab('ading', { filter: f, page: 1 })} counts={tabCounts(adingApps)} />
-                <SortMenu value={tabState.ading.sort} onChange={sort => patchTab('ading', { sort, page: 1 })} />
+                <div className="flex gap-3">
+                  <SortMenu value={tabState.ading.sort} onChange={sort => patchTab('ading', { sort, page: 1 })} />
+                  <PamMenu value={tabState.ading.pam} onChange={pam => patchTab('ading', { pam, page: 1 })} apps={filteredAding} />
+                </div>
               </div>
               <div className="relative order-2 sm:order-2 sm:flex-1 sm:min-w-0">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none">
@@ -1062,7 +1157,7 @@ export default function ApplicationsClient({
             </div>
 
             {tabState.ading.search.trim() && searchedAding.length > 0 && (
-              <p className="text-[12px] text-text-muted mb-3">{searchedAding.length} of {filteredAding.length} result{searchedAding.length !== 1 ? 's' : ''}</p>
+              <p className="text-[12px] text-text-muted mb-3">{searchedAding.length} of {pamFilteredAding.length} result{searchedAding.length !== 1 ? 's' : ''}</p>
             )}
             {searchedAding.length === 0 ? (
               <p className="text-[#5e5e5e] text-sm py-14 text-center">No applications found.</p>
@@ -1105,7 +1200,10 @@ export default function ApplicationsClient({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-5">
               <div className="order-1 sm:order-1 flex flex-col sm:flex-row sm:items-center gap-3">
                 <FilterBar active={tabState.kuyate.filter} onChange={f => patchTab('kuyate', { filter: f, page: 1 })} counts={tabCounts(kuyateApps)} />
-                <SortMenu value={tabState.kuyate.sort} onChange={sort => patchTab('kuyate', { sort, page: 1 })} />
+                <div className="flex gap-3">
+                  <SortMenu value={tabState.kuyate.sort} onChange={sort => patchTab('kuyate', { sort, page: 1 })} />
+                  <PamMenu value={tabState.kuyate.pam} onChange={pam => patchTab('kuyate', { pam, page: 1 })} apps={filteredKuyate} />
+                </div>
               </div>
               <div className="relative order-2 sm:order-2 sm:flex-1 sm:min-w-0">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none">
@@ -1134,7 +1232,7 @@ export default function ApplicationsClient({
             </div>
 
             {tabState.kuyate.search.trim() && searchedKuyate.length > 0 && (
-              <p className="text-[12px] text-text-muted mb-3">{searchedKuyate.length} of {filteredKuyate.length} result{searchedKuyate.length !== 1 ? 's' : ''}</p>
+              <p className="text-[12px] text-text-muted mb-3">{searchedKuyate.length} of {pamFilteredKuyate.length} result{searchedKuyate.length !== 1 ? 's' : ''}</p>
             )}
             {searchedKuyate.length === 0 ? (
               <p className="text-[#5e5e5e] text-sm py-14 text-center">No applications found.</p>
