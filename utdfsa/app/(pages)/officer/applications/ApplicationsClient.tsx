@@ -197,7 +197,7 @@ function FilterBar({ active, onChange, counts }: {
     all: 'All', pending: 'Pending', accepted: 'Accepted', rejected: 'Rejected',
   }
   return (
-    <div className="flex gap-2 flex-nowrap overflow-x-auto sm:flex-wrap sm:overflow-visible pills-scroll -mx-0.5 px-0.5">
+    <div className="flex gap-2 flex-nowrap overflow-x-auto xl:flex-wrap xl:overflow-visible pills-scroll -mx-0.5 px-0.5">
       {filters.map(f => (
         <button
           key={f}
@@ -254,7 +254,7 @@ function SortMenu({ value, onChange }: { value: SortOption; onChange: (v: SortOp
   }, [open])
 
   return (
-    <div className="relative flex-1 min-w-0 sm:flex-none" ref={ref}>
+    <div className="relative flex-1 min-w-0 xl:flex-none" ref={ref}>
       <button
         onClick={() => setOpen(prev => !prev)}
         aria-expanded={open}
@@ -266,7 +266,7 @@ function SortMenu({ value, onChange }: { value: SortOption; onChange: (v: SortOp
         <WidestLabel labels={Object.values(SORT_LABELS)} current={SORT_LABELS[value]} />
       </button>
       {open && (
-        <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-full sm:w-44 bg-dropdown-bg border border-white/10 rounded-xl py-1 z-30 shadow-xl">
+        <div className="absolute left-0 xl:left-auto xl:right-0 mt-2 w-full xl:w-44 bg-dropdown-bg border border-white/10 rounded-xl py-1 z-30 shadow-xl">
           {(Object.keys(SORT_LABELS) as SortOption[]).map(opt => (
             <button
               key={opt}
@@ -317,7 +317,7 @@ function PamMenu({ value, onChange, apps }: {
   const selectedLabel = options.find(o => o.value === value)?.label ?? 'All pams'
 
   return (
-    <div className="relative flex-1 min-w-0 sm:flex-none" ref={ref}>
+    <div className="relative flex-1 min-w-0 xl:flex-none" ref={ref}>
       <button
         onClick={() => setOpen(prev => !prev)}
         aria-expanded={open}
@@ -1122,15 +1122,15 @@ export default function ApplicationsClient({
         {/* ading tab */}
         {tab === 'ading' && (
           <section>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-5">
-              <div className="order-1 sm:order-1 flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 xl:gap-4 mb-5">
+              <div className="order-1 xl:order-1 flex flex-col xl:flex-row xl:items-center gap-3">
                 <FilterBar active={tabState.ading.filter} onChange={f => patchTab('ading', { filter: f, page: 1 })} counts={tabCounts(adingApps)} />
                 <div className="flex gap-3">
                   <SortMenu value={tabState.ading.sort} onChange={sort => patchTab('ading', { sort, page: 1 })} />
                   <PamMenu value={tabState.ading.pam} onChange={pam => patchTab('ading', { pam, page: 1 })} apps={filteredAding} />
                 </div>
               </div>
-              <div className="relative order-2 sm:order-2 sm:flex-1 sm:min-w-0">
+              <div className="relative order-2 xl:order-2 xl:flex-1 xl:min-w-0">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none">
                   <circle cx="11" cy="11" r="8"/>
                   <path d="M21 21l-4.35-4.35" strokeLinecap="round"/>
@@ -1146,13 +1146,13 @@ export default function ApplicationsClient({
               </div>
               <button
                 onClick={() => exportAdingCSV(filteredAding)}
-                className="order-3 flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 sm:p-2 rounded-[10px] border border-white/16 bg-transparent text-[#8c8c8c] hover:border-white/30 hover:text-[#cfcfcf] transition-all active:scale-95 sm:shrink-0"
+                className="order-3 flex items-center justify-center gap-2 w-full xl:w-auto px-4 py-2.5 xl:p-2 rounded-[10px] border border-white/16 bg-transparent text-[#8c8c8c] hover:border-white/30 hover:text-[#cfcfcf] transition-all active:scale-95 xl:shrink-0"
                 title="Export CSV"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span className="text-[13px] font-semibold sm:hidden">Export CSV</span>
+                <span className="text-[13px] font-semibold xl:hidden">Export CSV</span>
               </button>
             </div>
 
@@ -1197,15 +1197,15 @@ export default function ApplicationsClient({
         {/* kuyate tab */}
         {tab === 'kuyate' && (
           <section>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-5">
-              <div className="order-1 sm:order-1 flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 xl:gap-4 mb-5">
+              <div className="order-1 xl:order-1 flex flex-col xl:flex-row xl:items-center gap-3">
                 <FilterBar active={tabState.kuyate.filter} onChange={f => patchTab('kuyate', { filter: f, page: 1 })} counts={tabCounts(kuyateApps)} />
                 <div className="flex gap-3">
                   <SortMenu value={tabState.kuyate.sort} onChange={sort => patchTab('kuyate', { sort, page: 1 })} />
                   <PamMenu value={tabState.kuyate.pam} onChange={pam => patchTab('kuyate', { pam, page: 1 })} apps={filteredKuyate} />
                 </div>
               </div>
-              <div className="relative order-2 sm:order-2 sm:flex-1 sm:min-w-0">
+              <div className="relative order-2 xl:order-2 xl:flex-1 xl:min-w-0">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none">
                   <circle cx="11" cy="11" r="8"/>
                   <path d="M21 21l-4.35-4.35" strokeLinecap="round"/>
@@ -1221,13 +1221,13 @@ export default function ApplicationsClient({
               </div>
               <button
                 onClick={() => exportKuyateCSV(filteredKuyate)}
-                className="order-3 flex items-center justify-center gap-2 w-full sm:w-auto px-4 py-2.5 sm:p-2 rounded-[10px] border border-white/16 bg-transparent text-[#8c8c8c] hover:border-white/30 hover:text-[#cfcfcf] transition-all active:scale-95 sm:shrink-0"
+                className="order-3 flex items-center justify-center gap-2 w-full xl:w-auto px-4 py-2.5 xl:p-2 rounded-[10px] border border-white/16 bg-transparent text-[#8c8c8c] hover:border-white/30 hover:text-[#cfcfcf] transition-all active:scale-95 xl:shrink-0"
                 title="Export CSV"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span className="text-[13px] font-semibold sm:hidden">Export CSV</span>
+                <span className="text-[13px] font-semibold xl:hidden">Export CSV</span>
               </button>
             </div>
 
