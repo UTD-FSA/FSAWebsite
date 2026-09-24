@@ -34,6 +34,8 @@ type Props = {
   objectPosition?: string
   /** optional supplementary copy shown to the right of the stack on md+, below it on mobile */
   right?: ReactNode
+  /** keep the right-hand slot on one line instead of wrapping at 30ch */
+  rightNowrap?: boolean
 }
 
 export default function PageHero({
@@ -45,6 +47,7 @@ export default function PageHero({
   heightClassName = 'h-[50vh] md:h-[560px]',
   objectPosition = 'object-top',
   right,
+  rightNowrap = false,
 }: Props) {
   return (
     <section className={`relative w-full overflow-hidden ${heightClassName}`}>
@@ -98,7 +101,7 @@ export default function PageHero({
             <BaybayinRule word={baybayin} size="27px" onPhoto />
           </div>
           {right && (
-            <div className="hidden md:block max-w-[30ch] md:text-right text-[#e8e4dd]/90">{right}</div>
+            <div className={`hidden md:block md:text-right text-[#e8e4dd]/90 ${rightNowrap ? 'whitespace-nowrap' : 'max-w-[30ch]'}`}>{right}</div>
           )}
         </div>
       </AnimatedTitle>

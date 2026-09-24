@@ -64,7 +64,7 @@ export default function GoodphilAboutPage() {
         objectPosition="object-center"
         right={
           <span className="font-sans font-semibold uppercase tracking-[0.13em] text-[15px]">
-            The biggest Filipino intercollegiate event in the South
+            The biggest Filipino intercollegiate event<br />in the South
           </span>
         }
       />

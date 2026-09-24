@@ -24,7 +24,7 @@ export default function Footer() {
       <div className="px-6 py-6 flex items-center justify-between md:grid md:grid-cols-[1fr_auto_1fr] gap-8">
         {/* logo + tagline */}
         <div className="flex flex-col gap-2">
-          <Link href="/" aria-label="UTD FSA home">
+          <Link href="/" aria-label="UTD FSA home" className="w-fit hover:scale-110 hover:opacity-80 active:scale-95 transition-all duration-200">
             <Image
               src="/bare-logo.png"
               alt="UTD FSA"

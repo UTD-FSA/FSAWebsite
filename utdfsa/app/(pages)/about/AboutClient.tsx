@@ -52,6 +52,7 @@ const OFFICERS_2025_2026 = [
   { position: 'Historian',           name: 'Aliyah Carabeo' },
   { position: 'Marketing Chair',     name: 'Lance Martinez' },
   { position: 'Graphics Chair',      name: 'Skylar Dang' },
+  { position: 'Graphics Chair',      name: 'Angelina Tran' },
   { position: 'Philanthropy Chair',  name: 'Kenneth Le' },
   { position: 'Fundraising Chair',   name: 'Brian Leung' },
 ]

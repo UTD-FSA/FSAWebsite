@@ -262,8 +262,9 @@ export default function PamilyasClient({
         title="Pamilyas"
         baybayin="ᜉᜋᜒᜎ᜔ᜌ"
         objectPosition="object-[43%_35%]"
+        rightNowrap
         right={
-          <span className="font-sans text-[16px] leading-relaxed">
+          <span className="font-sans font-semibold uppercase tracking-[0.13em] text-[15px]">
             Find the pam that&rsquo;s right for you.
           </span>
         }
