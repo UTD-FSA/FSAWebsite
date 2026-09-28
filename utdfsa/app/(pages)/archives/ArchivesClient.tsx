@@ -37,7 +37,7 @@ export default function ArchivesClient({ galleries }: Props) {
   const filtersRef = useRef<HTMLDivElement>(null)
   const gridRef    = useRef<HTMLDivElement>(null)
   const ctaRef     = useRef<HTMLDivElement>(null)
-  const ctaVisible = useRevealOnScroll(ctaRef)
+  const ctaVisible = useRevealOnScroll(ctaRef, { line: 1 })
 
   // ── filter options ────────────────────────────────────────
   const filterOptions = useMemo(() => {

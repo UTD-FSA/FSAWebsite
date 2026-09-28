@@ -86,7 +86,7 @@ export default function GoodphilAboutPage() {
       </div>
 
       {/* ── SECTION 2 — WHAT IS GOODPHIL? ────────────────────────── */}
-      <section className="bg-section-bg py-16 px-6">
+      <section className="bg-section-bg pt-16 pb-[39px] md:pb-16 px-6">
         <div className="max-w-6xl mx-auto">
           <SectionHeader index="01" title="What Is GoodPhil?" baybayin="ᜄᜓᜇ᜔ᜉᜒᜎ᜔" />
 
