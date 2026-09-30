@@ -86,7 +86,7 @@ export const PAMILYAS: Pamilya[] = [
       { name: 'Simon Choi', handle: 'simon.choi03' },
       { name: 'Kenneth Le', handle: 'kennehleh' },
       { name: 'Brian Leung', handle: 'bruhian1' },
-      { name: 'Livy Kerr', handle: 'livyker' },
+      { name: 'Livy Ker', handle: 'livyker' },
       { name: 'Kelsey Lim', handle: 'kelseyllim' },
       { name: 'Alyssa Le', handle: 'alyssasle' },
       { name: 'Belinda Cai', handle: '_belindacai_' },
