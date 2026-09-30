@@ -1,14 +1,22 @@
 // ── PamilyasClient.tsx ────────────────────────────────────
-// client component — pamilyas page: intro, photo band, sign-up form
-// cards (ading / kuya-ate / protection form), and state-driven popups
+// client component — pamilyas page: intro, photo band, "meet the
+// pamilyas" roster, sign-up form cards (ading / kuya-ate / protection
+// form), and state-driven popups
 //
 // data:  memberState prop from pamilyas/page.tsx (login, membership,
-//        application, and onboarding state)
+//        application, and onboarding state); pam roster from
+//        pamilyasData.ts (static)
 // notes: each card's cta routes by member state — login, membership,
 //        onboarding, reapply, or a blocking popup (see the prop helpers).
 //        the fan carousel that used to sit between the intro and "meet
 //        the pamilyas" is gone — the PhotoBand under the intro carries
 //        the photos now.
+//        meet the pamilyas: one full-bleed band per pam, alternating
+//        backgrounds. below lg every pam uses the same stacked layout
+//        (design 8b); at lg+ even pams put a header row over photo-left,
+//        odd pams stack their info left of a full-height photo (design 7a).
+//        odd pams render their header twice (lg:hidden / hidden lg:flex)
+//        because it moves into the info column on desktop.
 // ──────────────────────────────────────────────────────────
 'use client'
 
@@ -20,7 +28,9 @@ import QuickNavRail from '@/components/QuickNavRail'
 import SectionHeader from '@/components/SectionHeader'
 import PageHero from '@/components/PageHero'
 import PhotoBand from '@/components/PhotoBand'
-import { useRevealOnScroll, useStaggeredReveal } from '@/lib/useRevealOnScroll'
+import ScrollFadeIn from '@/components/ScrollFadeIn'
+import { useStaggeredReveal } from '@/lib/useRevealOnScroll'
+import { PAMILYAS, type Pamilya } from './pamilyasData'
 
 const PAMILYAS_NAV_ITEMS = [
   { label: 'What Is a Pamilya', href: '#what-is-a-pamilya' },
@@ -120,6 +130,221 @@ function FormCard({
   )
 }
 
+// ── Meet the Pamilyas ─────────────────────────────────────────────────────────
+
+const PAM_NAME_SIZE = 'clamp(22px, 2.6vw, 34px)'
+
+function instagramUrl(handle: string): string {
+  return `https://instagram.com/${handle}`
+}
+
+function InstagramIcon({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true">
+      <rect x="2" y="2" width="20" height="20" rx="5" />
+      <circle cx="12" cy="12" r="4.5" />
+      <circle cx="17.5" cy="6.5" r="1.3" fill="currentColor" stroke="none" />
+    </svg>
+  )
+}
+
+function PamLogo({ pam, className }: { pam: Pamilya; className: string }) {
+  return (
+    <div
+      className={`${className} shrink-0 rounded-full overflow-hidden ${pam.logoBg === 'white' ? 'bg-white' : 'bg-black'} ${pam.logoContain ? 'p-1' : ''}`}
+    >
+      <div className="relative w-full h-full">
+        <SmoothImage
+          src={pam.logo}
+          alt={`${pam.name} logo`}
+          fill
+          sizes="56px"
+          className={pam.logoContain ? 'object-contain' : 'object-cover'}
+          style={pam.logoStyle}
+        />
+      </div>
+    </div>
+  )
+}
+
+// square icon button on mobile, "Follow" pill on desktop — one element
+function FollowButton({ pam }: { pam: Pamilya }) {
+  return (
+    <a
+      href={instagramUrl(pam.instagram)}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`${pam.name} on Instagram`}
+      className="shrink-0 inline-flex items-center justify-center gap-2 w-11 h-11 lg:w-auto lg:h-auto lg:px-[18px] lg:py-[9px] rounded-xl bg-accent-green text-[#0e0e0e] font-sans font-semibold text-[13px] hover:brightness-110 transition-[filter]"
+    >
+      <span className="lg:hidden"><InstagramIcon size={18} /></span>
+      <span className="hidden lg:inline-flex"><InstagramIcon size={13} /></span>
+      <span className="hidden lg:inline">Follow</span>
+    </a>
+  )
+}
+
+function PamSlogan({ pam }: { pam: Pamilya }) {
+  return (
+    <span className="font-sans italic text-[14px] lg:text-[15px] text-accent-green">
+      &ldquo;{pam.slogan}&rdquo;
+    </span>
+  )
+}
+
+// logo · name/slogan · follow — every pam below lg, even pams at lg+
+function PamHeaderRow({ pam, className = '' }: { pam: Pamilya; className?: string }) {
+  return (
+    <div className={`flex items-center gap-3.5 lg:gap-5 pb-[18px] lg:pb-[22px] border-b border-white/12 ${className}`}>
+      <PamLogo pam={pam} className="w-11 h-11 lg:w-14 lg:h-14" />
+      <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+        <h3
+          className="font-display font-extrabold lg:font-bold text-white leading-[1.05] tracking-[-0.015em] text-balance"
+          style={{ fontSize: PAM_NAME_SIZE }}
+        >
+          {pam.name}
+        </h3>
+        <PamSlogan pam={pam} />
+      </div>
+      <FollowButton pam={pam} />
+    </div>
+  )
+}
+
+// odd pams at lg+: logo + name, then slogan + follow over a hairline
+function PamHeaderStacked({ pam }: { pam: Pamilya }) {
+  return (
+    <div className="hidden lg:flex flex-col gap-5">
+      <div className="flex items-center gap-3.5">
+        <PamLogo pam={pam} className="w-12 h-12" />
+        <h3
+          className="font-display font-black text-white leading-[1.02] tracking-[-0.02em]"
+          style={{ fontSize: PAM_NAME_SIZE }}
+        >
+          {pam.name}
+        </h3>
+      </div>
+      <div className="flex items-center justify-between gap-4 pb-[18px] border-b border-white/12">
+        <PamSlogan pam={pam} />
+        <FollowButton pam={pam} />
+      </div>
+    </div>
+  )
+}
+
+function PamHeadCard({ pam }: { pam: Pamilya }) {
+  return (
+    <a
+      href={instagramUrl(pam.head.handle)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center justify-between gap-3 min-h-11 px-3.5 py-2 rounded-[14px] bg-accent-green/[0.08] border border-accent-green/45 hover:bg-accent-green/[0.14] transition-colors"
+    >
+      <span className="flex flex-col gap-0.5">
+        <span className="font-sans font-semibold text-[10px] tracking-[0.14em] text-accent-green">PAM HEAD</span>
+        <span className="font-sans font-semibold text-[15px] text-white">{pam.head.name}</span>
+      </span>
+      <span className="font-sans text-[13px] lg:text-[12px] text-accent-green">@{pam.head.handle}</span>
+    </a>
+  )
+}
+
+function KuyateList({ pam }: { pam: Pamilya }) {
+  return (
+    <div className="flex flex-col">
+      <div className="flex items-center gap-3 pb-1 lg:pb-2.5 font-sans font-semibold text-[11px]">
+        <span className="tracking-[0.12em] text-[#e8e4dd]/45">KUYAS &amp; ATES</span>
+        <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
+        <span className="text-[#e8e4dd]/40">{pam.kuyates.length}</span>
+      </div>
+      {pam.kuyates.map(person => (
+        <a
+          key={person.handle}
+          href={instagramUrl(person.handle)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center lg:items-baseline justify-between gap-3 lg:gap-4 min-h-11 lg:min-h-0 px-0.5 lg:px-1 lg:py-[9px] border-b border-white/8 last:border-b-0 text-[#e8e4dd] hover:text-white transition-colors"
+        >
+          <span className="font-sans font-medium text-[15px] lg:text-[14px]">{person.name}</span>
+          <span className="font-sans text-[13px] lg:text-[12px] text-accent-green">@{person.handle}</span>
+        </a>
+      ))}
+    </div>
+  )
+}
+
+function PamPhoto({ pam, fillColumn }: { pam: Pamilya; fillColumn: boolean }) {
+  const caption = (
+    <span className="flex flex-wrap justify-center gap-x-2 font-sans font-semibold text-[11px] tracking-[0.1em] uppercase text-[#e8e4dd]/40 text-center">
+      <span>{pam.name}</span>
+      <span>2026&ndash;27</span>
+    </span>
+  )
+  const alt = `${pam.name} group photo`
+
+  // odd pams: 4:5 crop on mobile, stretches to the info column's height at lg+
+  if (fillColumn) {
+    return (
+      <div className="flex flex-col gap-2 lg:gap-3 min-w-0 lg:order-2">
+        <div className="relative aspect-[4/5] lg:aspect-auto lg:flex-1 lg:min-h-[480px] overflow-hidden border border-white/8">
+          <SmoothImage
+            src={pam.photo}
+            alt={alt}
+            fill
+            sizes="(max-width: 1024px) 100vw, 55vw"
+            className="object-cover"
+            style={{ objectPosition: pam.photoPosition }}
+          />
+        </div>
+        {caption}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-2 lg:gap-2.5 min-w-0">
+      <div className="overflow-hidden border border-white/8">
+        <SmoothImage
+          src={pam.photo}
+          alt={alt}
+          sizes="(max-width: 1024px) 100vw, 55vw"
+          className="w-full h-auto block"
+        />
+      </div>
+      {caption}
+    </div>
+  )
+}
+
+function PamBand({ pam, index }: { pam: Pamilya; index: number }) {
+  const photoRight = index % 2 === 1
+
+  return (
+    <div className={`${photoRight ? 'bg-section-bg' : 'bg-brand-bg'} px-5 sm:px-6 pt-9 pb-10 lg:py-14`}>
+      <ScrollFadeIn className="max-w-xl lg:max-w-6xl mx-auto flex flex-col gap-5 lg:gap-0">
+        {photoRight
+          ? <PamHeaderRow pam={pam} className="lg:hidden" />
+          : <PamHeaderRow pam={pam} />}
+
+        <div
+          className={`grid grid-cols-1 gap-5 ${
+            photoRight
+              ? 'lg:grid-cols-[1.2fr_1fr] lg:gap-12 lg:items-stretch'
+              : 'lg:grid-cols-[1.15fr_1fr] lg:gap-[52px] lg:items-start lg:pt-[30px]'
+          }`}
+        >
+          <PamPhoto pam={pam} fillColumn={photoRight} />
+          <div className="flex flex-col gap-5 min-w-0">
+            {photoRight && <PamHeaderStacked pam={pam} />}
+            <PamHeadCard pam={pam} />
+            <KuyateList pam={pam} />
+          </div>
+        </div>
+      </ScrollFadeIn>
+    </div>
+  )
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function PamilyasClient({
@@ -131,10 +356,6 @@ export default function PamilyasClient({
 }) {
   // blocking popup content; null = no popup open
   const [popup, setPopup] = useState<{ title: string; message: string } | null>(null)
-
-  // "Meet the Pamilyas" coming-soon line — scroll reveal
-  const comingSoonRef = useRef<HTMLParagraphElement>(null)
-  const comingSoonVisible = useRevealOnScroll(comingSoonRef)
 
   // sign-up FormCards — staggered entrance
   const formGridRef = useRef<HTMLDivElement>(null)
@@ -327,23 +548,16 @@ export default function PamilyasClient({
         ]}
       />
 
-      {/* ── SECTION 4 — MEET THE PAMILYAS (coming soon) ──────────── */}
-      <section id="meet" className="scroll-mt-20 bg-brand-bg py-16 px-6">
-        <div className="max-w-6xl mx-auto">
-          <SectionHeader index="02" title="Meet the Pamilyas" />
-
-          <p
-            ref={comingSoonRef}
-            className="font-sans text-[16px] leading-relaxed text-[#e8e4dd]/60 max-w-xl pt-8"
-            style={{
-              opacity: comingSoonVisible ? 1 : 0,
-              transform: comingSoonVisible ? 'none' : 'translateY(20px)',
-              transition: 'opacity 700ms var(--ease-smooth), transform 700ms var(--ease-smooth)',
-            }}
-          >
-            Pamilyas will be revealed at the 2nd General Meeting. Check back soon!
-          </p>
+      {/* ── SECTION 4 — MEET THE PAMILYAS ────────────────────────── */}
+      <section id="meet" className="scroll-mt-20 bg-brand-bg">
+        <div className="px-5 sm:px-6 pt-9 lg:pt-16">
+          <div className="max-w-xl lg:max-w-6xl mx-auto">
+            <SectionHeader index="02" title="Meet the Pamilyas" />
+          </div>
         </div>
+        {PAMILYAS.map((pam, i) => (
+          <PamBand key={pam.name} pam={pam} index={i} />
+        ))}
       </section>
 
       {/* ── SECTION 5 — WHERE DO I SIGN UP? ──────────────────────── */}
