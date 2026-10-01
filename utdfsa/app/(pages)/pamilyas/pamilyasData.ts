@@ -129,7 +129,7 @@ export const PAMILYAS: Pamilya[] = [
   },
   {
     name: 'PamNextDoor',
-    slogan: 'Welcome to the Party',
+    slogan: 'Welcome to the Party.',
     instagram: 'pam.next.door',
     logo: pndLogo,
     logoBg: 'black',

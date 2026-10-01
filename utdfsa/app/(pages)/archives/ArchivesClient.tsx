@@ -138,30 +138,36 @@ export default function ArchivesClient({ galleries }: Props) {
           </div>
         </div>
 
-        {/* Filter pills + gallery count (count pinned right via ml-auto) */}
+        {/* Filter pills + gallery count — on mobile the pills swipe horizontally
+            (pills-scroll, same as the officer applications toolbar) under a
+            right-edge fade and the count is hidden; pr-8 lets the last pill
+            scroll clear of the fade. from sm up they wrap as before with the
+            count pinned right */}
         <div
           ref={filtersRef}
-          className="pt-9 flex items-center gap-2.5 flex-wrap"
+          className="pt-9 flex items-center gap-4"
           style={{ opacity: 0 }}
         >
-          {filterOptions.map((option) => {
-            const active = option === activeFilter
-            return (
-              <button
-                key={option}
-                onClick={() => handleFilterChange(option)}
-                className="filter-pill px-[18px] py-[9px] rounded-full text-[13px] font-semibold transition-all duration-150 cursor-pointer active:scale-95"
-                style={{
-                  background: active ? '#75ba78' : 'transparent',
-                  color: active ? '#0e0e0e' : '#b8b8b8',
-                  border: `1px solid ${active ? '#75ba78' : 'rgba(255,255,255,0.16)'}`,
-                }}
-              >
-                {option}
-              </button>
-            )
-          })}
-          <span className="ml-auto text-[13px] text-[#8c8c8c] font-medium whitespace-nowrap">
+          <div className="pills-scroll flex-1 min-w-0 flex gap-2.5 flex-nowrap overflow-x-auto pr-8 [mask-image:linear-gradient(to_right,#000_calc(100%-32px),transparent)] sm:flex-wrap sm:overflow-visible sm:pr-0 sm:[mask-image:none]">
+            {filterOptions.map((option) => {
+              const active = option === activeFilter
+              return (
+                <button
+                  key={option}
+                  onClick={() => handleFilterChange(option)}
+                  className="filter-pill flex-none whitespace-nowrap px-[18px] py-[9px] rounded-full text-[13px] font-semibold transition-all duration-150 cursor-pointer active:scale-95"
+                  style={{
+                    background: active ? '#75ba78' : 'transparent',
+                    color: active ? '#0e0e0e' : '#b8b8b8',
+                    border: `1px solid ${active ? '#75ba78' : 'rgba(255,255,255,0.16)'}`,
+                  }}
+                >
+                  {option}
+                </button>
+              )
+            })}
+          </div>
+          <span className="hidden sm:inline flex-none text-[13px] text-[#8c8c8c] font-medium whitespace-nowrap">
             {filtered.length} {filtered.length === 1 ? 'gallery' : 'galleries'}
           </span>
         </div>
@@ -202,13 +208,16 @@ export default function ArchivesClient({ galleries }: Props) {
                       {gallery.cover_photo_url ? (
                         // zoom promoted to its own compositor layer (transform-gpu +
                         // will-change), same as the goodphil about team cards; the
-                        // transition curve lives in SmoothImage. unlinked cards don't zoom
+                        // transition curve lives in SmoothImage. unlinked cards don't zoom.
+                        // desktop sizes are ~1.5x the card width on purpose: covers are 3:2
+                        // landscape cropped to a square, so height fills the card and the
+                        // file needs 1.5x the card's width to stay sharp
                         <SmoothImage
                           src={gallery.cover_photo_url}
                           alt={gallery.title}
                           fill
                           className={`object-cover object-center${linked ? ' transform-gpu will-change-transform group-hover:scale-[1.04]' : ''}`}
-                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 264px"
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 44vw, (max-width: 1280px) 35vw, 346px"
                           quality={85}
                         />
                       ) : (
