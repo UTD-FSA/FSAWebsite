@@ -30,17 +30,20 @@ const ABOUT_NAV_ITEMS = [
 
 // ── officer data ──────────────────────────────────────────────
 // update position/name entries each year; add new year block to PAST_OFFICERS
-// leadership (President, VP, Secretary, Treasurer) render in their own dedicated
-// row above the rest of the board
+// leadership (President, VP, Secretary, Treasurer, Board Advisor) render in their own
+// dedicated rows above the rest of the board — the first EXEC_TOP_ROW_COUNT entries
+// (President, VP) on the top row, everyone else on the row below
 const OFFICERS_LEADERSHIP = [
   { position: 'President',           name: 'Genna Ibarra' },
   { position: 'Vice President',      name: 'Simon Choi' },
   { position: 'Secretary',           name: 'Kevalin Staats' },
   { position: 'Treasurer',           name: 'Tristan Casillan' },
+  { position: 'Board Advisor',       name: 'Leo dos Remedios' },
 ]
 
+const EXEC_TOP_ROW_COUNT = 2
+
 const OFFICERS_2025_2026 = [
-  { position: 'Board Advisor',       name: 'Leo dos Remedios' },
   { position: 'Event Coordinator',   name: 'Kim Pham' },
   { position: 'Pamilya Chair',       name: 'Christopher Hay' },
   { position: 'Webmaster',           name: 'Adrian Hautea' },
@@ -317,14 +320,18 @@ export default function AboutClient() {
             EXECUTIVE BOARD
           </p>
           <div ref={boardGridRef} className="flex flex-col gap-6 mt-5">
-            {/* leadership row — President, VP, Secretary, Treasurer share their own
-                row, 2-up on mobile and 4-up from md on */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto w-full">
-              {OFFICERS_LEADERSHIP.map(({ position, name }, i) => (
+            {/* leadership rows — President + VP on top, the rest centered below. card
+                widths mirror the officer grid's columns (2 / 3 / 4-up, same gap-6) so
+                exec cards are the same size as the cards underneath */}
+            {[OFFICERS_LEADERSHIP.slice(0, EXEC_TOP_ROW_COUNT), OFFICERS_LEADERSHIP.slice(EXEC_TOP_ROW_COUNT)].map((row, rowIndex) => (
+            <div key={rowIndex} className="flex flex-wrap justify-center gap-6">
+              {row.map(({ position, name }, indexInRow) => {
+                const i = rowIndex * EXEC_TOP_ROW_COUNT + indexInRow
+                return (
                 <div
                   key={`${position}-${name}`}
                   data-officer-card
-                  className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden hover:brightness-110 transition-all duration-200"
+                  className="w-[calc((100%-1.5rem)/2)] md:w-[calc((100%-3rem)/3)] lg:w-[calc((100%-4.5rem)/4)] bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden hover:brightness-110 transition-all duration-200"
                 >
                   {/* replace this div with Next.js Image when officer photos are available:
                       <SmoothImage src="/officers/[name].jpg" alt="[Name]" fill
@@ -346,19 +353,22 @@ export default function AboutClient() {
                     </p>
                   </div>
                 </div>
-              ))}
+                )
+              })}
             </div>
+            ))}
 
-            {/* remaining officer board — normal responsive grid */}
+            {/* remaining officer board — 2 / 3 / 4-up. flex rather than grid so the
+                leftover cards on the last row can be centered on desktop (lg) */}
             <p className="text-center font-display font-semibold text-[12px] tracking-[0.14em] text-[#e8e4dd]/50 mt-6 mb-1">
               OFFICER BOARD
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="flex flex-wrap lg:justify-center gap-6">
               {OFFICERS_2025_2026.map(({ position, name }, i) => (
                 <div
                   key={`${position}-${name}`}
                   data-officer-card
-                  className="bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden hover:brightness-110 transition-all duration-200"
+                  className="w-[calc((100%-1.5rem)/2)] md:w-[calc((100%-3rem)/3)] lg:w-[calc((100%-4.5rem)/4)] bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden hover:brightness-110 transition-all duration-200"
                 >
                   {/* replace this div with Next.js Image when officer photos are available:
                       <SmoothImage src="/officers/[name].jpg" alt="[Name]" fill
