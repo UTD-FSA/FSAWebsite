@@ -1,11 +1,11 @@
 // ── page.tsx ──────────────────────────────────────────────
-// goodphil sports page — 9-sport grid, captain interest form,
+// goodphil sports page — 9-sport grid, sports interest form,
 // and captain meeting booking cta
 //
 // notes: fully static; hero: sports-hero.jpg (/public); band photos are
 //        sports-photo-1.jpg, goodphil-games.jpg, sports-photo-3.jpg;
 //        sport photos live in the SPORTS array below (photo: null
-//        renders the mystery-sport placeholder tile); captain form
+//        renders the mystery-sport placeholder tile); interest form
 //        and booking links are hardcoded google forms/calendar urls;
 //        no purple highlights anywhere; Our Sports section uses
 //        bg-brand-bg (#0e0e0e), same dark tone as the About page's
@@ -154,14 +154,14 @@ export default function SportsPage() {
         </div>
       </section>
 
-      {/* ── SECTION 4 — CAPTAINS ─────────────────────────────────── */}
+      {/* ── SECTION 4 — GET INVOLVED ─────────────────────────────── */}
       <section className="bg-section-bg py-16 px-6">
         <div className="max-w-6xl mx-auto">
-          <SectionHeader index="03" title="Captains" />
+          <SectionHeader index="03" title="Get Involved" />
 
           <div ref={headingRef} className="grid sm:grid-cols-2 gap-6 pt-10">
 
-            {/* primary cta — captain interest form */}
+            {/* primary cta — sports interest form */}
             <div
               className="bg-[#141414] border border-white/10 rounded-2xl px-8 py-10 text-center"
               style={{
@@ -174,22 +174,22 @@ export default function SportsPage() {
                 className="font-display font-black text-white mb-3"
                 style={{ fontSize: 'clamp(20px, 2.2vw, 26px)', letterSpacing: '-0.02em', lineHeight: 1.1 }}
               >
-                Want to Captain a Sport?
+                Want to Join a Team?
               </h3>
               <p
                 className="font-sans text-[#e8e4dd]/60 mb-6"
                 style={{ fontSize: '14.5px', lineHeight: 1.6, fontWeight: 500 }}
               >
-                Sports captains lead their team throughout Goodphil season. If you&apos;re interested in taking on a leadership role, fill out the captain interest form!
+                Interested in any Goodphil sport this year? Fill out the interest form so our sports coordinators and captains know who&apos;s in. It&apos;s not a commitment, and you&apos;re not locked into competing. We&apos;d love to have y&apos;all play for UTD FSA!
               </p>
               <a
-                href="https://docs.google.com/forms/d/e/1FAIpQLSc4CPQXu9A_CaCMmZO9xJiUl_7Up5R8bBxLPKlo2fFZpuxFGg/viewform?pli=1"
+                href="https://forms.gle/MrNgQqxByEJGPY8B9"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-accent-green text-[#0e0e0e] rounded-xl font-sans font-bold transition-all duration-200 hover:brightness-[1.08]"
                 style={{ fontSize: '14px', letterSpacing: '0.01em' }}
               >
-                Fill Out Captain Interest Form
+                Fill Out Sports Interest Form
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </a>
             </div>
