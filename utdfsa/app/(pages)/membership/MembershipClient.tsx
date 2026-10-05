@@ -12,6 +12,7 @@ import Image from 'next/image'
 import QuickNavRail from '@/components/QuickNavRail'
 import AnimatedTitle from '@/components/AnimatedTitle'
 import { useRevealOnScroll, useStaggeredReveal } from '@/lib/useRevealOnScroll'
+import { trackEvent } from '@/lib/analytics'
 
 const MEMBERSHIP_NAV_ITEMS = [
   { label: 'What You Get', href: '#what-you-get' },
@@ -169,6 +170,8 @@ export default function MembershipClient({
   async function handlePayment() {
     setLoading(true)
     setError(null)
+
+    trackEvent('Membership Checkout Started')
 
     try {
       // api: calls POST /api/membership/checkout — creates a stripe checkout session and returns the redirect URL — do not change this endpoint

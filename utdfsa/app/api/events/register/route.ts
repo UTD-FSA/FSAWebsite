@@ -29,6 +29,7 @@ import { isRateLimited } from '@/lib/rate-limit'
 import { resolveEventPricing } from '@/lib/events/pricing'
 import { resolveSessionExpiry } from '@/lib/events/session-expiry'
 import { shouldUseMemberPath } from '@/lib/events/registration-ownership'
+import { trackServerEvent } from '@/lib/analytics.server'
 
 // ponytail: in-memory rate limit — per-instance backstop only. the real gate is the
 // Vercel Firewall rate-limit rule on this path (global, runs at the edge). kept generous
@@ -214,6 +215,9 @@ export async function POST(req: Request) {
       console.error('Ticket insert error:', ticketError)
       return fail('Failed to create tickets.', 500)
     }
+
+    // analytics last — registration + tickets are confirmed written. never throws.
+    await trackServerEvent('Tickets Purchased', { type: 'free', tickets: tickets.length }, req)
 
     // members land on /member/orders after payment; guests land on /events
     const freeSuccessUrl = isMember

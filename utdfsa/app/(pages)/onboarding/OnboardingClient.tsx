@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { toTitleCase, formatPhone } from '@/lib/format'
 import SimpleHeader from '@/components/SimpleHeader'
+import { trackEvent } from '@/lib/analytics'
 
 /**
  * Props — passed down from OnboardingPage server component (onboarding/page.tsx)
@@ -336,6 +337,8 @@ export default function OnboardingClient({ firstName, isKuyateOpen, initialType,
         setLoading(false)
         return
       }
+
+      if (memberType) trackEvent('Onboarding Submitted', { memberType })
 
       // do NOT router.refresh() here — this route's server component (page.tsx) redirects
       // to /member/profile once onboarding_complete is true, which the submit above just

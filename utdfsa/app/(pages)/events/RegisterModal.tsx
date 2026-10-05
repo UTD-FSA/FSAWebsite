@@ -13,6 +13,7 @@
 
 import { useState } from 'react'
 import Modal from '@/components/Modal'
+import { trackEvent } from '@/lib/analytics'
 
 interface Ticket { fname: string; lname: string; email: string; emailConfirm: string }
 
@@ -126,6 +127,8 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
     }
     setEmailErrors([])
 
+    trackEvent('Registration Submitted', { event: event.name.slice(0, 255), tickets: tickets.length })
+
     try {
       // api: calls POST /api/events/register — creates registration + Stripe checkout session — do not change this endpoint
       // strip emailConfirm before sending — the api does not expect or validate it
@@ -164,7 +167,10 @@ export default function RegisterModal({ event, isMember, memberInfo }: Props) {
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true)
+          trackEvent('Register Opened', { event: event.name.slice(0, 255) })
+        }}
         className="w-full rounded-[13px] font-bold text-[15px] tracking-[0.01em] transition-all"
         style={{
           padding: '16px',

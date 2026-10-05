@@ -60,6 +60,7 @@ import { classifyRefundError, type RefundOutcome } from '@/lib/events/refund-err
 import QRCode from 'qrcode'
 import { NextResponse } from 'next/server'
 import { fail } from '@/lib/api-response'
+import { trackServerEvent } from '@/lib/analytics.server'
 
 // App Router reads the raw body via req.text() — no special config needed.
 // Do NOT add bodyParser: false here (that's Pages Router only and is ignored in App Router).
@@ -462,6 +463,9 @@ export async function POST(req: Request) {
           console.error('[webhook] unexpected error sending membership email for member', member_id, err)
         }
       }
+
+      // analytics last — after the confirmed DB write and the email. never throws.
+      await trackServerEvent('Membership Paid', { comp: session.payment_status === 'no_payment_required' }, req)
     }
 
     // ── event ticket fulfillment ──────────────────────────────────────────────
@@ -580,6 +584,9 @@ export async function POST(req: Request) {
         await supabase.from('pending_registrations').delete().eq('id', pending_id)
 
         await sendTicketEmails(supabase, registration.id)
+
+        // analytics last — after the confirmed DB write and the email. never throws.
+        await trackServerEvent('Tickets Purchased', { type: 'paid', tickets: pending.num_tickets }, req)
       } else if (registration_id) {
         // ── TRANSITION (legacy path): pre-deploy session, old metadata shape ─────────
         // remove this branch + purge leftover non-paid event_registrations rows no
