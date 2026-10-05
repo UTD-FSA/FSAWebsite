@@ -163,7 +163,7 @@ export default function SportsPage() {
 
             {/* primary cta — sports interest form */}
             <div
-              className="bg-[#141414] border border-white/10 rounded-2xl px-8 py-10 text-center"
+              className="bg-[#141414] border border-white/10 rounded-2xl px-8 py-10 text-center flex flex-col items-center"
               style={{
                 opacity: headingVisible ? 1 : 0,
                 transform: headingVisible ? 'translateY(0)' : 'translateY(10px)',
@@ -180,13 +180,13 @@ export default function SportsPage() {
                 className="font-sans text-[#e8e4dd]/60 mb-6"
                 style={{ fontSize: '14.5px', lineHeight: 1.6, fontWeight: 500 }}
               >
-                Interested in any Goodphil sport this year? Fill out the interest form so our sports coordinators and captains know who&apos;s in. It&apos;s not a commitment, and you&apos;re not locked into competing. We&apos;d love to have y&apos;all play for UTD FSA!
+                Interested in any Goodphil sport? Fill out the interest form so our captains know who&apos;s in. No commitment, and we&apos;d love to have y&apos;all play!
               </p>
               <a
                 href="https://forms.gle/MrNgQqxByEJGPY8B9"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-accent-green text-[#0e0e0e] rounded-xl font-sans font-bold transition-all duration-200 hover:brightness-[1.08]"
+                className="mt-auto inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 bg-accent-green text-[#0e0e0e] rounded-xl font-sans font-bold transition-all duration-200 hover:brightness-[1.08]"
                 style={{ fontSize: '14px', letterSpacing: '0.01em' }}
               >
                 Fill Out Sports Interest Form
@@ -220,7 +220,7 @@ export default function SportsPage() {
                 href="https://calendar.app.google/DeGvXnzB5Ux2DEQa8"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 border border-white/40 text-[#e8e4dd]/80 rounded-xl font-sans font-bold transition-all duration-200 hover:border-white/60 hover:text-white"
+                className="mt-auto inline-flex items-center justify-center gap-2 w-full px-6 py-3.5 border border-white/40 text-[#e8e4dd]/80 rounded-xl font-sans font-bold transition-all duration-200 hover:border-white/60 hover:text-white"
                 style={{ fontSize: '14px', letterSpacing: '0.01em' }}
               >
                 Book a Meeting
