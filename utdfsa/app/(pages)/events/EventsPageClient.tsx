@@ -21,6 +21,7 @@ import Modal from '@/components/Modal'
 import type { Event } from '@/types/database'
 import { getBadge, type EventTypeBadge } from '@/utils/eventTypes'
 import { fmtTimeRange, fmtDateShort } from '@/lib/format'
+import { buildGoogleCalendarUrl } from '@/lib/events/google-calendar-url'
 import { useRevealOnScroll } from '@/lib/useRevealOnScroll'
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -977,6 +978,22 @@ export default function EventsPageClient({ events, isMember, member, registeredE
                           : 'Free to attend — no registration required'}
                     </span>
                   </div>
+                )}
+
+                {/* only renders for events that haven't started — a past event isn't worth saving */}
+                {new Date(event.event_date) >= nowTs && (
+                  <a
+                    href={buildGoogleCalendarUrl(event)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 flex items-center justify-center gap-2 w-full px-4 py-3 text-sm font-semibold rounded-[13px] border border-white/16 bg-transparent text-[#cfcfcf] hover:border-white/30 hover:text-white transition-colors"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <rect x="3" y="4.5" width="18" height="16" rx="2.5" />
+                      <path d="M3 9h18M8 2.5v4M16 2.5v4M12 12v5M9.5 14.5h5" />
+                    </svg>
+                    Add to Google Calendar
+                  </a>
                 )}
               </div>
             </div>
