@@ -125,6 +125,7 @@ export const PAMILYAS: Pamilya[] = [
       { name: 'Vy Tran', handle: 'vtrhnn' },
       { name: 'Shayna Silvestre', handle: 'shaynasilv' },
       { name: 'Angelina Tran', handle: 'ang3lina_tran' },
+      { name: 'Misu', handle: 'misu.stagram' },
     ],
   },
   {
@@ -175,7 +176,7 @@ export const PAMILYAS: Pamilya[] = [
     head: { name: 'Kevalin Staats', handle: 'kevalinstaats' },
     kuyates: [
       { name: 'Richard Garcia', handle: 'richardleegarciaiv' },
-      { name: 'John Nguyen', handle: 'johnh.uynh' },
+      { name: 'John Huynh', handle: 'johnh.uynh' },
       { name: 'Michael Perez', handle: 'o_0michael' },
       { name: 'Trang Anh Nguyen', handle: 'trang._.anh.816' },
       { name: 'Ken Luong', handle: 'buggibutt' },
