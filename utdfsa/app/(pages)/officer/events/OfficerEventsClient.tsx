@@ -1330,12 +1330,15 @@ function EventRow({
     // hiding the kebab dropdown menu whenever it extended past the card's bottom edge.
     // left-edge color accent is an explicit user-requested override of the side-stripe-
     // border design ban, alongside the tinted date block (not a replacement for it).
+    // hidden-row dimming drops while the kebab menu is open — opacity < 1 creates a stacking
+    // context, which trapped the menu's z-index inside the row (later rows painted over it)
+    // and made the menu itself see-through.
     <div
       className={`rounded-2xl transition-[border-color] duration-150 ${
         isEditing
           ? 'bg-[#121212] border border-[rgba(151,71,255,0.3)]'
           : 'bg-[#121212] border border-white/8 hover:border-white/16'
-      } ${!event.is_visible ? 'opacity-80' : ''}`}
+      } ${!event.is_visible && !menuOpen ? 'opacity-80' : ''}`}
       style={{ borderLeft: `4px solid ${badge.dot}` }}
     >
       <div className="p-5 pb-[18px] flex gap-4">
